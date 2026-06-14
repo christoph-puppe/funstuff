@@ -63,6 +63,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 input.mono,textarea.mono,select.mono{font-family:"JetBrains Mono",monospace;font-size:12px}
 textarea{resize:vertical;line-height:1.5}
 select{appearance:none;cursor:pointer;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22><path d=%22M1 3l4 4 4-4%22 fill=%22none%22 stroke=%22%23999%22 stroke-width=%221.5%22/></svg>');background-repeat:no-repeat;background-position:right 10px center;padding-right:26px}
+select option{background:#181527;color:#efedf6}
+select option:checked,select option:hover{background:#3a2f5c;color:#fff}
 .prov{border:1px solid var(--b1);border-radius:10px;padding:11px;margin-bottom:10px;background:var(--elev1)}
 .prov .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .dot{width:9px;height:9px;border-radius:50%}
@@ -2399,10 +2401,10 @@ const COLOR_OF={openai:"#56c98a",anthropic:"#e0a35e",gemini:"#5fa3e8",xai:"#5fd0
 const MODELS={
   openai:["gpt-5.5","gpt-5.5-pro","gpt-5.4","gpt-5.4-mini","gpt-5.4-nano","gpt-5.1"],
   anthropic:["claude-opus-4-8","claude-sonnet-4-6","claude-haiku-4-5-20251001","claude-fable-5"],
-  gemini:["gemini-3.1-pro-preview","gemini-3-flash-preview","gemini-3.1-flash-lite-preview"],
+  gemini:["gemini-3.5-flash","gemini-3.1-pro-preview","gemini-3-flash-preview","gemini-3.1-flash-lite-preview"],
   xai:["grok-4.3","grok-4.1-fast-reasoning","grok-4.1-fast-non-reasoning","grok-4.20-multi-agent"]
 };
-const DEF_MODEL={openai:"gpt-5.4-mini",anthropic:"claude-sonnet-4-6",gemini:"gemini-3-flash-preview",xai:"grok-4.3"};
+const DEF_MODEL={openai:"gpt-5.4-mini",anthropic:"claude-sonnet-4-6",gemini:"gemini-3.5-flash",xai:"grok-4.3"};
 const MOVE_SCHEMA={type:"object",properties:{move:{type:"string"},comment:{type:"string"}},required:["move","comment"]};
 
 const LS={key:p=>"chessarena.key."+p,model:p=>"chessarena.model."+p,prompt:(t,l)=>"chessarena."+t+"."+l,
