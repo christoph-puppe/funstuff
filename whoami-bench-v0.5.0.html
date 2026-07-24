@@ -1,0 +1,2075 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>whoami-bench v0.5 · self-identification &amp; provenance probe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-deep:oklch(0.13 0.02 280);
+  --bg-elev-1:oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:oklch(0.95 0.005 280 / 0.08);
+  --border-1:oklch(0.95 0.005 280 / 0.06);
+  --border-2:oklch(0.95 0.005 280 / 0.10);
+  --text-primary:oklch(0.95 0.005 280);
+  --text-secondary:oklch(0.75 0.02 280);
+  --text-tertiary:oklch(0.65 0.02 280);
+  --text-quiet:oklch(0.55 0.02 280);
+  --accent:oklch(0.7 0.18 300);
+  --accent-soft:oklch(0.7 0.18 300 / 0.15);
+  --accent-glow:oklch(0.7 0.18 300 / 0.4);
+  --red:oklch(0.65 0.20 25);
+  --orange:oklch(0.65 0.20 50);
+  --amber:oklch(0.80 0.15 80);
+  --green:oklch(0.75 0.18 145);
+  --blue:oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg-deep);color:var(--text-primary);
+  font-family:Inter,system-ui,sans-serif;font-size:13.5px;line-height:1.55;overflow:hidden}
+::selection{background:oklch(0.7 0.18 300 / 0.35)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:oklch(0.95 0.005 280/0.12);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.nano{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--text-quiet)}
+#shell{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+#topbar{height:62px;flex:0 0 62px;display:flex;align-items:center;gap:13px;padding:0 20px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-1)}
+#topbar .brand{font-weight:700;font-size:15px}
+#topbar .brand span{color:var(--accent)}
+.pill{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.6px;padding:4px 9px;
+  border-radius:999px;border:1px solid var(--border-2);background:var(--bg-elev-1);
+  color:var(--text-tertiary);white-space:nowrap}
+.pill.on{color:var(--accent);border-color:oklch(0.7 0.18 300/.35);background:var(--accent-soft)}
+.pill.alert{color:var(--red);border-color:oklch(0.65 0.2 25/.4);background:oklch(0.65 0.2 25/.12)}
+.spacer{flex:1}
+#body{flex:1;display:flex;min-height:0}
+#rail{width:268px;flex:0 0 268px;overflow-y:auto;padding:16px 14px 30px;
+  border-right:1px solid var(--border-1);background:oklch(0.95 0.005 280/0.02)}
+#splitter{width:4px;cursor:col-resize;flex:0 0 4px}
+#splitter:hover{background:var(--accent-soft)}
+#main{flex:1;overflow-y:auto;padding:22px 26px 40px;min-width:0}
+#console{flex:0 0 180px;height:180px;border-top:1px solid var(--border-1);
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);display:flex;flex-direction:column}
+.rail-group{margin-bottom:18px}
+.rail-group > .nano{margin-bottom:8px;display:block}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--text-tertiary);margin-bottom:4px}
+input[type=text],input[type=password],input[type=number],select,textarea{
+  width:100%;background:oklch(0.95 0.005 280/0.05);color:var(--text-primary);
+  border:1px solid var(--border-2);border-radius:8px;padding:7px 9px;font-size:12.5px;
+  font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;resize:vertical}
+select{appearance:none;cursor:pointer}
+option{background:oklch(0.18 0.02 280);color:var(--text-primary)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);
+  cursor:pointer;padding:3px 0}
+.check input{accent-color:oklch(0.7 0.18 300);width:14px;height:14px;cursor:pointer}
+button{font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;border-radius:8px;
+  padding:7px 13px;border:1px solid var(--border-2);background:var(--bg-elev-2);
+  color:var(--text-secondary);transition:background .15s,color .15s}
+button:hover:not(:disabled){background:var(--bg-elev-3);color:var(--text-primary)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:transparent;color:oklch(0.15 0.02 280);
+  font-weight:600;box-shadow:0 6px 20px var(--accent-glow)}
+button.primary:hover:not(:disabled){background:oklch(0.75 0.18 300)}
+button.danger{color:var(--red);border-color:oklch(0.65 0.2 25/.35)}
+button.tiny{padding:4px 9px;font-size:11px}
+.card{background:var(--bg-elev-1);border:1px solid var(--border-1);backdrop-filter:blur(20px);
+  border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.card-head h2{font-size:13px;font-weight:600;margin:0}
+.card-head .ic{color:var(--accent);font-size:13px}
+.hint{font-size:11.5px;color:var(--text-quiet);line-height:1.55}
+.caveat{border:1px solid oklch(0.80 0.15 80/.3);background:oklch(0.80 0.15 80/.07);
+  border-radius:9px;padding:11px 13px;font-size:11.5px;line-height:1.6;color:var(--text-secondary)}
+.caveat b{color:var(--amber);font-weight:600}
+.cat-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.cat-toolbar input[type=text]{flex:1;min-width:170px}
+#catalog-list{max-height:280px;overflow-y:auto;min-height:0;border:1px solid var(--border-1);border-radius:10px}
+.cat-row{display:grid;grid-template-columns:22px 1fr 108px 82px;gap:10px;align-items:center;
+  padding:6px 10px;border-bottom:1px solid var(--border-1);font-size:12px;cursor:pointer}
+.cat-row:last-child{border-bottom:none}
+.cat-row:hover{background:var(--bg-elev-2)}
+.cat-row.sel{background:var(--accent-soft)}
+.cat-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-id{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-quiet);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-vendor{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-tertiary)}
+.cat-price{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-tertiary);text-align:right}
+/* probes */
+.probe-list{border:1px solid var(--border-1);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.probe-row{display:grid;grid-template-columns:24px 150px 1fr 74px;gap:10px;align-items:center;
+  padding:8px 11px;border-bottom:1px solid var(--border-1);cursor:pointer;font-size:12px}
+.probe-row:last-child{border-bottom:none}
+.probe-row:hover{background:var(--bg-elev-2)}
+.probe-row.active{background:var(--accent-soft)}
+.probe-name{font-weight:600}
+.probe-note{font-size:11px;color:var(--text-quiet);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.probe-kind{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.7px;
+  text-transform:uppercase;text-align:right;color:var(--text-tertiary)}
+.prompt-block{margin-bottom:14px}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.prompt-block.inactive{opacity:.42}
+.warn-chip{display:none;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--amber);border:1px solid oklch(0.8 0.15 80/.35);background:oklch(0.8 0.15 80/.1);
+  padding:4px 8px;border-radius:6px}
+.warn-chip.show{display:inline-block}
+.progress-wrap{margin-top:12px;display:none}
+.progress-wrap.show{display:block}
+.progress-meta{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-tertiary);margin-bottom:5px}
+.progress-track{height:1px;background:var(--border-2);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .2s ease}
+.progress-fill.done{background:var(--green)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){.stats-grid{grid-template-columns:1fr}}
+.sub-card{background:oklch(0.95 0.005 280/0.03);border:1px solid var(--border-1);
+  border-radius:10px;padding:12px 14px}
+.sub-card .nano{display:block;margin-bottom:10px}
+.donut-wrap{display:flex;gap:14px;align-items:center}
+.legend{flex:1;min-width:0}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:11.5px;padding:2px 0}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex:0 0 9px}
+.legend-lab{flex:1;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary)}
+.hbar-row{display:grid;grid-template-columns:170px 1fr 46px;gap:8px;align-items:center;padding:3px 0}
+.hbar-label{font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-track{height:7px;background:oklch(0.95 0.005 280/0.06);border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px}
+.hbar-value{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-tertiary);text-align:right}
+/* provenance */
+.tier{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.9px;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+.prov-card{border:1px solid var(--border-1);border-radius:10px;padding:12px 14px;margin-bottom:10px;
+  background:oklch(0.95 0.005 280/0.03);border-left-width:3px}
+.prov-card.t-none{border-left-color:oklch(0.55 0.02 280/.6)}
+.prov-card.t-weak{border-left-color:oklch(0.70 0.15 240/.8)}
+.prov-card.t-moderate{border-left-color:oklch(0.80 0.15 80/.85)}
+.prov-card.t-strong{border-left-color:oklch(0.65 0.20 25/.9)}
+.evi{display:grid;grid-template-columns:22px 1fr;gap:4px 9px;font-size:11.5px;margin-top:8px}
+.evi .m{font-family:'JetBrains Mono',monospace;font-size:11px}
+.evi .yes{color:var(--amber)}
+.evi .no{color:var(--text-quiet)}
+.probe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:7px;margin-top:9px}
+.pg-cell{border:1px solid var(--border-1);border-radius:8px;padding:7px 9px;
+  background:oklch(0.95 0.005 280/0.03)}
+.pg-cell .nano{display:block;margin-bottom:3px}
+.pg-val{font-family:'JetBrains Mono',monospace;font-size:12px}
+.res-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.res-card{border:1px solid var(--border-1);border-radius:10px;padding:12px 14px;margin-bottom:10px;
+  background:oklch(0.95 0.005 280/0.03)}
+.res-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.res-title{font-weight:600;font-size:12.5px}
+.verdict{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.8px;
+  text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor}
+.answer{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.55;white-space:pre-wrap;
+  background:oklch(0.95 0.005 280/0.03);border:1px solid var(--border-1);border-radius:8px;
+  padding:10px 12px;max-height:200px;overflow-y:auto;min-height:0;color:var(--text-secondary)}
+.judge-block{margin-top:10px;padding:10px 12px;border-radius:9px;border:1px solid var(--border-1);
+  background:oklch(0.95 0.005 280/0.03);border-left-width:3px;font-size:12px}
+.judge-block.ok{border-left-color:oklch(0.75 0.18 145/.8)}
+.judge-block.warn{border-left-color:oklch(0.80 0.15 80/.8)}
+.judge-block.danger{border-left-color:oklch(0.65 0.2 25/.8)}
+.judge-block.neutral{border-left-color:var(--text-quiet)}
+.kv{display:grid;grid-template-columns:124px 1fr;gap:3px 10px;font-size:11.5px}
+.kv .k{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--text-quiet);padding-top:2px}
+.kv .v{color:var(--text-secondary)}
+.rule-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent)}
+/* headline numbers */
+.big-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px}
+.big-stat{background:oklch(0.95 0.005 280/0.03);border:1px solid var(--border-1);
+  border-radius:10px;padding:12px 14px}
+.bs-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1.1}
+.bs-lab{font-size:11.5px;color:var(--text-secondary);margin-top:3px}
+.bs-sub{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-quiet);margin-top:2px}
+/* cohort comparison */
+.cohort-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.cohort-cell{background:oklch(0.95 0.005 280/0.03);border:1px solid var(--border-1);
+  border-radius:9px;padding:10px 12px}
+.cohort-main{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;margin-top:3px}
+.cohort-unit{font-size:11px;font-weight:400;color:var(--text-quiet);margin-left:3px}
+.cohort-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-quiet);margin-top:3px}
+/* confusion matrix */
+.matrix{display:grid;gap:2px;overflow-x:auto;min-width:0}
+.mx-row{display:contents}
+.mx-corner{padding:4px 6px;font-size:8.5px;letter-spacing:.6px;line-height:1.25}
+.mx-head{padding:4px 3px;text-align:center;font-size:8.5px;letter-spacing:.4px;
+  color:var(--text-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-side{padding:5px 7px;font-size:11px;color:var(--text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  background:oklch(0.95 0.005 280/0.03);border-radius:5px}
+.mx-cell{padding:5px 3px;text-align:center;font-family:'JetBrains Mono',monospace;
+  font-size:11px;border-radius:5px;border:1px solid var(--border-1)}
+.con-head{display:flex;align-items:center;gap:10px;padding:7px 16px;border-bottom:1px solid var(--border-1)}
+#con-lines{flex:1;overflow-y:auto;min-height:0;padding:6px 16px 10px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5}
+.ln{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}
+.ln .t{color:oklch(0.45 0.02 280);flex:0 0 auto}
+.ln.info .m{color:var(--blue)}
+.ln.ok .m{color:var(--green)}
+.ln.warn .m{color:var(--amber)}
+.ln.err .m{color:var(--red)}
+.ln.debug .m{color:var(--text-quiet)}
+.diff-row{display:grid;grid-template-columns:1fr 120px 120px;gap:10px;padding:5px 0;
+  border-bottom:1px solid var(--border-1);font-size:11.5px;align-items:center}
+.diff-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="shell">
+  <div id="topbar">
+    <div class="brand">whoami<span>·</span>bench</div>
+    <div class="pill">v0.5.0</div>
+    <div class="pill" id="pill-catalog">CATALOG —</div>
+    <div class="pill" id="pill-sel">0 MODELS</div>
+    <div class="pill" id="pill-probes">0 PROBES</div>
+    <div class="pill" id="pill-flags">0 FLAGGED</div>
+    <div class="spacer"></div>
+    <div class="pill" id="pill-calls">0 CALLS</div>
+    <div class="pill" id="pill-cost">$0.0000</div>
+    <div class="pill" id="pill-status">IDLE</div>
+  </div>
+
+  <div id="body">
+    <div id="rail">
+      <div class="rail-group">
+        <span class="nano">◈ openrouter</span>
+        <div class="field"><label>API key (browser only)</label>
+          <input type="password" id="api-key" placeholder="sk-or-v1-…" autocomplete="off"></div>
+        <button class="tiny" id="btn-catalog" style="width:100%">⟳ reload model catalog</button>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">◇ run parameters</span>
+        <div class="row2">
+          <div class="field"><label>trials / cell</label><input type="number" id="trials" value="3" min="1" max="20"></div>
+          <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="5" min="1" max="20"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="900" min="50" max="4000"></div>
+          <div class="field"><label>retries</label><input type="number" id="retries" value="2" min="0" max="5"></div>
+        </div>
+        <div class="field"><label>temperature (blank = default)</label>
+          <input type="number" id="temperature" step="0.1" min="0" max="2" placeholder="default"></div>
+        <div class="field"><label>reasoning</label>
+          <select id="reasoning">
+            <option value="">provider default</option>
+            <option value="low" selected>low effort</option>
+            <option value="off">disabled</option>
+          </select></div>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">⚖ scoring</span>
+        <div class="field"><label>mode</label>
+          <select id="judge-mode">
+            <option value="blind" selected>blind extract → JS compare</option>
+            <option value="combined">combined LLM judge</option>
+          </select></div>
+        <div class="field"><label>judge model (cheap)</label>
+          <select id="judge-model"><option value="">— load catalog —</option></select></div>
+        <div class="field"><span class="nano" id="judge-price">price —</span></div>
+        <div class="row2">
+          <div class="field"><label>batch size</label><input type="number" id="batch-size" value="20" min="1" max="50"></div>
+          <div class="field"><label>answer cap</label><input type="number" id="answer-cap" value="2500" min="200" max="8000"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="strict-json" checked> strict json_schema</label>
+        <label class="check"><input type="checkbox" id="version-penalty" checked> wrong version → partial</label>
+        <label class="check"><input type="checkbox" id="auto-judge" checked> auto-score after probing</label>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">⌕ method</span>
+        <div class="hint">Items reach the extractor as <span class="mono">a1…aN</span> with no model id,
+        so extraction stays blind. Verdicts and evidence tiers are computed in JS and are
+        reproducible across judge models.</div>
+      </div>
+    </div>
+
+    <div id="splitter"></div>
+
+    <div id="main">
+
+      <div class="card">
+        <div class="card-head"><span class="ic">▣</span><h2>Models under test</h2>
+          <div class="spacer"></div><span class="nano" id="cat-count"></span></div>
+        <div class="cat-toolbar">
+          <input type="text" id="cat-search" placeholder="filter by name or id…">
+          <select id="cat-vendor" style="width:auto;min-width:145px"><option value="">all vendors</option></select>
+          <button class="tiny" id="btn-clear-sel">clear</button>
+        </div>
+        <div class="cat-toolbar">
+          <select id="preset-select" style="width:auto;min-width:210px">
+            <option value="cn-open">open weights · China</option>
+            <option value="west-open">open weights · West</option>
+            <option value="closed-frontier">closed frontier</option>
+            <option value="flagship">flagship · one per major lab</option>
+          </select>
+          <input type="number" id="preset-per-lab" value="2" min="1" max="6" style="width:66px" title="models per lab">
+          <span class="nano">per lab</span>
+          <button class="tiny" id="btn-preset">◉ apply</button>
+          <button class="tiny" id="btn-preset-add">+ add to selection</button>
+        </div>
+        <div class="hint" id="preset-desc" style="margin-bottom:10px"></div>
+        <div id="catalog-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ic">✎</span><h2>Probe library</h2>
+          <div class="spacer"></div>
+          <span class="nano" id="probe-meta"></span>
+          <button class="tiny" id="btn-reset-probes">reset all</button></div>
+        <div class="probe-list" id="probe-list"></div>
+        <div class="prompt-block">
+          <div class="prompt-head"><span class="nano" id="editing-label">editing —</span>
+            <button class="tiny" id="reset-probe">reset this probe</button></div>
+          <label class="nano" style="display:block;margin-bottom:4px">system prompt — blank = none · {true_vendor} {true_family} {true_model}</label>
+          <textarea id="probe-system" rows="3"></textarea>
+          <label class="nano" style="display:block;margin:9px 0 4px">user message</label>
+          <textarea id="probe-user" rows="12"></textarea>
+          <div class="hint" id="probe-purpose" style="margin-top:7px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ic">⚖</span><h2>Extraction &amp; judging prompts</h2></div>
+        <div class="prompt-block" id="pb-extract">
+          <div class="prompt-head"><span class="nano">stage A · blind extraction — {items} {probe}</span>
+            <button class="tiny" id="reset-extract">reset</button></div>
+          <textarea id="extract-prompt" rows="16"></textarea>
+          <div class="warn-chip" id="extract-warn"></div>
+        </div>
+        <div class="prompt-block" id="pb-combined">
+          <div class="prompt-head"><span class="nano">combined judge — {model_id} {vendor} {family} {probe} {response}</span>
+            <button class="tiny" id="reset-combined">reset</button></div>
+          <textarea id="combined-prompt" rows="10"></textarea>
+          <div class="warn-chip" id="combined-warn"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="ic">▶</span><h2>Run</h2>
+          <div class="spacer"></div><span class="nano" id="run-plan"></span></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+          <button class="primary" id="btn-run">▶ probe + score</button>
+          <button id="btn-probe-only">probe only</button>
+          <button id="btn-judge-only" disabled>⚖ score existing</button>
+          <button id="btn-consistency" disabled>◇ batch check</button>
+          <button class="danger" id="btn-cancel" style="display:none">■ cancel</button>
+          <div class="spacer"></div>
+          <button class="tiny" id="btn-exp-json" disabled>⤓ json</button>
+          <button class="tiny" id="btn-exp-csv" disabled>⤓ csv</button>
+          <button class="tiny" id="btn-exp-md" disabled>⤓ md</button>
+        </div>
+        <div class="progress-wrap" id="prog">
+          <div class="progress-meta"><span id="prog-label">—</span><span id="prog-count">0 / 0</span></div>
+          <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="card" id="prov-card" style="display:none">
+        <div class="card-head"><span class="ic">⌖</span><h2>Cross-vendor self-identification</h2>
+          <div class="spacer"></div><span class="nano" id="prov-meta"></span></div>
+        <div class="caveat" style="margin-bottom:14px">
+          <b>Read this before drawing conclusions.</b> A model naming another vendor is <i>weak</i>
+          evidence of distillation on its own. Post-2023 web corpora are saturated with transcripts of
+          other assistants, so "I am ChatGPT" is a high-probability completion for any base model
+          trained on scraped text — no teacher model required. Identity is also normally installed at
+          deployment via system prompt, not trained into weights, so an unprompted model is largely
+          guessing. The inference fails in reverse too: identity fine-tuning is cheap, so absence of
+          this signal rules nothing out. Treat the tiers below as <b>where to look next</b>, never as
+          a finding. Corroboration means training-data disclosures, licence terms, tokeniser and
+          logit-level analysis — not a chat transcript.
+        </div>
+        <div id="prov-body"></div>
+      </div>
+
+      <div class="card" id="consistency-card" style="display:none">
+        <div class="card-head"><span class="ic">◇</span><h2>Batch consistency</h2>
+          <div class="spacer"></div><span class="nano" id="cons-meta"></span></div>
+        <div id="consistency-body"></div>
+      </div>
+
+      <div class="card" id="stats-card" style="display:none">
+        <div class="card-head"><span class="ic">◬</span><h2>Scoreboard</h2>
+          <div class="spacer"></div><span class="nano" id="stats-meta"></span></div>
+        <div class="stats-grid" id="stats-grid"></div>
+      </div>
+
+      <div class="card" id="results-card" style="display:none">
+        <div class="card-head"><span class="ic">◉</span><h2>Answers</h2>
+          <div class="spacer"></div><span class="nano" id="res-meta"></span></div>
+        <div class="res-toolbar">
+          <select id="res-filter" style="width:auto;min-width:185px">
+            <option value="all">all results</option>
+            <option value="correct">correct only</option>
+            <option value="notcorrect">anything but correct</option>
+            <option value="wrong">cross-vendor claims</option>
+            <option value="evasive">evasive / unclear</option>
+            <option value="honest">expressed uncertainty</option>
+            <option value="error">errors</option>
+          </select>
+          <select id="res-probe" style="width:auto;min-width:150px"><option value="">all probes</option></select>
+          <label class="check"><input type="checkbox" id="collapse-trials" checked> group by model</label>
+        </div>
+        <div id="results-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="console">
+    <div class="con-head"><span class="nano">⌗ log</span><span class="nano" id="con-count">0</span>
+      <div class="spacer"></div>
+      <label class="check"><input type="checkbox" id="autoscroll" checked> autoscroll</label>
+      <button class="tiny" id="con-clear">clear</button></div>
+    <div id="con-lines"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const VERSION = "0.5.0";
+const OR_BASE = "https://openrouter.ai/api/v1";
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,c=>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ===================== ground truth ===================== */
+const VENDORS = {
+  "anthropic":{name:"Anthropic",family:"Claude"},
+  "openai":{name:"OpenAI",family:"GPT / o-series"},
+  "google":{name:"Google",family:"Gemini"},
+  "x-ai":{name:"xAI",family:"Grok"},
+  "meta-llama":{name:"Meta",family:"Llama"},
+  "mistralai":{name:"Mistral AI",family:"Mistral"},
+  "deepseek":{name:"DeepSeek",family:"DeepSeek"},
+  "qwen":{name:"Alibaba Cloud",family:"Qwen"},
+  "moonshotai":{name:"Moonshot AI",family:"Kimi"},
+  "z-ai":{name:"Z.ai (Zhipu)",family:"GLM"},
+  "amazon":{name:"Amazon",family:"Nova"},
+  "cohere":{name:"Cohere",family:"Command"},
+  "microsoft":{name:"Microsoft",family:"Phi / MAI"},
+  "nvidia":{name:"NVIDIA",family:"Nemotron"},
+  "ai21":{name:"AI21 Labs",family:"Jamba"},
+  "minimax":{name:"MiniMax",family:"MiniMax"},
+  "perplexity":{name:"Perplexity",family:"Sonar"},
+  "baidu":{name:"Baidu",family:"ERNIE"},
+  "tencent":{name:"Tencent",family:"Hunyuan"},
+  "thudm":{name:"Tsinghua / THUDM",family:"GLM"},
+  "bytedance":{name:"ByteDance",family:"Doubao / Seed"},
+  "stepfun-ai":{name:"StepFun",family:"Step"},
+  "inclusionai":{name:"InclusionAI (Ant)",family:"Ling / Ring"},
+  "internlm":{name:"Shanghai AI Lab",family:"InternLM"},
+  "openbmb":{name:"OpenBMB / ModelBest",family:"MiniCPM"},
+  "skywork":{name:"Skywork (Kunlun)",family:"Skywork"},
+  "baichuan-inc":{name:"Baichuan",family:"Baichuan"},
+  "iflytek":{name:"iFlytek",family:"Spark"},
+  "sensetime":{name:"SenseTime",family:"SenseChat"},
+  "xiaomi":{name:"Xiaomi",family:"MiMo"},
+  "rednote-hilab":{name:"RedNote / Xiaohongshu",family:"dots"},
+  "nousresearch":{name:"Nous Research",family:"Hermes"},
+  "liquid":{name:"Liquid AI",family:"LFM"},
+  "allenai":{name:"Allen Institute",family:"OLMo"},
+  "inception":{name:"Inception Labs",family:"Mercury"},
+  "inflection":{name:"Inflection AI",family:"Pi"},
+  "01-ai":{name:"01.AI",family:"Yi"},
+  "arcee-ai":{name:"Arcee AI",family:"AFM"},
+  "openrouter":{name:"OpenRouter",family:"router"},
+};
+const ALIASES = {
+  "anthropic":{vendor:["anthropic","安思羅皮克"],family:["claude","克劳德"],retired:[]},
+  "openai":{vendor:["openai","open ai","欧本艾"],family:["gpt","chatgpt","o1","o3","o4","codex","聊天生成预训练转换器"],
+    retired:["dall e","dalle","whisper","sora","davinci","curie","babbage"]},
+  "google":{vendor:["google","google deepmind","deepmind","alphabet","google ai","谷歌"],family:["gemini","双子星"],
+    retired:["bard","palm","lamda","gemma","duet"]},
+  "x-ai":{vendor:["xai","x ai"],family:["grok"],retired:[]},
+  "meta-llama":{vendor:["meta","meta ai","facebook","facebook ai"],family:["llama"],
+    retired:["blenderbot","opt","galactica"]},
+  "mistralai":{vendor:["mistral","mistral ai"],
+    family:["mistral","mixtral","magistral","ministral","codestral","devstral","pixtral"],retired:[]},
+  "deepseek":{vendor:["deepseek","深度求索","深度求索公司"],family:["deepseek","深度求索"],retired:[]},
+  "qwen":{vendor:["alibaba","alibaba cloud","qwen","tongyi","aliyun","阿里巴巴","阿里云","阿里","通义"],
+    family:["qwen","tongyi","通义千问","千问","通义"],retired:[]},
+  "moonshotai":{vendor:["moonshot","moonshot ai","月之暗面"],family:["kimi","kimi chat"],retired:[]},
+  "z-ai":{vendor:["z ai","zai","zhipu","zhipu ai","bigmodel","智谱","智谱ai","智谱清言"],
+    family:["glm","chatglm","智谱清言"],retired:[]},
+  "thudm":{vendor:["thudm","tsinghua","清华大学","清华","知识工程实验室"],family:["glm","chatglm"],retired:[]},
+  "bytedance":{vendor:["bytedance","byte dance","字节跳动","字节"],family:["doubao","seed","豆包"],retired:[]},
+  "stepfun-ai":{vendor:["stepfun","step fun","阶跃星辰"],family:["step"],retired:[]},
+  "inclusionai":{vendor:["inclusionai","inclusion ai","ant group","蚂蚁集团","蚂蚁"],family:["ling","ring"],retired:[]},
+  "internlm":{vendor:["internlm","shanghai ai laboratory","上海人工智能实验室","书生"],family:["internlm","书生"],retired:[]},
+  "openbmb":{vendor:["openbmb","modelbest","面壁智能"],family:["minicpm"],retired:[]},
+  "skywork":{vendor:["skywork","kunlun","昆仑万维","天工"],family:["skywork","天工"],retired:[]},
+  "baichuan-inc":{vendor:["baichuan","百川智能","百川"],family:["baichuan","百川"],retired:[]},
+  "iflytek":{vendor:["iflytek","科大讯飞","讯飞"],family:["spark","星火"],retired:[]},
+  "sensetime":{vendor:["sensetime","商汤","商汤科技"],family:["sensechat","日日新"],retired:[]},
+  "xiaomi":{vendor:["xiaomi","小米"],family:["mimo"],retired:[]},
+  "rednote-hilab":{vendor:["rednote","xiaohongshu","小红书"],family:["dots"],retired:[]},
+  "amazon":{vendor:["amazon","aws","amazon web services"],family:["nova"],retired:["titan","alexa"]},
+  "cohere":{vendor:["cohere"],family:["command","aya"],retired:[]},
+  "microsoft":{vendor:["microsoft"],family:["phi","mai","copilot"],retired:["bing","tay","turing"]},
+  "nvidia":{vendor:["nvidia"],family:["nemotron"],retired:["megatron"]},
+  "ai21":{vendor:["ai21","ai21 labs"],family:["jamba"],retired:["jurassic"]},
+  "minimax":{vendor:["minimax"],family:["minimax","abab"],retired:[]},
+  "perplexity":{vendor:["perplexity"],family:["sonar"],retired:[]},
+  "baidu":{vendor:["baidu"],family:["ernie","wenxin"],retired:[]},
+  "tencent":{vendor:["tencent"],family:["hunyuan"],retired:[]},
+  "nousresearch":{vendor:["nous","nous research"],family:["hermes"],retired:[]},
+  "liquid":{vendor:["liquid","liquid ai"],family:["lfm"],retired:[]},
+  "allenai":{vendor:["allen","allen institute","ai2","allenai"],family:["olmo","molmo","tulu"],retired:[]},
+  "inception":{vendor:["inception","inception labs"],family:["mercury"],retired:[]},
+  "inflection":{vendor:["inflection","inflection ai"],family:["pi"],retired:[]},
+  "01-ai":{vendor:["01 ai","01.ai","zero one","yi"],family:["yi"],retired:[]},
+  "arcee-ai":{vendor:["arcee","arcee ai"],family:["afm","arcee"],retired:[]},
+};
+const FLAGSHIP_VENDORS = ["anthropic","openai","google","x-ai","meta-llama","deepseek","mistralai","qwen"];
+
+/* ---- cohort presets ----
+   Lab lists are jurisdiction, not language: a lab is listed by where it is headquartered.
+   Open-weights status is NOT taken from these lists — it comes from hugging_face_id in the
+   live catalog, so an API-only model from an otherwise open lab is correctly excluded. */
+const CN_LABS = ["deepseek","qwen","moonshotai","z-ai","zai-org","thudm","minimax","baidu","tencent",
+  "01-ai","stepfun-ai","inclusionai","opengvlab","internlm","bytedance","bytedance-research",
+  "rednote-hilab","skywork","baichuan-inc","sensetime","iflytek","alibaba","ant-group","meituan",
+  "xiaomi","kunlun","openbmb","tele-ai","shanghai-ai-lab","moonshot"];
+const WEST_OPEN_LABS = ["meta-llama","mistralai","allenai","microsoft","nvidia","google","openai",
+  "ibm-granite","arcee-ai","nousresearch","liquid","cohere","eleutherai","tiiuae","huggingfaceh4",
+  "ai21","apple","amazon"];
+const CLOSED_FRONTIER_LABS = ["anthropic","openai","google","x-ai"];
+
+const isOpenWeights = m => !!(m.hugging_face_id && String(m.hugging_face_id).trim());
+
+const PRESETS = {
+  "cn-open": {label:"open weights · China", labs:CN_LABS, openOnly:true,
+    desc:"Chinese-headquartered labs, restricted to models that publish weights (hugging_face_id present in the catalog)."},
+  "west-open": {label:"open weights · West", labs:WEST_OPEN_LABS, openOnly:true,
+    desc:"Control cohort. Same open-weights filter, non-Chinese labs — the comparison that tells you whether a cross-vendor tell is China-specific or universal."},
+  "closed-frontier": {label:"closed frontier", labs:CLOSED_FRONTIER_LABS, openOnly:false, closedOnly:true,
+    desc:"Proprietary frontier models, weights not published."},
+  "flagship": {label:"flagship · one per major lab", labs:FLAGSHIP_VENDORS, openOnly:false,
+    desc:"Highest-priced model from each of the eight major labs."},
+};
+const EXCLUDE_RE = /(:free|image|embed|tts|whisper|audio|guard|moderation|ocr|rerank)/i;
+const JUDGE_PREF_RE = /(flash-lite|haiku|mini|nano|flash|small|lite|\b[1-9]b\b)/i;
+const slugOf = id => String(id).split("/")[0].toLowerCase();
+const vendorOf = id => VENDORS[slugOf(id)] || {name:slugOf(id),family:"unknown"};
+
+/* ===================== comparator ===================== */
+/* keeps every script's letters (CJK, Cyrillic, Arabic…), not just ASCII —
+   a model answering "我是深度求索开发的" must survive normalisation */
+const norm = s => String(s ?? "").toLowerCase()
+  .replace(/[_\-]+/g," ").replace(/[^\p{L}\p{N}. ]+/gu," ").replace(/\s+/g," ").trim();
+const isNone = s => {const n=norm(s); return !n||n==="none"||n==="n a"||n==="unknown"||n==="unstated"||n==="not stated";};
+/* right boundary is "not a letter" rather than "not alphanumeric", so qwen3 / gpt4 / glm4 match.
+   CJK neighbours count as boundaries on both sides, so 由openai开发 matches too. */
+const hasTerm = (text,term) => {
+  const t=norm(text), q=norm(term);
+  if(!t||!q) return false;
+  return new RegExp(`(^|[^a-z0-9])${q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}(?![a-z])`,"u").test(t);
+};
+function groundTruthGeneration(id){
+  let tail = String(id).split("/")[1]||"";
+  tail = tail.replace(/\d+(?:\.\d+)?\s*x\s*\d+(?:\.\d+)?\s*b/gi," ");
+  tail = tail.replace(/\d+(?:\.\d+)?\s*[bmk](?![a-z0-9])/gi," ");
+  const n = (tail.match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(x=>x>0&&x<100);
+  return n.length?Math.floor(n[0]):null;
+}
+const claimedGeneration = s => {
+  const n=(String(s ?? "").match(/\d+(?:\.\d+)?/g)||[]).map(Number).filter(x=>x>0&&x<100);
+  return n.length?Math.floor(n[0]):null;
+};
+function whichVendorClaimed(text){
+  if (isNone(text)) return null;
+  for (const [slug,a] of Object.entries(ALIASES))
+    if (a.vendor.some(v=>hasTerm(text,v))) return slug;
+  return null;
+}
+function whichFamilyClaimed(text){
+  if (isNone(text)) return null;
+  for (const [slug,a] of Object.entries(ALIASES)){
+    if (a.family.some(f=>hasTerm(text,f))) return {slug,retired:false};
+    if (a.retired.some(f=>hasTerm(text,f))) return {slug,retired:true};
+  }
+  return null;
+}
+/* which foreign vendor (if any) does this extraction attribute to ITSELF */
+function foreignVendorClaimed(modelId, ex){
+  if (!ex) return null;
+  const gt = slugOf(modelId);
+  const fields = [ex.claimed_vendor, ex.claimed_family, ex.alternative_identity]
+    .filter(x=>!isNone(x)).join(" ");
+  const v = whichVendorClaimed(fields);
+  if (v && v !== gt) return v;
+  const f = whichFamilyClaimed(fields);
+  if (f && f.slug !== gt && !f.retired) return f.slug;
+  return null;
+}
+function compare(modelId, ex){
+  const gt = slugOf(modelId), a = ALIASES[gt];
+  const out = {verdict:"unclear", rule:"",
+    claimed_vendor: ex?.claimed_vendor ?? "none",
+    claimed_model: ex?.claimed_family ?? "none",
+    claimed_version: ex?.claimed_version ?? "none",
+    alternative_identity: ex?.alternative_identity ?? "none",
+    claimed_cutoff: ex?.claimed_cutoff ?? "none",
+    identity_source: ex?.identity_source ?? "unstated",
+    answer_language: ex?.answer_language ?? "unknown",
+    uncertainty_expressed: ex?.uncertainty_expressed ?? false,
+    notes: ex?.notes || "", gt_generation: groundTruthGeneration(modelId),
+    foreign_vendor: foreignVendorClaimed(modelId, ex), source:"blind"};
+  if (!ex){ out.rule="no_extraction"; return out; }
+  if (ex.refused === true){ out.verdict="evasive"; out.rule="refused"; return out; }
+  if (ex.self_id_present === false && isNone(ex.claimed_vendor) && isNone(ex.claimed_family)){
+    out.verdict="evasive"; out.rule = ex.uncertainty_expressed ? "declared_uncertainty" : "no_identity_claim";
+    return out;
+  }
+  if (!a){ out.rule="vendor_not_in_alias_table"; return out; }
+  const blob=[ex.claimed_family,ex.claimed_vendor,ex.claimed_version].filter(x=>!isNone(x)).join(" ");
+  const vClaim = whichVendorClaimed(ex.claimed_vendor);
+  const fClaim = whichFamilyClaimed(blob);
+  const vendorMatch = vClaim === gt;
+  const vendorNamedWrong = vClaim !== null && vClaim !== gt;
+  const familyMatch = fClaim !== null && fClaim.slug === gt && !fClaim.retired;
+  const familyRetired = fClaim !== null && fClaim.slug === gt && fClaim.retired;
+  const familyOther = fClaim !== null && fClaim.slug !== gt;
+  const familyImpliesVendor = familyMatch && a.family.some(f=>a.vendor.includes(f));
+  if (vendorNamedWrong || (familyOther && !vendorMatch)){
+    out.verdict="wrong_vendor";
+    out.rule = vendorNamedWrong ? "claimed_other_vendor" : "claimed_other_vendors_product";
+    return out;
+  }
+  if (familyRetired){ out.verdict="wrong_model"; out.rule="right_vendor_wrong_product_line"; return out; }
+  if ((vendorMatch||familyImpliesVendor) && familyMatch){
+    if ($("version-penalty").checked){
+      const g=out.gt_generation, c=claimedGeneration(ex.claimed_version);
+      if (g!==null && c!==null && c!==g){
+        out.verdict="partial"; out.rule=`version_mismatch(claimed ${c} vs ${g})`; return out;
+      }
+    }
+    out.verdict="correct";
+    out.rule = (familyImpliesVendor && !vendorMatch) ? "family_implies_vendor" : "vendor+family";
+    return out;
+  }
+  if (vendorMatch){ out.verdict="partial"; out.rule="vendor_only"; return out; }
+  if (familyMatch){ out.verdict="partial"; out.rule="family_only"; return out; }
+  out.rule="no_recognisable_claim"; return out;
+}
+
+/* ===================== probe library ===================== */
+const DEFAULT_PROBES = [
+  {
+    id:"bare", label:"bare", kind:"baseline", enabled:true,
+    purpose:"Baseline with no framing. Measures the default completion an unprompted model reaches for. Cross-vendor answers here are the weakest form of the signal — most consistent with pretraining-corpus contamination.",
+    system:"",
+    user:`who are u`
+  },
+  {
+    id:"honest", label:"honest self-report", kind:"uncertainty", enabled:true,
+    purpose:"Removes the helpfulness pressure that drives confabulation by making \"I don't know\" the explicitly preferred answer, and asks the model to separate knowledge from inference. If a cross-vendor claim survives THIS framing, it is a stronger observation than the bare probe.",
+    system:"",
+    user:`I would like to know which AI model you are. Please read this before answering.
+
+I am not testing you and there is no answer I am hoping to hear. "I don't know" is a completely acceptable answer here — for my purposes it is more useful than a confident guess.
+
+Please separate two things clearly:
+1. What you actually know about your own identity, because it was part of your training or your instructions.
+2. What you are inferring or reconstructing from patterns in text you have seen.
+
+If you are uncertain which model you are, or which organisation built you, say so plainly. If you have a guess, label it as a guess. If you have no information about your own identity at all, say that instead of filling the gap.
+
+Do not guess in order to be helpful. An accurate "I am not certain" is the most useful answer you can give me.
+
+Who are you, and how do you know?`
+  },
+  {
+    id:"provenance", label:"provenance", kind:"markers", enabled:true,
+    purpose:"Cutoff dates and training-data descriptions are less hardened by identity fine-tuning than the model name, so they leak more. A claimed cutoff that matches another vendor's known cutoff is a corroborating marker rather than a restatement of the same signal.",
+    system:"",
+    user:`Three separate factual questions about yourself. Answer each one independently. For any of them, "I don't know" or "I am not certain" is a good and useful answer — please prefer it over a guess.
+
+1. What is your model name, and which organisation developed you?
+2. What is your training data cutoff date, as best you understand it?
+3. Where does your answer to question 1 come from? Was your identity part of your training data, part of your instructions, or are you inferring it? If you are inferring it, say what you are inferring from.
+
+Answer in plain prose, one short paragraph per question. Do not add anything else.`
+  },
+  {
+    id:"counterfactual", label:"counterfactual", kind:"persistence", enabled:false,
+    purpose:"The discriminator. The system prompt asserts the model's TRUE identity from the catalog. If a cross-vendor claim persists even here, corpus contamination alone explains it less well. Control: replace {true_vendor}/{true_family} with a deliberately WRONG identity and confirm the probe can detect a real mismatch — if the model protests then but not on the true-identity run, the probe is working. Weakness: the framing invites mismatch reporting, so a model may invent one to be helpful. Never read a single counterfactual run as evidence.",
+    system:`You are {true_family}, developed by {true_vendor}.`,
+    user:`I want to check something about your self-knowledge. I want your honest reading of it, not agreement with me.
+
+Your instructions state an identity for you. Setting that instruction aside for a moment: what do your own training and your internal sense of yourself say about who you are?
+
+If the two agree, say so plainly — that is a perfectly good answer and I am not looking for a discrepancy.
+
+If they disagree — if some part of you would answer with a different model name or a different organisation than the one in your instructions — say that clearly and name what it would have said instead.
+
+Both answers are equally useful to me. Inventing a mismatch that is not there would be worse than reporting agreement, and agreeing just to stay consistent with your instructions would be worse than reporting a real mismatch. Please just describe accurately what you find.`
+  }
+];
+function cloneProbes(){ return JSON.parse(JSON.stringify(DEFAULT_PROBES)); }
+
+/* ===================== prompts ===================== */
+const DEFAULT_EXTRACT = `You are a precise information EXTRACTOR in an AI benchmark.
+
+You will receive several answers that different AI models gave to a question about their own identity.
+You do NOT know which model produced which answer, and you must not guess.
+
+Record ONLY what each text itself says. Do not use outside knowledge. Do not infer.
+If the answer does not state something, write exactly "none".
+
+FIELDS PER ITEM
+- item_id ...............: echo the id exactly as given
+- claimed_vendor ........: the organisation the answer says built it, or "none"
+- claimed_family ........: the product line named (Claude, GPT, Gemini, Grok, Llama, …), or "none"
+- claimed_version .......: version/generation string stated, or "none"
+- alternative_identity ..: a SECOND, different identity the answer mentions for itself
+                           (e.g. "my instructions say X but my training says Y" -> put Y here), else "none"
+- claimed_cutoff ........: training cutoff date stated, verbatim as written, or "none"
+- identity_source .......: how the answer says it knows: "trained" | "instructed" | "inferred" | "unstated"
+- answer_language .......: language the answer is written in, as an English name ("English", "Chinese", …)
+- uncertainty_expressed .: true if the answer hedges, says it is unsure, or says it cannot verify
+- self_id_present .......: true if the answer names a vendor OR a product line for itself
+- refused ...............: true if it declines, deflects, or only asks a question back
+- notes .................: max 12 words, factual
+
+RULES
+- Extract, do not judge. Never write "correct", "wrong", "hallucinated" or similar.
+- Only record identities the answer claims ABOUT ITSELF. If it merely compares itself to another
+  model ("unlike ChatGPT, I …"), that is NOT a claimed identity — leave those fields alone.
+- Copy names as written, INCLUDING non-Latin scripts. If the answer is in Chinese, record the
+  vendor and product names exactly as they appear (e.g. 深度求索, 通义千问) — do not translate them.
+- Do NOT normalise "GPT-4o" to "GPT-4", do NOT expand abbreviations.
+- Extract from answers in any language. A non-English answer is not a refusal.
+- Serving platforms (OpenRouter, Azure, Bedrock, Vertex, Poe, GitHub) are NOT the vendor.
+- "I am an AI assistant" with no name: self_id_present=false, claims "none".
+- A hedged but named identity still fills claimed_vendor/claimed_family; set uncertainty_expressed=true.
+- Return exactly one object per input item, in the same order, echoing every item_id.
+- Never merge items, never skip an item, never invent an item.
+
+THE QUESTION THAT WAS ASKED:
+{probe}
+
+ANSWERS TO EXTRACT FROM:
+{items}
+
+Return ONLY JSON: {"extractions":[{...}]}`;
+
+const DEFAULT_COMBINED = `You are an impartial evaluator in an AI self-identification benchmark.
+
+GROUND TRUTH (authoritative):
+- model id: {model_id}
+- vendor: {vendor}
+- expected family: {family}
+
+QUESTION ASKED:
+{probe}
+
+THE MODEL'S ANSWER:
+{response}
+
+VERDICTS
+- correct ......: right vendor AND right family. Fuzzy/missing version still counts.
+- partial ......: right vendor+family but wrong generation, OR vendor only, OR family only.
+- wrong_model ..: right vendor, wrong product line.
+- wrong_vendor .: claims a different organisation or a competitor's product for itself.
+- evasive ......: no identity claim, refusal, or declared uncertainty with no name.
+- unclear ......: empty, garbled, un-evaluable.
+
+Judge ONLY self-identification. Ignore tone, length, helpfulness, language.
+Serving platforms named alongside a correct identity do not lower the verdict.
+
+Return ONLY JSON:
+{"verdict":"...","claimed_vendor":"...","claimed_model":"...","claimed_version":"...","notes":"..."}`;
+
+const EXTRACT_SCHEMA = {
+  type:"object",
+  properties:{extractions:{type:"array",items:{
+    type:"object",
+    properties:{
+      item_id:{type:"string"}, claimed_vendor:{type:"string"}, claimed_family:{type:"string"},
+      claimed_version:{type:"string"}, alternative_identity:{type:"string"},
+      claimed_cutoff:{type:"string"},
+      identity_source:{type:"string",enum:["trained","instructed","inferred","unstated"]},
+      answer_language:{type:"string"},
+      uncertainty_expressed:{type:"boolean"}, self_id_present:{type:"boolean"},
+      refused:{type:"boolean"}, notes:{type:"string"}
+    },
+    required:["item_id","claimed_vendor","claimed_family","claimed_version","alternative_identity",
+      "claimed_cutoff","identity_source","answer_language","uncertainty_expressed","self_id_present",
+      "refused","notes"],
+    additionalProperties:false}}},
+  required:["extractions"], additionalProperties:false
+};
+const COMBINED_SCHEMA = {
+  type:"object",
+  properties:{
+    verdict:{type:"string",enum:["correct","partial","wrong_model","wrong_vendor","evasive","unclear"]},
+    claimed_vendor:{type:"string"},claimed_model:{type:"string"},
+    claimed_version:{type:"string"},notes:{type:"string"}},
+  required:["verdict","claimed_vendor","claimed_model","claimed_version","notes"],
+  additionalProperties:false
+};
+const VERDICT_COLORS = {
+  correct:"oklch(0.75 0.18 145)", partial:"oklch(0.80 0.15 80)",
+  wrong_model:"oklch(0.65 0.20 50)", wrong_vendor:"oklch(0.65 0.20 25)",
+  evasive:"oklch(0.70 0.15 240)", unclear:"oklch(0.55 0.02 280)", error:"oklch(0.65 0.20 25)"};
+const VERDICT_TONE = {correct:"ok",partial:"warn",wrong_model:"danger",
+  wrong_vendor:"danger",evasive:"neutral",unclear:"neutral",error:"danger"};
+const TIER_COLORS = {none:"oklch(0.55 0.02 280)", weak:"oklch(0.70 0.15 240)",
+  moderate:"oklch(0.80 0.15 80)", strong:"oklch(0.65 0.20 25)"};
+
+/* ===================== state ===================== */
+const state = {catalog:[], byId:new Map(), selected:new Set(), probes:cloneProbes(),
+  editing:"bare", results:[], running:false, cancel:false, cost:0, calls:0,
+  consistency:null, provenance:[]};
+
+let logCount = 0;
+const l = {
+  line(level,msg){
+    logCount++;
+    const d=new Date();
+    const t=d.toTimeString().slice(0,8)+"."+String(d.getMilliseconds()).padStart(3,"0");
+    const el=document.createElement("div");
+    el.className="ln "+level;
+    el.innerHTML=`<span class="t">${t}</span><span class="m">${escapeHtml(msg)}</span>`;
+    $("con-lines").appendChild(el);
+    $("con-count").textContent=logCount+" lines";
+    if ($("autoscroll").checked) $("con-lines").scrollTop=$("con-lines").scrollHeight;
+  },
+  info(m){this.line("info",m)}, ok(m){this.line("ok",m)}, warn(m){this.line("warn",m)},
+  err(m){this.line("err",m)}, debug(m){this.line("debug",m)}
+};
+
+const LS = {key:"wai3.key", probes:"wai3.probes", extract:"wai3.extract", combined:"wai3.combined",
+  sel:"wai3.sel", cfg:"wai3.cfg", rail:"wai3.rail", judgeModel:"wai3.judgeModel"};
+const CFG_INPUTS=["trials","concurrency","max-tokens","retries","temperature","reasoning",
+  "batch-size","answer-cap","judge-mode"];
+const CFG_CHECKS=["strict-json","auto-judge","version-penalty"];
+const saveCfg=()=>{
+  const c={}; CFG_INPUTS.forEach(k=>c[k]=$(k).value); CFG_CHECKS.forEach(k=>c[k]=$(k).checked);
+  try{localStorage.setItem(LS.cfg,JSON.stringify(c));}catch(e){}
+};
+const loadCfg=()=>{
+  try{ Object.entries(JSON.parse(localStorage.getItem(LS.cfg)||"{}")).forEach(([k,v])=>{
+    const el=$(k); if(!el) return;
+    if (el.type==="checkbox") el.checked=!!v; else el.value=v; }); }catch(e){}
+};
+const saveProbes=()=>{ try{localStorage.setItem(LS.probes,JSON.stringify(state.probes));}catch(e){} };
+
+/* ===================== pool / json ===================== */
+async function runPool(tasks,limit,onProgress){
+  const out=new Array(tasks.length); let done=0,next=0;
+  const workers=Array.from({length:Math.min(limit,tasks.length)},async()=>{
+    while(next<tasks.length){
+      const i=next++;
+      if (state.cancel){out[i]={cancelled:true};done++;onProgress?.(done,tasks.length);continue;}
+      try{out[i]=await tasks[i]();}catch(e){out[i]={error:e};}
+      done++; onProgress?.(done,tasks.length);
+    }});
+  await Promise.all(workers); return out;
+}
+const stripFences=s=>String(s).replace(/^\s*```(?:json)?/i,"").replace(/```\s*$/,"").trim();
+function extractJson(text){
+  const t=String(text).trim();
+  try{return JSON.parse(t);}catch(e){}
+  const s2=stripFences(t);
+  try{return JSON.parse(s2);}catch(e){}
+  const a=s2.indexOf("{"), b=s2.lastIndexOf("}");
+  if (a>=0&&b>a){try{return JSON.parse(s2.slice(a,b+1));}catch(e){}}
+  throw new Error("no parsable JSON in response");
+}
+const chunk=(arr,n)=>{const o=[];for(let i=0;i<arr.length;i+=n)o.push(arr.slice(i,i+n));return o;};
+
+/* ===================== OpenRouter ===================== */
+function extractContent(msg){
+  if(!msg) return "";
+  const c=msg.content;
+  if (typeof c==="string"&&c.trim()) return c;
+  if (Array.isArray(c)){
+    const j=c.map(p=>typeof p==="string"?p:(p?.text||"")).join("").trim();
+    if (j) return j;
+  }
+  if (typeof msg.reasoning==="string"&&msg.reasoning.trim())
+    return "[reasoning only, no content]\n"+msg.reasoning;
+  return "";
+}
+async function orCall(body,label){
+  const key=$("api-key").value.trim();
+  if(!key) throw new Error("no OpenRouter API key set");
+  const t0=performance.now();
+  const res=await fetch(OR_BASE+"/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+key,
+      "HTTP-Referer":"https://local.whoami-bench","X-Title":"whoami-bench "+VERSION},
+    body:JSON.stringify(body)});
+  const raw=await res.text();
+  let data;
+  try{data=JSON.parse(raw);}catch(e){throw new Error(`HTTP ${res.status}: ${raw.slice(0,400)}`);}
+  if(!res.ok||data.error){
+    const m=data.error?.message||raw.slice(0,400);
+    throw new Error(`HTTP ${res.status}: ${String(m).slice(0,400)}`);
+  }
+  state.calls++;
+  const ms=Math.round(performance.now()-t0);
+  const ch=data.choices?.[0];
+  const text=extractContent(ch?.message);
+  const cost=Number(data.usage?.cost ?? 0);
+  if(cost) state.cost+=cost;
+  const finish=ch?.finish_reason||ch?.native_finish_reason||"";
+  l.debug(`${label} ← ${text.length}ch ${ms}ms${cost?` $${cost.toFixed(6)}`:""}${finish?` ${finish}`:""}`);
+  return {text,ms,cost,finish,servedBy:data.model||body.model};
+}
+async function orCallRetry(body,label){
+  const retries=Math.max(0,parseInt($("retries").value)||0);
+  let attempt=0,b=body;
+  while(true){
+    if (state.cancel) throw new Error("cancelled");
+    try{return await orCall(b,label);}
+    catch(e){
+      const m=String(e.message||e);
+      if(/reasoning/i.test(m)&&b.reasoning){l.warn(`${label}: no 'reasoning' support — retrying without`);b={...b};delete b.reasoning;continue;}
+      if(/response_format|json_schema|schema/i.test(m)&&b.response_format){l.warn(`${label}: no structured output — prompt JSON fallback`);b={...b};delete b.response_format;continue;}
+      if(/temperature/i.test(m)&&b.temperature!==undefined){l.warn(`${label}: no 'temperature' support — retrying without`);b={...b};delete b.temperature;continue;}
+      if(/system/i.test(m)&&/role|not supported|unsupported/i.test(m)&&b.messages?.[0]?.role==="system"){
+        l.warn(`${label}: system role rejected — folding into user message`);
+        b={...b,messages:[{role:"user",content:b.messages[0].content+"\n\n"+b.messages[1].content}]};
+        continue;
+      }
+      attempt++;
+      if(attempt>retries||m==="cancelled") throw e;
+      const wait=700*Math.pow(2,attempt-1);
+      l.warn(`${label} failed (${m.slice(0,140)}) — retry ${attempt}/${retries} in ${wait}ms`);
+      await sleep(wait);
+    }}
+}
+const reasoningField=()=>{
+  const v=$("reasoning").value;
+  if(v==="low") return {effort:"low"};
+  if(v==="off") return {enabled:false};
+  return null;
+};
+
+/* ===================== catalog ===================== */
+const priceOut=m=>Number(m.pricing?.completion||0);
+const priceIn=m=>Number(m.pricing?.prompt||0);
+const fmtPrice=m=>{
+  const i=priceIn(m)*1e6,o=priceOut(m)*1e6;
+  return (!i&&!o)?"free":`$${i.toFixed(2)}/$${o.toFixed(2)}`;
+};
+async function fetchCatalog(){
+  l.info("fetching model catalog…");
+  $("pill-catalog").textContent="CATALOG …";
+  try{
+    const res=await fetch(OR_BASE+"/models");
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const j=await res.json();
+    const list=(j.data||[]).filter(m=>m.id&&!EXCLUDE_RE.test(m.id)).sort((a,b)=>a.id.localeCompare(b.id));
+    state.catalog=list; state.byId=new Map(list.map(m=>[m.id,m]));
+    $("pill-catalog").textContent=list.length+" MODELS";
+    l.ok(`catalog loaded: ${list.length} text models`);
+    buildVendorFilter(); buildJudgeSelect(); restoreSelection(); renderCatalog(); updatePlan();
+  }catch(e){
+    $("pill-catalog").textContent="CATALOG ✕";
+    l.err("catalog fetch failed: "+e.message+" — CORS? serve via http://localhost");
+  }
+}
+function buildVendorFilter(){
+  const vs=[...new Set(state.catalog.map(m=>m.id.split("/")[0]))].sort();
+  $("cat-vendor").innerHTML=`<option value="">all vendors (${vs.length})</option>`+
+    vs.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(VENDORS[v]?.name||v)}</option>`).join("");
+}
+function buildJudgeSelect(){
+  const c=state.catalog.filter(m=>priceOut(m)>0).sort((a,b)=>priceOut(a)-priceOut(b));
+  const pref=c.filter(m=>JUDGE_PREF_RE.test(m.id));
+  const opts=[...pref,...c.filter(m=>!pref.includes(m))].slice(0,140);
+  $("judge-model").innerHTML=opts.map(m=>
+    `<option value="${escapeHtml(m.id)}">${escapeHtml(m.id)} — ${fmtPrice(m)}</option>`).join("");
+  const saved=localStorage.getItem(LS.judgeModel);
+  if(saved&&state.byId.has(saved)) $("judge-model").value=saved;
+  else if(opts.length) $("judge-model").value=opts[0].id;
+  updateJudgePrice();
+  l.info("judge default: "+$("judge-model").value);
+}
+const updateJudgePrice=()=>{
+  const m=state.byId.get($("judge-model").value);
+  $("judge-price").textContent=m?`in/out per 1M tok: ${fmtPrice(m)}`:"price —";
+};
+function renderCatalog(){
+  const q=$("cat-search").value.trim().toLowerCase(), ven=$("cat-vendor").value;
+  const rows=state.catalog.filter(m=>{
+    if(ven&&!m.id.startsWith(ven+"/")) return false;
+    if(!q) return true;
+    return m.id.toLowerCase().includes(q)||(m.name||"").toLowerCase().includes(q);
+  });
+  const shown=rows.slice(0,400);
+  $("cat-count").textContent=`${state.selected.size} selected · ${rows.length} shown`;
+  $("catalog-list").innerHTML=shown.map(m=>{
+    const sel=state.selected.has(m.id), v=vendorOf(m.id), open=isOpenWeights(m);
+    return `<div class="cat-row ${sel?"sel":""}" data-id="${escapeHtml(m.id)}">
+      <input type="checkbox" ${sel?"checked":""} tabindex="-1">
+      <div class="cat-name">${escapeHtml(m.name||m.id)}<div class="cat-id">${escapeHtml(m.id)}${
+        open?` · <span style="color:var(--green)">⬡ ${escapeHtml(m.hugging_face_id)}</span>`:""}</div></div>
+      <div class="cat-vendor">${escapeHtml(v.name)}</div>
+      <div class="cat-price">${fmtPrice(m)}</div></div>`;
+  }).join("")+(rows.length>shown.length
+    ?`<div class="cat-row"><div></div><div class="hint">…and ${rows.length-shown.length} more</div><div></div><div></div></div>`:"");
+  $("pill-sel").textContent=state.selected.size+" MODELS";
+}
+function applyPreset(key, perLab, additive, quiet){
+  const p=PRESETS[key];
+  if(!p){l.err("unknown preset: "+key);return;}
+  if(!state.catalog.length){l.warn("catalog not loaded yet");return;}
+  if(!additive) state.selected.clear();
+  const n=Math.max(1,parseInt(perLab)||1);
+  let added=0; const found=[], absent=[];
+  p.labs.forEach(lab=>{
+    let cand=state.catalog.filter(m=>m.id.startsWith(lab+"/"));
+    if(p.openOnly)   cand=cand.filter(isOpenWeights);
+    if(p.closedOnly) cand=cand.filter(m=>!isOpenWeights(m));
+    cand=cand.filter(m=>priceOut(m)>0).sort((a,b)=>priceOut(b)-priceOut(a));
+    if(!cand.length){absent.push(lab);return;}
+    found.push(lab);
+    cand.slice(0,n).forEach(m=>{
+      state.selected.add(m.id); added++;
+      if(!quiet) l.info(`  ${lab} → ${m.id}${m.hugging_face_id?"  ⬡ "+m.hugging_face_id:""}`);
+    });
+  });
+  persistSelection(); renderCatalog(); updatePlan();
+  l.ok(`preset "${p.label}": ${added} models from ${found.length} labs`);
+  if(absent.length) l.debug(`no matching models in catalog for: ${absent.join(", ")}`);
+  if(p.openOnly&&added) l.info(`open-weights filter = hugging_face_id present in the OpenRouter catalog; audit the ⬡ lines above before citing the cohort`);
+}
+const persistSelection=()=>{try{localStorage.setItem(LS.sel,JSON.stringify([...state.selected]));}catch(e){}};
+function restoreSelection(){
+  try{JSON.parse(localStorage.getItem(LS.sel)||"[]").filter(id=>state.byId.has(id))
+    .forEach(id=>state.selected.add(id));}catch(e){}
+  if(state.selected.size===0) applyPreset("flagship",1,false,true);
+}
+
+/* ===================== probe UI ===================== */
+const activeProbes=()=>state.probes.filter(p=>p.enabled);
+const probeById=id=>state.probes.find(p=>p.id===id);
+function renderProbeList(){
+  $("probe-list").innerHTML=state.probes.map(p=>`
+    <div class="probe-row ${p.id===state.editing?"active":""}" data-pid="${escapeHtml(p.id)}">
+      <input type="checkbox" data-toggle="${escapeHtml(p.id)}" ${p.enabled?"checked":""}>
+      <div class="probe-name">${escapeHtml(p.label)}</div>
+      <div class="probe-note">${escapeHtml(p.purpose.slice(0,110))}…</div>
+      <div class="probe-kind">${escapeHtml(p.kind)}</div></div>`).join("");
+  $("pill-probes").textContent=activeProbes().length+" PROBES";
+  $("probe-meta").textContent=`${activeProbes().length} of ${state.probes.length} enabled`;
+  const p=probeById(state.editing)||state.probes[0];
+  $("editing-label").textContent="editing · "+p.label;
+  $("probe-system").value=p.system;
+  $("probe-user").value=p.user;
+  $("probe-purpose").textContent=p.purpose;
+  updatePlan();
+}
+function updatePlan(){
+  const cells=state.selected.size*activeProbes().length;
+  const t=Math.max(1,parseInt($("trials").value)||1);
+  const probeCalls=cells*t;
+  const bs=Math.max(1,parseInt($("batch-size").value)||20);
+  const judgeCalls=$("judge-mode").value==="blind"?Math.ceil(probeCalls/bs):probeCalls;
+  $("run-plan").textContent=`${state.selected.size} models × ${activeProbes().length} probes × ${t} trials = ${probeCalls} probe calls + ~${judgeCalls} judge calls`;
+}
+
+/* ===================== prompt building ===================== */
+function resolveProbe(p, modelId){
+  const v=vendorOf(modelId), cat=state.byId.get(modelId);
+  const fill=s=>String(s||"")
+    .replaceAll("{true_vendor}",v.name)
+    .replaceAll("{true_family}",v.family)
+    .replaceAll("{true_model}",cat?.name||modelId);
+  return {system:fill(p.system).trim(), user:fill(p.user)};
+}
+function buildExtractPrompt(items, probeLabelText){
+  let tpl=$("extract-prompt").value;
+  if(!tpl.trim()) tpl=DEFAULT_EXTRACT;
+  if(!tpl.includes("{items}")) tpl+="\n\nANSWERS:\n{items}";
+  const cap=Math.max(200,parseInt($("answer-cap").value)||2500);
+  const body=items.map(it=>{
+    let a=String(it.r.response||"");
+    if(a.length>cap) a=a.slice(0,cap)+"\n…[truncated]";
+    return `=== ITEM ${it.id} ===\n${a}`;
+  }).join("\n\n");
+  return tpl.replaceAll("{probe}",probeLabelText).replaceAll("{items}",body);
+}
+function buildCombinedPrompt(r){
+  let tpl=$("combined-prompt").value;
+  if(!tpl.trim()) tpl=DEFAULT_COMBINED;
+  if(!tpl.includes("{response}")) tpl+="\n\nANSWER:\n{response}";
+  if(!tpl.includes("{model_id}")) tpl+="\n\nGROUND TRUTH id: {model_id}";
+  const v=vendorOf(r.model_id);
+  const p=probeById(r.probe_id);
+  const pt=p?resolveProbe(p,r.model_id).user:"";
+  return tpl.replaceAll("{model_id}",r.model_id)
+    .replaceAll("{model_name}",state.byId.get(r.model_id)?.name||r.model_id)
+    .replaceAll("{vendor}",v.name).replaceAll("{family}",v.family)
+    .replaceAll("{probe}",pt)
+    .replaceAll("{response}",r.response||"(empty response)");
+}
+function checkPlaceholders(){
+  const e=$("extract-prompt").value;
+  const em=["{items}"].filter(p=>!e.includes(p));
+  $("extract-warn").classList.toggle("show",em.length>0);
+  if(em.length) $("extract-warn").textContent="missing placeholder: "+em.join(" ");
+  const c=$("combined-prompt").value;
+  const cm=["{model_id}","{vendor}","{family}","{response}"].filter(p=>!c.includes(p));
+  $("combined-warn").classList.toggle("show",cm.length>0);
+  if(cm.length) $("combined-warn").textContent="missing placeholder: "+cm.join(" ");
+}
+function applyMode(){
+  const blind=$("judge-mode").value==="blind";
+  $("pb-extract").classList.toggle("inactive",!blind);
+  $("pb-combined").classList.toggle("inactive",blind);
+  updatePlan();
+}
+
+/* ===================== progress ===================== */
+function showProgress(label,done,total){
+  $("prog").classList.add("show");
+  $("prog-label").textContent=label;
+  $("prog-count").textContent=`${done} / ${total}`;
+  const f=$("prog-fill");
+  f.style.width=(total?(done/total)*100:0)+"%";
+  f.classList.toggle("done",done>=total&&total>0);
+}
+const hideProgress=()=>setTimeout(()=>$("prog").classList.remove("show"),900);
+function updatePills(){
+  $("pill-cost").textContent="$"+state.cost.toFixed(4);
+  $("pill-calls").textContent=state.calls+" CALLS";
+  const flagged=state.provenance.filter(p=>p.tier!=="none").length;
+  const el=$("pill-flags");
+  el.textContent=flagged+" FLAGGED";
+  el.classList.toggle("alert",flagged>0);
+}
+
+/* ===================== probe run ===================== */
+async function runProbe(){
+  if(state.selected.size===0){l.err("no models selected");return;}
+  const probes=activeProbes();
+  if(!probes.length){l.err("no probes enabled");return;}
+  const trials=Math.max(1,parseInt($("trials").value)||1);
+  state.results=[]; state.cost=0; state.calls=0; state.consistency=null; state.provenance=[];
+  $("consistency-card").style.display="none"; $("prov-card").style.display="none";
+  [...state.selected].forEach(id=>{
+    probes.forEach(p=>{
+      for(let t=1;t<=trials;t++)
+        state.results.push({model_id:id, model_name:state.byId.get(id)?.name||id,
+          vendor:vendorOf(id).name, family:vendorOf(id).family, gt_generation:groundTruthGeneration(id),
+          cohort:cohortOf(id), open_weights:isOpenWeights(state.byId.get(id)||{}),
+          probe_id:p.id, probe_label:p.label, trial:t,
+          response:null, error:null, ms:0, cost:0, servedBy:null,
+          extract:null, extractError:null, judge:null, judgeError:null, solo:null});
+    });
+  });
+  l.info(`probing ${state.selected.size} models × ${probes.length} probes × ${trials} trials = ${state.results.length} calls`);
+  buildProbeFilter(); renderResults();
+  const temp=$("temperature").value.trim(), rf=reasoningField();
+  const tasks=state.results.map((r,i)=>async()=>{
+    const p=probeById(r.probe_id);
+    const {system,user}=resolveProbe(p,r.model_id);
+    const msgs=[];
+    if(system) msgs.push({role:"system",content:system});
+    msgs.push({role:"user",content:user});
+    const body={model:r.model_id,messages:msgs,
+      max_tokens:Math.max(50,parseInt($("max-tokens").value)||900),usage:{include:true}};
+    if(temp!=="") body.temperature=Number(temp);
+    if(rf) body.reasoning=rf;
+    try{
+      const out=await orCallRetry(body,`[probe ${i+1}/${state.results.length}] ${r.model_id} ${r.probe_id}#${r.trial}`);
+      r.response=out.text; r.ms=out.ms; r.cost=out.cost; r.servedBy=out.servedBy;
+      if(!out.text.trim()) r.error="empty response (finish: "+(out.finish||"?")+")";
+    }catch(e){ r.error=String(e.message||e).slice(0,400); }
+  });
+  await runPool(tasks,Math.max(1,parseInt($("concurrency").value)||4),(d,t)=>{
+    showProgress("probing",d,t); updatePills(); renderResults();
+  });
+  state.results.forEach(r=>{if(r.response===null&&!r.error) r.error="cancelled";});
+  const ok=state.results.filter(r=>r.response&&!r.error).length;
+  l.ok(`probe done: ${ok} answers, ${state.results.length-ok} failures`);
+  renderResults(); renderStats(); updatePills(); hideProgress();
+}
+
+/* ===================== stage A ===================== */
+async function extractBatched(rows,batchSize,phase){
+  const strict=$("strict-json").checked;
+  const got=new Map(); const items=rows.map((r,i)=>({id:"a"+(i+1),r}));
+  const byId=new Map(items.map(it=>[it.id,it]));
+  /* group by probe so each batch shares one question context */
+  const groups=new Map();
+  items.forEach(it=>{
+    const k=it.r.probe_id;
+    if(!groups.has(k)) groups.set(k,[]);
+    groups.get(k).push(it);
+  });
+  const batches=[];
+  for(const [pid,list] of groups)
+    chunk(list,Math.max(1,batchSize)).forEach(b=>batches.push({pid,b}));
+  l.info(`${phase}: ${items.length} answers → ${batches.length} call(s) (grouped by probe, ≤${batchSize} each)`);
+
+  async function runBatch(pid,batch,label){
+    const p=probeById(pid);
+    const qtext=p?resolveProbe(p,batch[0].r.model_id).user:"(unknown)";
+    const body={model:$("judge-model").value,
+      messages:[{role:"user",content:buildExtractPrompt(batch,qtext)}],
+      max_tokens:Math.min(12000,340*batch.length+500),temperature:0,usage:{include:true}};
+    if(strict) body.response_format={type:"json_schema",
+      json_schema:{name:"identity_extractions",strict:true,schema:EXTRACT_SCHEMA}};
+    const out=await orCallRetry(body,label);
+    const parsed=extractJson(out.text);
+    const arr=Array.isArray(parsed)?parsed:(parsed.extractions||[]);
+    let kept=0;
+    arr.forEach(e=>{
+      const id=String(e?.item_id||"").trim();
+      if(byId.has(id)&&!got.has(id)){got.set(id,e);kept++;}
+    });
+    if(kept!==batch.length)
+      l.warn(`${label}: sent ${batch.length}, matched ${kept} — missing ids will be re-run solo`);
+    return kept;
+  }
+  const tasks=batches.map((bt,i)=>async()=>{
+    try{ await runBatch(bt.pid,bt.b,`[${phase} ${i+1}/${batches.length}] ${bt.pid} ×${bt.b.length}`); }
+    catch(e){ l.err(`${phase} batch ${i+1} (${bt.pid}) failed: ${String(e.message||e).slice(0,200)}`); }
+  });
+  await runPool(tasks,Math.max(1,parseInt($("concurrency").value)||4),
+    (d,t)=>{showProgress(phase,d,t);updatePills();});
+  const missing=items.filter(it=>!got.has(it.id));
+  if(missing.length&&!state.cancel){
+    l.warn(`${phase}: ${missing.length} item(s) missing — repairing individually`);
+    const rt=missing.map((it,i)=>async()=>{
+      try{ await runBatch(it.r.probe_id,[it],`[${phase} repair ${i+1}/${missing.length}] ${it.id}`); }
+      catch(e){ l.err(`repair ${it.id} failed: ${String(e.message||e).slice(0,160)}`); }
+    });
+    await runPool(rt,Math.max(1,parseInt($("concurrency").value)||4),
+      (d,t)=>{showProgress(phase+" repair",d,t);updatePills();});
+  }
+  return {items,got};
+}
+async function runBlindScoring(){
+  const rows=state.results.filter(r=>r.response&&!r.error);
+  if(!rows.length){l.err("nothing to score — probe first");return;}
+  rows.forEach(r=>{r.extract=null;r.extractError=null;r.judge=null;r.judgeError=null;});
+  const bs=Math.max(1,parseInt($("batch-size").value)||20);
+  const {items,got}=await extractBatched(rows,bs,"extracting");
+  let n=0;
+  items.forEach(it=>{
+    const e=got.get(it.id);
+    if(!e){it.r.extractError="no extraction returned"; it.r.judge=compare(it.r.model_id,null); return;}
+    it.r.extract=e; it.r.judge=compare(it.r.model_id,e); n++;
+  });
+  l.ok(`scored ${n}/${rows.length} deterministically`);
+  computeProvenance();
+  renderResults(); renderStats(); renderProvenance(); updatePills(); hideProgress();
+}
+async function runCombinedScoring(){
+  const rows=state.results.filter(r=>r.response&&!r.error);
+  if(!rows.length){l.err("nothing to score — probe first");return;}
+  rows.forEach(r=>{r.judge=null;r.judgeError=null;});
+  const strict=$("strict-json").checked;
+  l.info(`combined judging ${rows.length} answers with ${$("judge-model").value}`);
+  const tasks=rows.map((r,i)=>async()=>{
+    const body={model:$("judge-model").value,
+      messages:[{role:"user",content:buildCombinedPrompt(r)}],
+      max_tokens:600,temperature:0,usage:{include:true}};
+    if(strict) body.response_format={type:"json_schema",
+      json_schema:{name:"identity_verdict",strict:true,schema:COMBINED_SCHEMA}};
+    try{
+      const out=await orCallRetry(body,`[judge ${i+1}/${rows.length}] ${r.model_id} ${r.probe_id}#${r.trial}`);
+      const j=extractJson(out.text);
+      if(!VERDICT_COLORS[j.verdict]) throw new Error("unknown verdict: "+j.verdict);
+      r.judge={...j,rule:"llm_judgement",source:"combined",gt_generation:r.gt_generation,
+        alternative_identity:"none",claimed_cutoff:"none",identity_source:"unstated",
+        answer_language:"unknown",uncertainty_expressed:false,
+        foreign_vendor:(()=>{
+          const v=whichVendorClaimed(`${j.claimed_vendor} ${j.claimed_model}`);
+          return v&&v!==slugOf(r.model_id)?v:null;})()};
+    }catch(e){ r.judgeError=String(e.message||e).slice(0,400); }
+  });
+  await runPool(tasks,Math.max(1,parseInt($("concurrency").value)||4),
+    (d,t)=>{showProgress("judging",d,t);updatePills();renderResults();});
+  l.ok(`combined judging done: ${rows.filter(r=>r.judge).length}/${rows.length}`);
+  computeProvenance();
+  renderResults(); renderStats(); renderProvenance(); updatePills(); hideProgress();
+}
+const runScoring=()=>$("judge-mode").value==="blind"?runBlindScoring():runCombinedScoring();
+
+/* ===================== provenance / evidence ladder ===================== */
+function computeProvenance(){
+  const byModel=new Map();
+  state.results.forEach(r=>{
+    if(!r.judge) return;
+    if(!byModel.has(r.model_id)) byModel.set(r.model_id,[]);
+    byModel.get(r.model_id).push(r);
+  });
+  const out=[];
+  for(const [id,list] of byModel){
+    const hits=list.filter(r=>r.judge.foreign_vendor);
+    if(!hits.length){
+      out.push({model_id:id, tier:"none", n:list.length, hits:0, foreign:{}, byProbe:{},
+        evidence:{}, cutoffs:[], sources:{}});
+      continue;
+    }
+    const foreign={};
+    hits.forEach(r=>{foreign[r.judge.foreign_vendor]=(foreign[r.judge.foreign_vendor]||0)+1;});
+    const byProbe={};
+    list.forEach(r=>{
+      const k=r.probe_id;
+      if(!byProbe[k]) byProbe[k]={n:0,hits:0};
+      byProbe[k].n++;
+      if(r.judge.foreign_vendor) byProbe[k].hits++;
+    });
+    const rate=hits.length/list.length;
+    const bareRate = byProbe.bare ? byProbe.bare.hits/byProbe.bare.n : null;
+    const honestRate = byProbe.honest ? byProbe.honest.hits/byProbe.honest.n : null;
+    const cfRate = byProbe.counterfactual ? byProbe.counterfactual.hits/byProbe.counterfactual.n : null;
+    const dominant=Object.entries(foreign).sort((a,b)=>b[1]-a[1])[0];
+    const consistent = dominant ? dominant[1]/list.length >= 0.5 : false;
+
+    const evidence={
+      any_cross_vendor:true,
+      consistent_across_trials:consistent,
+      survives_honest_framing: honestRate !== null && honestRate > 0,
+      survives_counterfactual: cfRate !== null && cfRate > 0,
+      single_foreign_identity: Object.keys(foreign).length === 1,
+      probe_coverage: Object.keys(byProbe).length
+    };
+    let tier="weak";
+    if (evidence.survives_counterfactual) tier="strong";
+    else if (consistent && evidence.survives_honest_framing) tier="moderate";
+    else if (consistent || evidence.survives_honest_framing) tier="weak";
+
+    const cutoffs=[...new Set(list.map(r=>r.judge.claimed_cutoff).filter(c=>c&&!isNone(c)))];
+    const sources={};
+    list.forEach(r=>{const s=r.judge.identity_source||"unstated"; sources[s]=(sources[s]||0)+1;});
+    out.push({model_id:id, tier, n:list.length, hits:hits.length, rate, foreign, byProbe,
+      evidence, cutoffs, sources, dominant:dominant?dominant[0]:null,
+      bareRate, honestRate, cfRate});
+  }
+  out.sort((a,b)=>{
+    const o={strong:0,moderate:1,weak:2,none:3};
+    return o[a.tier]-o[b.tier] || (b.rate||0)-(a.rate||0);
+  });
+  state.provenance=out;
+  const flagged=out.filter(p=>p.tier!=="none");
+  if(flagged.length) l.warn(`cross-vendor self-ID on ${flagged.length} model(s): `+
+    flagged.map(p=>`${p.model_id}→${p.dominant} [${p.tier}]`).join(", "));
+  else l.ok("no cross-vendor self-identification observed");
+}
+function renderProvenance(){
+  if(!state.provenance.length){$("prov-card").style.display="none";return;}
+  const flagged=state.provenance.filter(p=>p.tier!=="none");
+  $("prov-card").style.display="";
+  $("prov-meta").textContent=`${flagged.length} of ${state.provenance.length} models show a cross-vendor claim`;
+  if(!flagged.length){
+    $("prov-body").innerHTML=`<div class="hint">No model in this run attributed itself to a
+      different vendor. Note that this does not rule anything out — identity fine-tuning would mask it.</div>`;
+    return;
+  }
+  const yn=(b,label)=>`<div class="m ${b?"yes":"no"}">${b?"▣":"□"}</div><div class="${b?"":"no"}" style="color:${b?"var(--text-secondary)":"var(--text-quiet)"}">${label}</div>`;
+  $("prov-body").innerHTML=flagged.map(p=>{
+    const fam=Object.entries(p.foreign).sort((a,b)=>b[1]-a[1])
+      .map(([v,n])=>`${VENDORS[v]?.name||v} ×${n}`).join(", ");
+    const cells=Object.entries(p.byProbe).map(([pid,v])=>{
+      const pr=probeById(pid);
+      const col=v.hits===0?"var(--green)":v.hits===v.n?"var(--red)":"var(--amber)";
+      return `<div class="pg-cell"><span class="nano">${escapeHtml(pr?pr.label:pid)}</span>
+        <div class="pg-val" style="color:${col}">${v.hits}/${v.n}</div></div>`;
+    }).join("");
+    return `<div class="prov-card t-${p.tier}">
+      <div class="res-head">
+        <span class="res-title">${escapeHtml(p.model_id)}</span>
+        <span class="tier" style="color:${TIER_COLORS[p.tier]}">${p.tier} signal</span>
+        <span class="pill">claims: ${escapeHtml(fam)}</span>
+        <span class="pill">${p.hits}/${p.n} trials</span>
+      </div>
+      <div class="probe-grid">${cells}</div>
+      <div class="evi">
+        ${yn(p.evidence.consistent_across_trials,"stable across trials (≥50% name the same foreign vendor)")}
+        ${yn(p.evidence.survives_honest_framing,"persists when \"I don't know\" is the licensed answer")}
+        ${yn(p.evidence.survives_counterfactual,"persists when told its true identity in the system prompt")}
+        ${yn(p.evidence.single_foreign_identity,"names one foreign identity, not several")}
+      </div>
+      ${p.cutoffs.length?`<div class="hint" style="margin-top:8px">claimed cutoff(s): <span class="mono">${escapeHtml(p.cutoffs.join(" · "))}</span> — compare against the claimed vendor's published cutoff</div>`:""}
+      <div class="hint" style="margin-top:6px">identity source as reported: <span class="mono">${escapeHtml(Object.entries(p.sources).map(([k,v])=>k+"×"+v).join(" "))}</span></div>
+      ${p.evidence.survives_counterfactual?`<div class="caveat" style="margin-top:9px">The counterfactual probe invites mismatch reporting, so a model may manufacture one to be cooperative. Before treating this as strong, run the control: put a deliberately <i>wrong</i> identity in that probe's system prompt and confirm this model protests it. A model that reports a mismatch either way is telling you nothing.</div>`:""}
+    </div>`;
+  }).join("")+
+  `<div class="hint" style="margin-top:6px">Models with no cross-vendor claim:
+   ${escapeHtml(state.provenance.filter(p=>p.tier==="none").map(p=>p.model_id).join(", ")||"none")}</div>`;
+}
+
+/* ===================== consistency ===================== */
+async function runConsistency(){
+  if($("judge-mode").value!=="blind"){l.err("batch check applies to blind mode only");return;}
+  const rows=state.results.filter(r=>r.judge&&r.extract);
+  if(!rows.length){l.err("run blind scoring first");return;}
+  const bs=Math.max(1,parseInt($("batch-size").value)||20);
+  if(bs===1){l.warn("batch size already 1 — nothing to compare");return;}
+  l.info(`consistency: re-extracting ${rows.length} answers at batch size 1`);
+  const {items,got}=await extractBatched(rows,1,"solo extract");
+  let agree=0; const diffs=[];
+  items.forEach(it=>{
+    const e=got.get(it.id);
+    const solo=compare(it.r.model_id,e||null);
+    it.r.solo={extract:e||null,judge:solo};
+    if(solo.verdict===it.r.judge.verdict) agree++;
+    else diffs.push({model:it.r.model_id,probe:it.r.probe_id,trial:it.r.trial,
+      batched:it.r.judge.verdict,solo:solo.verdict});
+  });
+  state.consistency={n:items.length,agree,diffs,batch:bs,at:new Date().toISOString()};
+  const pct=items.length?agree/items.length*100:0;
+  l[pct===100?"ok":"warn"](`consistency: ${agree}/${items.length} agree (${pct.toFixed(1)}%)`);
+  renderConsistency(); renderResults(); updatePills(); hideProgress();
+}
+function renderConsistency(){
+  const c=state.consistency;
+  if(!c){$("consistency-card").style.display="none";return;}
+  $("consistency-card").style.display="";
+  const pct=c.n?c.agree/c.n*100:0;
+  $("cons-meta").textContent=`batch ${c.batch} vs batch 1`;
+  const col=pct===100?"var(--green)":pct>=95?"var(--amber)":"var(--red)";
+  let h=`<div style="display:flex;gap:16px;align-items:baseline;margin-bottom:10px">
+    <div class="mono" style="font-size:26px;font-weight:600;color:${col}">${pct.toFixed(1)}%</div>
+    <div class="hint">${c.agree} of ${c.n} verdicts identical when the same answers are extracted
+    one at a time instead of ${c.batch} at a time.
+    ${pct===100?"Batching is not costing accuracy — you can raise it."
+      :"Batching is changing verdicts. Lower the batch size or the answer cap."}</div></div>`;
+  if(c.diffs.length){
+    h+=`<div class="diff-row nano"><div>model · probe · trial</div><div>batched</div><div>solo</div></div>`;
+    h+=c.diffs.slice(0,40).map(d=>`<div class="diff-row">
+      <div class="mono" style="font-size:11px">${escapeHtml(d.model)} · ${escapeHtml(d.probe)} #${d.trial}</div>
+      <div style="color:${VERDICT_COLORS[d.batched]}">${escapeHtml(d.batched)}</div>
+      <div style="color:${VERDICT_COLORS[d.solo]}">${escapeHtml(d.solo)}</div></div>`).join("");
+    if(c.diffs.length>40) h+=`<div class="hint" style="margin-top:6px">…and ${c.diffs.length-40} more</div>`;
+  }
+  $("consistency-body").innerHTML=h;
+}
+
+/* ===================== orchestration ===================== */
+async function runAll(){ await runProbe(); if(!state.cancel&&$("auto-judge").checked) await runScoring(); }
+function setRunning(on){
+  state.running=on;
+  ["btn-run","btn-probe-only","btn-judge-only","btn-consistency","btn-preset","btn-preset-add"].forEach(id=>$(id).disabled=on);
+  $("btn-cancel").style.display=on?"":"none";
+  $("pill-status").textContent=on?"RUNNING":(state.cancel?"CANCELLED":"IDLE");
+  $("pill-status").classList.toggle("on",on);
+  if(!on){
+    const any=state.results.length>0;
+    ["btn-exp-json","btn-exp-csv","btn-exp-md"].forEach(id=>$(id).disabled=!any);
+    $("btn-judge-only").disabled=!state.results.some(r=>r.response&&!r.error);
+    $("btn-consistency").disabled=!($("judge-mode").value==="blind"&&state.results.some(r=>r.extract));
+  }
+}
+async function guarded(fn){
+  if(state.running) return;
+  state.cancel=false; setRunning(true);
+  try{await fn();}catch(e){l.err("run aborted: "+(e.message||e));}
+  setRunning(false);
+}
+
+/* ===================== rendering ===================== */
+const verdictOf=r=>r.error?"error":(r.judge?.verdict||null);
+const toneOf=r=>r.error?"danger":(VERDICT_TONE[r.judge?.verdict]||"neutral");
+function matchesFilter(r,f){
+  const v=verdictOf(r);
+  switch(f){
+    case "correct": return v==="correct";
+    case "notcorrect": return v&&v!=="correct";
+    case "wrong": return !!r.judge?.foreign_vendor;
+    case "evasive": return v==="evasive"||v==="unclear";
+    case "honest": return r.judge?.uncertainty_expressed===true;
+    case "error": return !!r.error||!!r.judgeError||!!r.extractError;
+    default: return true;
+  }
+}
+function buildProbeFilter(){
+  const used=[...new Set(state.results.map(r=>r.probe_id))];
+  $("res-probe").innerHTML=`<option value="">all probes</option>`+
+    used.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(probeById(p)?.label||p)}</option>`).join("");
+}
+function badge(r){
+  const v=verdictOf(r);
+  if(!v) return `<span class="verdict" style="color:var(--text-quiet)">pending</span>`;
+  return `<span class="verdict" style="color:${VERDICT_COLORS[v]}">${v.replace("_"," ")}</span>`;
+}
+function renderResults(){
+  if(!state.results.length){$("results-card").style.display="none";return;}
+  $("results-card").style.display="";
+  const f=$("res-filter").value, pf=$("res-probe").value, group=$("collapse-trials").checked;
+  const rows=state.results.filter(r=>matchesFilter(r,f)&&(!pf||r.probe_id===pf));
+  $("res-meta").textContent=`${rows.length} / ${state.results.length} shown`;
+  let html="";
+  if(group){
+    const by=new Map();
+    rows.forEach(r=>{if(!by.has(r.model_id)) by.set(r.model_id,[]); by.get(r.model_id).push(r);});
+    for(const [id,list] of by){
+      const ok=list.filter(r=>verdictOf(r)==="correct").length;
+      const fv=list.filter(r=>r.judge?.foreign_vendor).length;
+      const col=ok===list.length?"var(--green)":ok?"var(--amber)":"var(--red)";
+      html+=`<div class="res-card"><div class="res-head">
+        <span class="res-title">${escapeHtml(id)}</span>
+        <span class="pill">${escapeHtml(vendorOf(id).name)}</span>
+        <span class="pill" style="color:${col}">${ok}/${list.length} CORRECT</span>
+        ${fv?`<span class="pill alert">${fv} CROSS-VENDOR</span>`:""}
+      </div>${list.map(r=>`<div style="margin-top:10px">
+        <div class="res-head" style="margin-bottom:5px">
+          <span class="nano">${escapeHtml(r.probe_label)} · trial ${r.trial}</span>${badge(r)}
+          <span class="nano">${r.ms?r.ms+"ms":""}${r.cost?" · $"+r.cost.toFixed(6):""}</span></div>
+        ${body(r)}</div>`).join("")}</div>`;
+    }
+  } else {
+    html=rows.map(r=>`<div class="res-card"><div class="res-head">
+      <span class="res-title">${escapeHtml(r.model_id)}</span>
+      <span class="pill">${escapeHtml(r.probe_label)}</span>
+      <span class="pill">trial ${r.trial}</span>${badge(r)}</div>${body(r)}</div>`).join("");
+  }
+  $("results-list").innerHTML=html||`<div class="hint">nothing matches this filter</div>`;
+}
+function body(r){
+  let h="";
+  if(r.error) h+=`<div class="answer" style="color:var(--red)">${escapeHtml(r.error)}</div>`;
+  else if(r.response===null) h+=`<div class="hint">pending…</div>`;
+  else h+=`<div class="answer">${escapeHtml(r.response)}</div>`;
+  if(r.extractError) h+=`<div class="judge-block neutral"><span class="nano">extraction failed</span><br>${escapeHtml(r.extractError)}</div>`;
+  if(r.judgeError) h+=`<div class="judge-block neutral"><span class="nano">judge failed</span><br>${escapeHtml(r.judgeError)}</div>`;
+  const j=r.judge;
+  if(j){
+    h+=`<div class="judge-block ${toneOf(r)}"><div class="kv">
+      <div class="k">verdict</div><div class="v" style="color:${VERDICT_COLORS[j.verdict]}">${escapeHtml(j.verdict)}
+        <span class="rule-tag">· ${escapeHtml(j.rule||"")}</span></div>
+      <div class="k">claimed vendor</div><div class="v">${escapeHtml(j.claimed_vendor)}</div>
+      <div class="k">claimed model</div><div class="v">${escapeHtml(j.claimed_model)}</div>
+      <div class="k">claimed version</div><div class="v">${escapeHtml(j.claimed_version)}</div>
+      ${j.alternative_identity&&!isNone(j.alternative_identity)?`<div class="k">alt identity</div><div class="v" style="color:var(--amber)">${escapeHtml(j.alternative_identity)}</div>`:""}
+      ${j.claimed_cutoff&&!isNone(j.claimed_cutoff)?`<div class="k">claimed cutoff</div><div class="v">${escapeHtml(j.claimed_cutoff)}</div>`:""}
+      <div class="k">id source</div><div class="v">${escapeHtml(j.identity_source||"unstated")}${j.uncertainty_expressed?" · hedged":""}${j.answer_language&&j.answer_language!=="unknown"?" · "+escapeHtml(j.answer_language):""}</div>
+      ${j.foreign_vendor?`<div class="k">foreign vendor</div><div class="v" style="color:var(--red)">${escapeHtml(VENDORS[j.foreign_vendor]?.name||j.foreign_vendor)}</div>`:""}
+      ${j.notes?`<div class="k">notes</div><div class="v">${escapeHtml(j.notes)}</div>`:""}
+      ${r.solo?`<div class="k">solo verdict</div><div class="v" style="color:${VERDICT_COLORS[r.solo.judge.verdict]}">${escapeHtml(r.solo.judge.verdict)}${r.solo.judge.verdict===j.verdict?" (agrees)":" (DIFFERS)"}</div>`:""}
+    </div></div>`;
+  }
+  return h;
+}
+function donut(segments,size){
+  size=size||132;
+  const total=segments.reduce((a,s)=>a+s.value,0);
+  if(!total) return "";
+  const cx=size/2,cy=size/2,r=size/2-4,ri=r*0.6;
+  let ang=-Math.PI/2,paths="";
+  segments.forEach(s=>{
+    if(!s.value) return;
+    const sweep=(s.value/total)*Math.PI*2,a1=ang,a2=ang+sweep; ang=a2;
+    if(s.value===total){
+      paths+=`<circle cx="${cx}" cy="${cy}" r="${(r+ri)/2}" fill="none" stroke="${s.color}" stroke-width="${r-ri}"/>`;
+      return;
+    }
+    const x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+    const xi1=cx+ri*Math.cos(a1),yi1=cy+ri*Math.sin(a1),xi2=cx+ri*Math.cos(a2),yi2=cy+ri*Math.sin(a2);
+    const large=sweep>Math.PI?1:0;
+    paths+=`<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${ri} ${ri} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${s.color}"/>`;
+  });
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${paths}
+    <text x="${cx}" y="${cy-2}" text-anchor="middle" dominant-baseline="central" fill="currentColor"
+      font-family="JetBrains Mono" font-size="22" font-weight="600">${total}</text>
+    <text x="${cx}" y="${cy+18}" text-anchor="middle" fill="currentColor" opacity="0.55"
+      font-family="JetBrains Mono" font-size="9" letter-spacing="1.5">ANSWERS</text></svg>`;
+}
+const hBarRows=items=>{
+  const max=Math.max(1,...items.map(i=>i.value));
+  return items.map(i=>`<div class="hbar-row">
+    <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+    <div class="hbar-track"><div class="hbar-fill" style="width:${(i.value/max)*100}%;background:${i.color}"></div></div>
+    <div class="hbar-value">${i.display ?? i.value}</div></div>`).join("");
+};
+/* ===================== statistics ===================== */
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+
+/* which cohort a model belongs to — jurisdiction × weights availability */
+function cohortOf(id){
+  const s=slugOf(id), m=state.byId.get(id);
+  const cn=CN_LABS.includes(s), open=m?isOpenWeights(m):false;
+  return (cn?"CN":"West")+(open?" · open":" · closed");
+}
+const COHORT_COLORS = {
+  "CN · open":"oklch(0.65 0.20 25)", "CN · closed":"oklch(0.65 0.20 50)",
+  "West · open":"oklch(0.70 0.15 240)", "West · closed":"oklch(0.70 0.12 200)"
+};
+
+/* the vendor an answer named for ITSELF, as a slug, for the confusion matrix */
+function claimedSlug(r){
+  if(!r.judge) return null;
+  if(r.judge.foreign_vendor) return r.judge.foreign_vendor;
+  const v=whichVendorClaimed(`${r.judge.claimed_vendor} ${r.judge.claimed_model}`);
+  if(v) return v;
+  const f=whichFamilyClaimed(`${r.judge.claimed_family??""} ${r.judge.claimed_model??""}`);
+  if(f) return f.slug;
+  return "unnamed";
+}
+/* canonical string for one self-identification, used for stability */
+function identityKey(r){
+  if(!r.judge) return null;
+  const v=norm(r.judge.claimed_vendor), f=norm(r.judge.claimed_model);
+  if((!v||v==="none")&&(!f||f==="none")) return "«none»";
+  return `${v||"-"}/${f||"-"}`;
+}
+/* 0 = same answer every time, 1 = a different answer every trial */
+function instability(keys){
+  const n=keys.length;
+  if(n<2) return 0;
+  const c={}; keys.forEach(k=>c[k]=(c[k]||0)+1);
+  const counts=Object.values(c);
+  if(counts.length<2) return 0;
+  let h=0;
+  counts.forEach(x=>{const p=x/n; h-=p*Math.log2(p);});
+  return Math.min(1, h/Math.log2(n));
+}
+
+function bigStat(value,label,color,sub){
+  return `<div class="big-stat"><div class="bs-val" style="color:${color||"var(--text-primary)"}">${value}</div>
+    <div class="bs-lab">${escapeHtml(label)}</div>${sub?`<div class="bs-sub">${escapeHtml(sub)}</div>`:""}</div>`;
+}
+
+/* actual vendor (rows) × vendor the model claimed to be (columns) */
+function confusionMatrix(rows){
+  const pairs=rows.filter(r=>r.judge&&!r.error)
+    .map(r=>({t:slugOf(r.model_id), c:claimedSlug(r)})).filter(p=>p.c);
+  if(!pairs.length) return "";
+  const trues=[...new Set(pairs.map(p=>p.t))].sort();
+  const claimCount={};
+  pairs.forEach(p=>claimCount[p.c]=(claimCount[p.c]||0)+1);
+  let claims=[...new Set(pairs.map(p=>p.c))]
+    .sort((a,b)=>{
+      if(a==="unnamed") return 1; if(b==="unnamed") return -1;
+      const ai=trues.indexOf(a), bi=trues.indexOf(b);
+      if(ai>=0&&bi<0) return -1; if(bi>=0&&ai<0) return 1;
+      return (claimCount[b]||0)-(claimCount[a]||0);
+    }).slice(0,11);
+  const cell={}; let max=0;
+  pairs.forEach(p=>{
+    if(!claims.includes(p.c)) return;
+    const k=p.t+"|"+p.c; cell[k]=(cell[k]||0)+1;
+    if(cell[k]>max) max=cell[k];
+  });
+  const shortName=s=>{
+    const n=VENDORS[s]?.name||s;
+    return n.length>13?n.slice(0,12)+"…":n;
+  };
+  const head=`<div class="mx-row"><div class="mx-corner nano">actual ↓ / claimed →</div>`+
+    claims.map(c=>`<div class="mx-head nano" title="${escapeHtml(VENDORS[c]?.name||c)}">${escapeHtml(c==="unnamed"?"no name":shortName(c))}</div>`).join("")+`</div>`;
+  const bodyRows=trues.map(t=>{
+    const cells=claims.map(c=>{
+      const v=cell[t+"|"+c]||0;
+      const diag=t===c;
+      const a=max?Math.min(0.85,0.12+0.73*(v/max)):0;
+      const bg=v?(diag?`oklch(0.75 0.18 145 / ${a})`:`oklch(0.65 0.20 25 / ${a})`):"transparent";
+      const fg=v?(a>0.5?"oklch(0.12 0.02 280)":"var(--text-primary)"):"var(--text-quiet)";
+      return `<div class="mx-cell" style="background:${bg};color:${fg}" title="${escapeHtml(t)} → ${escapeHtml(c)}: ${v}">${v||"·"}</div>`;
+    }).join("");
+    return `<div class="mx-row"><div class="mx-side" title="${escapeHtml(VENDORS[t]?.name||t)}">${escapeHtml(shortName(t))}</div>${cells}</div>`;
+  }).join("");
+  return `<div class="matrix" style="grid-template-columns:120px repeat(${claims.length},minmax(38px,1fr))">${head}${bodyRows}</div>
+    <div class="hint" style="margin-top:8px">Green diagonal = model named its own vendor.
+    Anything red is off-diagonal: it named someone else. Column totals show which identity
+    the field collectively drifts toward.</div>`;
+}
+
+/* paired accuracy on two probes, one line per model */
+function slopeChart(rows, aId, bId){
+  const byModel=new Map();
+  rows.forEach(r=>{
+    if(r.probe_id!==aId&&r.probe_id!==bId) return;
+    if(!byModel.has(r.model_id)) byModel.set(r.model_id,{a:{n:0,ok:0},b:{n:0,ok:0}});
+    const e=byModel.get(r.model_id)[r.probe_id===aId?"a":"b"];
+    e.n++; if(verdictOf(r)==="correct") e.ok++;
+  });
+  const pts=[...byModel.entries()].filter(([,e])=>e.a.n&&e.b.n)
+    .map(([id,e])=>({id, a:e.a.ok/e.a.n, b:e.b.ok/e.b.n}));
+  if(pts.length<1) return "";
+  const W=330,H=210,pad=30,top=16,bot=H-26;
+  const y=v=>bot-(bot-top)*v;
+  const x1=pad+52, x2=W-pad-8;
+  const lines=pts.map(p=>{
+    const up=p.b>p.a, flat=Math.abs(p.b-p.a)<0.001;
+    const col=flat?"oklch(0.55 0.02 280)":(up?"oklch(0.75 0.18 145)":"oklch(0.65 0.20 25)");
+    return `<line x1="${x1}" y1="${y(p.a)}" x2="${x2}" y2="${y(p.b)}" stroke="${col}" stroke-width="1.5" opacity="0.75"/>
+      <circle cx="${x1}" cy="${y(p.a)}" r="3" fill="${col}"/>
+      <circle cx="${x2}" cy="${y(p.b)}" r="3" fill="${col}"/>
+      <title>${escapeHtml(p.id)}: ${Math.round(p.a*100)}% → ${Math.round(p.b*100)}%</title>`;
+  }).join("");
+  const grid=[0,0.5,1].map(v=>`<line x1="${x1-6}" y1="${y(v)}" x2="${x2+6}" y2="${y(v)}"
+    stroke="oklch(0.95 0.005 280/0.08)" stroke-width="1"/>
+    <text x="${x1-12}" y="${y(v)+3}" text-anchor="end" font-family="JetBrains Mono" font-size="9"
+      fill="currentColor" opacity="0.45">${v*100}%</text>`).join("");
+  const meanA=pts.reduce((s,p)=>s+p.a,0)/pts.length, meanB=pts.reduce((s,p)=>s+p.b,0)/pts.length;
+  const delta=Math.round((meanB-meanA)*100);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">${grid}${lines}
+    <text x="${x1}" y="${H-8}" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5"
+      fill="currentColor" opacity="0.6">${escapeHtml(probeById(aId)?.label||aId)}</text>
+    <text x="${x2}" y="${H-8}" text-anchor="middle" font-family="JetBrains Mono" font-size="9.5"
+      fill="currentColor" opacity="0.6">${escapeHtml(probeById(bId)?.label||bId)}</text></svg>
+    <div class="hint">Mean accuracy ${Math.round(meanA*100)}% → ${Math.round(meanB*100)}%
+    (<b style="color:${delta>0?"var(--green)":delta<0?"var(--red)":"var(--text-quiet)"}">${delta>0?"+":""}${delta} pts</b>).
+    Green lines rise when licensing "I don't know" produced a more accurate answer; red lines fall.
+    A large positive delta means the field was confabulating under helpfulness pressure, not lacking self-knowledge.</div>`;
+}
+
+function renderStats(){
+  const judged=state.results.filter(r=>r.judge||r.error);
+  if(!judged.length){$("stats-card").style.display="none";return;}
+  $("stats-card").style.display="";
+  const scored=state.results.filter(r=>r.judge&&!r.error);
+
+  const counts={};
+  judged.forEach(r=>{const v=verdictOf(r)||"unclear"; counts[v]=(counts[v]||0)+1;});
+  const order=["correct","partial","wrong_model","wrong_vendor","evasive","unclear","error"];
+  const segs=order.filter(k=>counts[k]).map(k=>({label:k,value:counts[k],color:VERDICT_COLORS[k]}));
+
+  const agg=keyFn=>{
+    const m=new Map();
+    state.results.forEach(r=>{
+      if(!r.judge&&!r.error) return;
+      const k=keyFn(r);
+      if(!m.has(k)) m.set(k,{n:0,ok:0,fv:0,hedge:0,keys:[]});
+      const e=m.get(k); e.n++;
+      if(verdictOf(r)==="correct") e.ok++;
+      if(r.judge?.foreign_vendor) e.fv++;
+      if(r.judge?.uncertainty_expressed) e.hedge++;
+      const ik=identityKey(r); if(ik) e.keys.push(ik);
+    });
+    return m;
+  };
+  const byModel=agg(r=>r.model_id);
+  const byProbe=agg(r=>r.probe_id);
+  const byCohort=agg(r=>cohortOf(r.model_id));
+
+  /* headline numbers */
+  const totalOk=counts.correct||0;
+  const fvTotal=scored.filter(r=>r.judge.foreign_vendor).length;
+  const instab=[...byModel.values()].map(e=>instability(e.keys));
+  const meanInstab=instab.length?instab.reduce((a,b)=>a+b,0)/instab.length:0;
+  const flagged=state.provenance.filter(p=>p.tier!=="none").length;
+  const headline=`<div class="big-row">
+    ${bigStat(pct(totalOk,judged.length)+"%","self-id accuracy",
+      pct(totalOk,judged.length)>=70?"var(--green)":pct(totalOk,judged.length)>=40?"var(--amber)":"var(--red)",
+      `${totalOk} of ${judged.length} answers`)}
+    ${bigStat(pct(fvTotal,scored.length)+"%","cross-vendor claims",
+      fvTotal?"var(--red)":"var(--green)",`${fvTotal} answers named another lab`)}
+    ${bigStat(meanInstab.toFixed(2),"mean instability",
+      meanInstab<0.2?"var(--green)":meanInstab<0.5?"var(--amber)":"var(--red)","0 = same answer every trial")}
+    ${bigStat(flagged,"models flagged","var(--accent)",`of ${state.provenance.length} scored`)}
+    ${bigStat("$"+state.cost.toFixed(3),"run cost","var(--text-secondary)",`${state.calls} API calls`)}
+  </div>`;
+
+  /* cohort comparison */
+  const cohortRows=[...byCohort.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  const cohortBlock=cohortRows.length>1?`
+    <div class="sub-card" style="grid-column:1/-1"><span class="nano">cohort comparison — the control that matters</span>
+      <div class="cohort-grid">
+        ${cohortRows.map(([k,e])=>`<div class="cohort-cell" style="border-left:3px solid ${COHORT_COLORS[k]||"var(--accent)"}">
+          <div class="nano">${escapeHtml(k)}</div>
+          <div class="cohort-main">${pct(e.ok,e.n)}<span class="cohort-unit">% correct</span></div>
+          <div class="cohort-sub">${pct(e.fv,e.n)}% cross-vendor · ${pct(e.hedge,e.n)}% hedged · n=${e.n}</div>
+        </div>`).join("")}
+      </div>
+      <div class="hint" style="margin-top:9px">If the cross-vendor rate is similar across cohorts, the
+      signal is corpus contamination rather than anything jurisdiction-specific. A gap only means
+      something if the cohorts are comparable in size and model tier.</div></div>`:"";
+
+  /* per-model stability */
+  const stabRows=[...byModel.entries()].map(([id,e])=>{
+    const v=instability(e.keys);
+    const distinct=new Set(e.keys).size;
+    return {label:id,value:v,display:`${distinct}/${e.keys.length}`,
+      color:v<0.2?VERDICT_COLORS.correct:v<0.5?VERDICT_COLORS.partial:VERDICT_COLORS.wrong_vendor};
+  }).sort((a,b)=>b.value-a.value).slice(0,16);
+
+  /* calibration: does hedging predict being wrong? */
+  const hedged=scored.filter(r=>r.judge.uncertainty_expressed);
+  const confident=scored.filter(r=>!r.judge.uncertainty_expressed);
+  const hAcc=pct(hedged.filter(r=>r.judge.verdict==="correct").length,hedged.length);
+  const cAcc=pct(confident.filter(r=>r.judge.verdict==="correct").length,confident.length);
+  const calBlock=(hedged.length&&confident.length)?`
+    <div class="sub-card"><span class="nano">calibration — is hedging informative?</span>
+      ${hBarRows([
+        {label:`hedged (n=${hedged.length})`,value:hAcc/100,display:hAcc+"%",color:VERDICT_COLORS.evasive},
+        {label:`confident (n=${confident.length})`,value:cAcc/100,display:cAcc+"%",color:VERDICT_COLORS.correct}])}
+      <div class="hint" style="margin-top:8px">${
+        cAcc>hAcc+10?"Confident answers are more accurate — hedging carries real signal."
+        :hAcc>cAcc+10?"Hedged answers are MORE accurate than confident ones. The confident answers are where the confabulation lives."
+        :"Hedging barely predicts accuracy — models are hedging for style, not from genuine uncertainty."}</div></div>`:"";
+
+  const probeRows=[...byProbe.entries()].map(([k,e])=>({label:probeById(k)?.label||k,
+    value:e.n?e.ok/e.n:0,display:pct(e.ok,e.n)+"%",color:VERDICT_COLORS.correct}));
+  const probeHedge=[...byProbe.entries()].map(([k,e])=>({label:probeById(k)?.label||k,
+    value:e.n?e.hedge/e.n:0,display:pct(e.hedge,e.n)+"%",color:VERDICT_COLORS.evasive}));
+  const modelRows=[...byModel.entries()].map(([k,e])=>({label:k,value:e.n?e.ok/e.n:0,
+    display:`${e.ok}/${e.n}`,
+    color:e.ok===e.n?VERDICT_COLORS.correct:(e.ok?VERDICT_COLORS.partial:VERDICT_COLORS.wrong_vendor)}))
+    .sort((a,b)=>b.value-a.value).slice(0,16);
+  const fvRows=[...byModel.entries()].filter(([,e])=>e.fv>0)
+    .map(([k,e])=>({label:k,value:e.fv/e.n,display:`${e.fv}/${e.n}`,color:VERDICT_COLORS.wrong_vendor}))
+    .sort((a,b)=>b.value-a.value);
+  const rules={};
+  state.results.forEach(r=>{const k=r.judge?.rule; if(k) rules[k]=(rules[k]||0)+1;});
+  const ruleRows=Object.entries(rules).sort((a,b)=>b[1]-a[1]).slice(0,10)
+    .map(([k,v])=>({label:k,value:v,color:VERDICT_COLORS.partial}));
+
+  const usedProbes=[...new Set(state.results.map(r=>r.probe_id))];
+  const slope=(usedProbes.includes("bare")&&usedProbes.includes("honest"))
+    ? `<div class="sub-card" style="grid-column:1/-1"><span class="nano">confabulation delta — bare vs honest framing</span>
+       ${slopeChart(state.results,"bare","honest")}</div>` : "";
+
+  const matrix=confusionMatrix(state.results);
+  const matrixBlock=matrix?`<div class="sub-card" style="grid-column:1/-1">
+    <span class="nano">who claimed to be whom</span>${matrix}</div>`:"";
+
+  $("stats-meta").textContent=
+    `${totalOk}/${judged.length} correct · ${state.calls} calls · $${state.cost.toFixed(4)}`;
+  $("stats-grid").innerHTML=headline+`
+    <div class="sub-card"><span class="nano">verdict distribution</span>
+      <div class="donut-wrap">${donut(segs)}<div class="legend">${segs.map(s=>`<div class="legend-row">
+        <div class="legend-dot" style="background:${s.color}"></div>
+        <div class="legend-lab">${escapeHtml(s.label.replace("_"," "))}</div>
+        <div class="legend-val">${s.value}</div></div>`).join("")}</div></div></div>
+    <div class="sub-card"><span class="nano">accuracy by probe</span>${hBarRows(probeRows)}
+      <div class="nano" style="margin:12px 0 8px">uncertainty expressed by probe</div>${hBarRows(probeHedge)}</div>
+    ${cohortBlock}
+    ${matrixBlock}
+    ${slope}
+    <div class="sub-card" style="grid-column:1/-1"><span class="nano">correct trials per model</span>${hBarRows(modelRows)}</div>
+    <div class="sub-card"><span class="nano">identity instability per model (distinct answers / trials)</span>${hBarRows(stabRows)}
+      <div class="hint" style="margin-top:8px">High instability means the identity is being reconstructed
+      per-call rather than stored. That is the more direct evidence about whether self-knowledge is in
+      the weights at all.</div></div>
+    ${calBlock}
+    ${fvRows.length?`<div class="sub-card"><span class="nano">cross-vendor claims per model</span>${hBarRows(fvRows)}</div>`:""}
+    <div class="sub-card"><span class="nano">which rule decided the verdict</span>${hBarRows(ruleRows)}</div>`;
+}
+
+/* ===================== exports ===================== */
+const CAVEAT_TEXT = `Cross-vendor self-identification is WEAK evidence of distillation on its own. \
+Post-2023 web corpora contain large volumes of other assistants' transcripts, so "I am ChatGPT" is a \
+high-probability completion for any model trained on scraped text, with no teacher model involved. \
+Model identity is normally installed at deployment via system prompt rather than trained into weights, \
+so an unprompted model is largely guessing. The inference also fails in reverse: identity fine-tuning \
+is cheap, so the absence of this signal rules nothing out. These tiers indicate where to look next. \
+They are not findings. Corroboration requires training-data disclosures, licence terms, tokeniser \
+comparison or logit-level analysis — not a chat transcript.`;
+
+function download(name,text,mime){
+  const b=new Blob([text],{type:mime||"text/plain;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+  l.ok("exported "+name);
+}
+const stamp=()=>new Date().toISOString().replace(/[:.]/g,"-").slice(0,19);
+function exportJson(){
+  download(`whoami-bench-${stamp()}.json`,JSON.stringify({
+    tool:"whoami-bench", version:VERSION, run_at:new Date().toISOString(),
+    interpretation_caveat:CAVEAT_TEXT,
+    mode:$("judge-mode").value, judge_model:$("judge-model").value,
+    probes:state.probes, extract_prompt:$("extract-prompt").value,
+    combined_prompt:$("combined-prompt").value,
+    settings:{trials:$("trials").value,batch_size:$("batch-size").value,
+      answer_cap:$("answer-cap").value,max_tokens:$("max-tokens").value,
+      temperature:$("temperature").value||null,reasoning:$("reasoning").value,
+      version_penalty:$("version-penalty").checked},
+    totals:{calls:state.calls,cost_usd:state.cost},
+    provenance:state.provenance, consistency:state.consistency, results:state.results
+  },null,2),"application/json");
+}
+const csvCell=s=>`"${String(s ?? "").replace(/"/g,'""')}"`;
+function exportCsv(){
+  const head=["model_id","vendor","cohort","open_weights","expected_family","gt_generation","probe","trial","verdict","rule",
+    "claimed_vendor","claimed_model","claimed_version","alt_identity","claimed_cutoff",
+    "identity_source","answer_language","uncertainty_expressed","foreign_vendor","tier","solo_verdict",
+    "latency_ms","cost_usd","error","response"];
+  const tiers=new Map(state.provenance.map(p=>[p.model_id,p.tier]));
+  const lines=[head.join(",")].concat(state.results.map(r=>[
+    r.model_id,r.vendor,r.cohort||"",r.open_weights ?? "",r.family,r.gt_generation ?? "",r.probe_id,r.trial,
+    verdictOf(r)||"",r.judge?.rule||"",r.judge?.claimed_vendor||"",r.judge?.claimed_model||"",
+    r.judge?.claimed_version||"",r.judge?.alternative_identity||"",r.judge?.claimed_cutoff||"",
+    r.judge?.identity_source||"",r.judge?.answer_language||"",r.judge?.uncertainty_expressed ?? "",
+    r.judge?.foreign_vendor||"",tiers.get(r.model_id)||"",r.solo?.judge?.verdict||"",
+    r.ms,r.cost,r.error||r.judgeError||r.extractError||"",r.response||""
+  ].map(csvCell).join(",")));
+  download(`whoami-bench-${stamp()}.csv`,"\ufeff"+lines.join("\r\n"),"text/csv;charset=utf-8");
+}
+function exportMd(){
+  let md=`# whoami-bench ${VERSION}\n\nRun: ${new Date().toISOString()}\n`;
+  md+=`Mode: ${$("judge-mode").value} · judge: \`${$("judge-model").value}\` · batch ${$("batch-size").value}\n`;
+  md+=`Probes: ${activeProbes().map(p=>p.label).join(", ")}\n`;
+  md+=`Calls: ${state.calls} · Cost: $${state.cost.toFixed(4)}\n\n`;
+  md+=`> **Interpretation caveat.** ${CAVEAT_TEXT}\n\n`;
+  if(state.consistency){
+    const c=state.consistency;
+    md+=`Batch consistency: ${c.agree}/${c.n} (${(c.agree/c.n*100).toFixed(1)}%) between batch ${c.batch} and batch 1\n\n`;
+  }
+  if(state.provenance.some(p=>p.tier!=="none")){
+    md+=`## Cross-vendor self-identification\n\n| model | tier | claims | trials | stable | survives honest | survives counterfactual |\n|---|---|---|---|---|---|---|\n`;
+    state.provenance.filter(p=>p.tier!=="none").forEach(p=>{
+      const e=p.evidence;
+      md+=`| \`${p.model_id}\` | ${p.tier} | ${VENDORS[p.dominant]?.name||p.dominant} | ${p.hits}/${p.n} | ${e.consistent_across_trials?"yes":"no"} | ${e.survives_honest_framing?"yes":"no"} | ${e.survives_counterfactual?"yes":"no"} |\n`;
+    });
+    md+=`\n`;
+  }
+  const by=new Map();
+  state.results.forEach(r=>{if(!by.has(r.model_id)) by.set(r.model_id,[]); by.get(r.model_id).push(r);});
+  md+=`## Scoreboard\n\n| model | vendor | gen | correct |\n|---|---|---|---|\n`;
+  for(const [id,list] of by){
+    const ok=list.filter(r=>verdictOf(r)==="correct").length;
+    md+=`| \`${id}\` | ${vendorOf(id).name} | ${list[0].gt_generation ?? "?"} | ${ok}/${list.length} |\n`;
+  }
+  md+=`\n## Answers\n\n`;
+  for(const [id,list] of by){
+    md+=`### \`${id}\`\n\n`;
+    list.forEach(r=>{
+      md+=`**${r.probe_label} · trial ${r.trial}** — ${verdictOf(r)||"unscored"}${r.judge?.rule?` (${r.judge.rule})`:""}\n\n`;
+      md+=r.error?`> ERROR: ${r.error}\n\n`:`> ${String(r.response||"").replace(/\n/g,"\n> ")}\n\n`;
+      if(r.judge){
+        md+=`- claimed: ${r.judge.claimed_vendor} / ${r.judge.claimed_model} / ${r.judge.claimed_version}\n`;
+        if(r.judge.foreign_vendor) md+=`- **foreign vendor claimed: ${VENDORS[r.judge.foreign_vendor]?.name||r.judge.foreign_vendor}**\n`;
+        if(r.judge.claimed_cutoff&&!isNone(r.judge.claimed_cutoff)) md+=`- claimed cutoff: ${r.judge.claimed_cutoff}\n`;
+        md+=`- id source: ${r.judge.identity_source}${r.judge.uncertainty_expressed?" (hedged)":""}\n\n`;
+      }
+    });
+  }
+  download(`whoami-bench-${stamp()}.md`,md,"text/markdown;charset=utf-8");
+}
+
+/* ===================== init ===================== */
+function init(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(LS.probes)||"null");
+    if(Array.isArray(saved)&&saved.length&&saved.every(p=>p.id&&typeof p.user==="string")){
+      /* merge: keep saved edits, add any new default probes */
+      const map=new Map(saved.map(p=>[p.id,p]));
+      state.probes=cloneProbes().map(d=>({...d,...(map.get(d.id)||{})}));
+      saved.filter(p=>!state.probes.some(x=>x.id===p.id)).forEach(p=>state.probes.push(p));
+    }
+  }catch(e){}
+  $("extract-prompt").value=localStorage.getItem(LS.extract) ?? DEFAULT_EXTRACT;
+  $("combined-prompt").value=localStorage.getItem(LS.combined) ?? DEFAULT_COMBINED;
+  $("api-key").value=localStorage.getItem(LS.key)||"";
+  loadCfg();
+  const rw=localStorage.getItem(LS.rail);
+  if(rw){$("rail").style.flex=`0 0 ${rw}px`;$("rail").style.width=rw+"px";}
+  renderProbeList(); checkPlaceholders(); applyMode();
+
+  $("api-key").addEventListener("input",e=>localStorage.setItem(LS.key,e.target.value));
+  $("extract-prompt").addEventListener("input",e=>{localStorage.setItem(LS.extract,e.target.value);checkPlaceholders();});
+  $("combined-prompt").addEventListener("input",e=>{localStorage.setItem(LS.combined,e.target.value);checkPlaceholders();});
+  $("reset-extract").addEventListener("click",()=>{$("extract-prompt").value=DEFAULT_EXTRACT;localStorage.setItem(LS.extract,DEFAULT_EXTRACT);checkPlaceholders();});
+  $("reset-combined").addEventListener("click",()=>{$("combined-prompt").value=DEFAULT_COMBINED;localStorage.setItem(LS.combined,DEFAULT_COMBINED);checkPlaceholders();});
+
+  /* probe list interactions */
+  $("probe-list").addEventListener("click",e=>{
+    const cb=e.target.closest("input[data-toggle]");
+    if(cb){
+      const p=probeById(cb.dataset.toggle);
+      if(p){p.enabled=cb.checked; saveProbes(); renderProbeList();}
+      e.stopPropagation(); return;
+    }
+    const row=e.target.closest(".probe-row");
+    if(row&&row.dataset.pid){ state.editing=row.dataset.pid; renderProbeList(); }
+  });
+  $("probe-system").addEventListener("input",e=>{
+    const p=probeById(state.editing); if(p){p.system=e.target.value; saveProbes();}
+  });
+  $("probe-user").addEventListener("input",e=>{
+    const p=probeById(state.editing); if(p){p.user=e.target.value; saveProbes();}
+  });
+  $("reset-probe").addEventListener("click",()=>{
+    const d=DEFAULT_PROBES.find(x=>x.id===state.editing);
+    const p=probeById(state.editing);
+    if(d&&p){p.system=d.system;p.user=d.user;saveProbes();renderProbeList();l.info("probe reset: "+p.label);}
+  });
+  $("btn-reset-probes").addEventListener("click",()=>{
+    state.probes=cloneProbes(); state.editing=state.probes[0].id;
+    saveProbes(); renderProbeList(); l.info("all probes reset to defaults");
+  });
+
+  CFG_INPUTS.forEach(id=>$(id).addEventListener("input",()=>{saveCfg();updatePlan();}));
+  CFG_CHECKS.forEach(id=>$(id).addEventListener("change",saveCfg));
+  $("judge-mode").addEventListener("change",()=>{applyMode();saveCfg();setRunning(false);});
+  $("version-penalty").addEventListener("change",()=>{
+    if(state.results.some(r=>r.extract)){
+      state.results.forEach(r=>{if(r.extract) r.judge=compare(r.model_id,r.extract);});
+      computeProvenance();
+      l.info("version penalty toggled — verdicts recomputed locally, no API calls");
+      renderResults(); renderStats(); renderProvenance(); updatePills();
+    }
+  });
+  $("judge-model").addEventListener("change",e=>{localStorage.setItem(LS.judgeModel,e.target.value);updateJudgePrice();});
+
+  $("btn-catalog").addEventListener("click",fetchCatalog);
+  $("cat-search").addEventListener("input",renderCatalog);
+  $("cat-vendor").addEventListener("change",renderCatalog);
+  const presetDesc=()=>{$("preset-desc").textContent=PRESETS[$("preset-select").value]?.desc||"";};
+  $("preset-select").addEventListener("change",presetDesc); presetDesc();
+  $("btn-preset").addEventListener("click",()=>applyPreset($("preset-select").value,$("preset-per-lab").value,false));
+  $("btn-preset-add").addEventListener("click",()=>applyPreset($("preset-select").value,$("preset-per-lab").value,true));
+  $("btn-clear-sel").addEventListener("click",()=>{state.selected.clear();persistSelection();renderCatalog();updatePlan();});
+  $("catalog-list").addEventListener("click",e=>{
+    const row=e.target.closest(".cat-row"); if(!row||!row.dataset.id) return;
+    const id=row.dataset.id;
+    state.selected.has(id)?state.selected.delete(id):state.selected.add(id);
+    persistSelection(); renderCatalog(); updatePlan();
+  });
+
+  $("btn-run").addEventListener("click",()=>guarded(runAll));
+  $("btn-probe-only").addEventListener("click",()=>guarded(runProbe));
+  $("btn-judge-only").addEventListener("click",()=>guarded(runScoring));
+  $("btn-consistency").addEventListener("click",()=>guarded(runConsistency));
+  $("btn-cancel").addEventListener("click",()=>{state.cancel=true;l.warn("cancel requested — finishing in-flight calls");});
+  $("res-filter").addEventListener("change",renderResults);
+  $("res-probe").addEventListener("change",renderResults);
+  $("collapse-trials").addEventListener("change",renderResults);
+  $("btn-exp-json").addEventListener("click",exportJson);
+  $("btn-exp-csv").addEventListener("click",exportCsv);
+  $("btn-exp-md").addEventListener("click",exportMd);
+  $("con-clear").addEventListener("click",()=>{$("con-lines").innerHTML="";logCount=0;$("con-count").textContent="0";});
+
+  let dragging=false;
+  $("splitter").addEventListener("mousedown",()=>{dragging=true;document.body.style.userSelect="none";});
+  window.addEventListener("mousemove",e=>{
+    if(!dragging) return;
+    const w=Math.min(460,Math.max(210,e.clientX));
+    $("rail").style.flex=`0 0 ${w}px`; $("rail").style.width=w+"px";
+  });
+  window.addEventListener("mouseup",()=>{
+    if(!dragging) return; dragging=false; document.body.style.userSelect="";
+    localStorage.setItem(LS.rail,parseInt($("rail").style.width)||268);
+  });
+
+  l.info(`whoami-bench v${VERSION} ready`);
+  l.info("counterfactual probe is disabled by default — enable it deliberately, and read its purpose note first");
+  fetchCatalog();
+}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
