@@ -198,7 +198,7 @@ button.danger{color:var(--red);border-color:oklch(0.65 0.2 25 / 0.3)}
     <span class="pill mono" id="pill-state">IDLE</span>
     <span class="pill mono" id="pill-count">0 BILDER</span>
     <span class="grow"></span>
-    <span class="pill mono" id="pill-build">v1.4.1</span>
+    <span class="pill mono" id="pill-build">v1.5.0</span>
   </div>
 
   <div id="mid">
@@ -1231,7 +1231,7 @@ function download(blob, name){
 
 $("btn-export-run").onclick = () => {
   const payload = {
-    tool: "meme-archivar", version: "1.4.1",
+    tool: "meme-archivar", version: "1.5.0",
     exported: new Date().toISOString(),
     model: $("model").value,
     grounding: $("grounding").checked,
@@ -1669,6 +1669,11 @@ function siteIndexHtml(title){
     position:relative; line-height:0 }
   .cell:hover{ border-style:inset; background:#202060 }
   .cell img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#111 }
+  .cell.fallback img{ outline:2px solid #ffcc00; outline-offset:-2px }
+  .cell img.dead{ background:#300 }
+  #loadinfo{ font-family:"Courier New",monospace; font-size:11px; color:#00ff00;
+    text-align:center; padding:4px 0 0 }
+  #loadinfo.warn{ color:#ffcc00 }
   .cell .cap{ font-size:10px; line-height:1.25; color:#c0c0c0; word-break:break-word;
     max-height:2.5em; overflow:hidden; margin-top:3px }
   .badge{ position:absolute; top:5px; right:5px; background:#ff0000; color:#fff;
@@ -1743,7 +1748,7 @@ function siteIndexHtml(title){
     <button id="last">last &raquo;&raquo;</button>
   </div>
 
-  <div class="panel"><div class="grid" id="grid"></div></div>
+  <div class="panel"><div class="grid" id="grid"></div><div id="loadinfo"></div></div>
 
   <div class="panel bar">
     <button id="first2">&laquo;&laquo; first</button>
@@ -1784,6 +1789,76 @@ function siteIndexHtml(title){
   function pages(){ return Math.max(1, Math.ceil(view.length / pageSize)); }
   function kb(b){ return b > 1048576 ? (b/1048576).toFixed(1) + ' MB' : Math.round(b/1024) + ' KB'; }
 
+  // Billig-Hosting mag keine 60 gleichzeitigen Anfragen: Thumbnails laufen
+  // durch eine kleine Warteschlange, Fehlversuche werden wiederholt und
+  // fallen zur Not auf das Originalbild zurueck.
+  var BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  var LOADER = { pending: [], active: 0, max: 6, token: 0,
+                 total: 0, done: 0, retried: 0, fallback: 0, dead: 0 };
+
+  function loadStatus(){
+    var el = document.getElementById('loadinfo');
+    if (!LOADER.total) { el.textContent = ''; return; }
+    var bad = LOADER.fallback + LOADER.dead;
+    if (LOADER.done < LOADER.total) {
+      el.className = '';
+      el.textContent = 'loading thumbnails ' + LOADER.done + ' / ' + LOADER.total
+        + (LOADER.retried ? '  (' + LOADER.retried + ' retries)' : '');
+    } else if (bad || LOADER.retried) {
+      el.className = 'warn';
+      el.textContent = LOADER.total + ' thumbnails'
+        + (LOADER.retried ? ', ' + LOADER.retried + ' needed a retry' : '')
+        + (LOADER.fallback ? ', ' + LOADER.fallback + ' fell back to the full image' : '')
+        + (LOADER.dead ? ', ' + LOADER.dead + ' could not be loaded' : '')
+        + ' - the server is throttling, not the pictures.';
+    } else { el.className = ''; el.textContent = ''; }
+  }
+
+  function release(token){
+    if (token !== LOADER.token) return;
+    LOADER.active--; LOADER.done++;
+    loadStatus(); pump(token);
+  }
+
+  function pump(token){
+    while (token === LOADER.token && LOADER.active < LOADER.max && LOADER.pending.length) {
+      var img = LOADER.pending.shift();
+      LOADER.active++;
+      loadOne(img, 0, token);
+    }
+  }
+
+  function loadOne(img, attempt, token){
+    if (token !== LOADER.token) return;
+    var src = img.getAttribute('data-src');
+    img.onload = function(){ release(token); };
+    img.onerror = function(){
+      if (token !== LOADER.token) return;
+      if (attempt < 3) {
+        LOADER.retried++; loadStatus();
+        setTimeout(function(){ loadOne(img, attempt + 1, token); }, 400 * Math.pow(2, attempt));
+      } else {
+        LOADER.fallback++;
+        img.parentNode.classList.add('fallback');
+        img.onerror = function(){ LOADER.fallback--; LOADER.dead++;
+          img.classList.add('dead'); release(token); };
+        img.onload = function(){ release(token); };
+        img.src = img.getAttribute('data-full');
+      }
+    };
+    img.src = attempt ? src + (src.indexOf('?') < 0 ? '?' : '&') + 'retry=' + attempt : src;
+  }
+
+  function startLoading(){
+    LOADER.token++;
+    var token = LOADER.token;
+    LOADER.pending = Array.prototype.slice.call(grid.querySelectorAll('img[data-src]'));
+    LOADER.active = 0; LOADER.done = 0; LOADER.retried = 0;
+    LOADER.fallback = 0; LOADER.dead = 0; LOADER.total = LOADER.pending.length;
+    loadStatus();
+    pump(token);
+  }
+
   function render(){
     page = Math.min(Math.max(0, page), pages() - 1);
     var start = page * pageSize, slice = view.slice(start, start + pageSize), h = '';
@@ -1792,10 +1867,12 @@ function siteIndexHtml(title){
       var cap = it.en && it.en.title ? it.en.title : it.n;
       h += '<div class="cell" data-i="' + (start + i) + '">'
         + (it.a ? '<span class="badge">GIF</span>' : '')
-        + '<img loading="lazy" src="' + it.t + '" alt="' + esc(cap) + '">'
+        + '<img src="' + BLANK + '" data-src="' + it.t + '" data-full="' + it.f
+        + '" alt="' + esc(cap) + '">'
         + '<div class="cap">' + esc(cap) + '</div></div>';
     }
     grid.innerHTML = h || '<p style="color:#ff8080">nothing found.</p>';
+    startLoading();
     var info = 'page ' + (page + 1) + ' / ' + pages();
     document.getElementById('pageinfo').textContent = info;
     document.getElementById('pageinfo2').textContent = info;
@@ -1991,7 +2068,7 @@ function siteIndexHtml(title){
 /* ============================================================ boot */
 renderResults();
 updateButtons();
-l.info("Meme Archivar v1.4.1 bereit.");
+l.info("Meme Archivar v1.5.0 bereit.");
 l.info("Ablauf: Ordner wählen → Texte erzeugen → optional prüfen → Galerie schreiben.");
 if (!window.showDirectoryPicker)
   l.warn("Dieser Browser kann keine Ordner schreiben — nur ZIP-Download. Chrome oder Edge nutzen.");
