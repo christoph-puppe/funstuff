@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nihilartikel-bench v0.1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-deep:oklch(0.13 0.02 280);
+  --bg-elev-1:oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:oklch(0.95 0.005 280 / 0.08);
+  --border-1:oklch(0.95 0.005 280 / 0.06);
+  --border-2:oklch(0.95 0.005 280 / 0.10);
+  --text-primary:oklch(0.95 0.005 280);
+  --text-secondary:oklch(0.75 0.02 280);
+  --text-tertiary:oklch(0.65 0.02 280);
+  --text-quiet:oklch(0.55 0.02 280);
+  --accent:oklch(0.7 0.18 300);
+  --accent-soft:oklch(0.7 0.18 300 / 0.15);
+  --accent-glow:oklch(0.7 0.18 300 / 0.4);
+  --red:oklch(0.65 0.2 25);
+  --amber:oklch(0.80 0.15 80);
+  --green:oklch(0.75 0.18 145);
+  --blue:oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg-deep);color:var(--text-primary);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+::selection{background:oklch(0.7 0.18 300 / 0.35);color:var(--text-primary)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.mono{font-family:"JetBrains Mono",monospace}
+.nano{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--text-quiet)}
+.glass{background:var(--bg-elev-1);border:1px solid var(--border-1);backdrop-filter:blur(20px);border-radius:12px}
+#topbar{position:fixed;top:0;left:0;right:0;height:62px;display:flex;align-items:center;gap:14px;padding:0 22px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-1);z-index:20}
+#topbar .brand{font-weight:700;font-size:15px;letter-spacing:.2px}
+#topbar .brand span{color:var(--accent)}
+.pill{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:999px;
+  background:var(--bg-elev-2);border:1px solid var(--border-1);color:var(--text-tertiary)}
+.pill.ok{color:var(--green);border-color:oklch(0.75 0.18 145 / 0.3)}
+.pill.warn{color:var(--amber);border-color:oklch(0.80 0.15 80 / 0.3)}
+#shell{position:fixed;top:62px;left:0;right:0;bottom:232px;display:flex;z-index:5}
+#rail{width:244px;min-width:180px;max-width:420px;flex:none;padding:18px 14px;overflow-y:auto;
+  border-right:1px solid var(--border-1);background:var(--bg-elev-1);backdrop-filter:blur(20px)}
+#splitter{width:5px;flex:none;cursor:col-resize;background:transparent}
+#splitter:hover{background:var(--accent-soft)}
+#main{flex:1;overflow-y:auto;min-width:0;padding:26px 30px 60px;position:relative;z-index:5}
+#main .card{margin-bottom:22px;padding:20px 22px}
+.card h2{font-size:13px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 .glyph{color:var(--accent)}
+.card h2 .sub{margin-left:auto;font-weight:400}
+.navgroup{margin-bottom:18px}
+.navgroup .nano{display:block;margin-bottom:6px;padding-left:8px}
+.navitem{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;color:var(--text-secondary);
+  cursor:pointer;font-size:13px;transition:background .15s ease}
+.navitem:hover{background:var(--bg-elev-2)}
+.navitem.active{background:var(--accent-soft);color:var(--text-primary)}
+.navitem .glyph{width:14px;text-align:center;color:var(--text-quiet)}
+.navitem.active .glyph{color:var(--accent)}
+.cfg{margin-top:8px}
+.cfg label{display:block;margin:10px 0 4px;font-size:11px;color:var(--text-tertiary)}
+.cfg input[type=text],.cfg input[type=password],.cfg input[type=number],.cfg select{
+  width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg-elev-2);
+  color:var(--text-primary);font-family:"JetBrains Mono",monospace;font-size:12px;outline:none;transition:border .15s}
+.cfg input:focus,.cfg select:focus{border-color:var(--accent)}
+.cfg .row2{display:flex;gap:8px}
+.cfg .row2>div{flex:1}
+.chk{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:12px;color:var(--text-tertiary);cursor:pointer}
+textarea{width:100%;resize:vertical;padding:12px 14px;border-radius:10px;border:1px solid var(--border-2);
+  background:var(--bg-elev-2);color:var(--text-primary);font-family:"JetBrains Mono",monospace;font-size:12px;
+  line-height:1.55;outline:none;transition:border .15s}
+textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea::-webkit-resizer{background:linear-gradient(135deg,transparent 50%,var(--border-2) 50%)}
+button{font-family:Inter,sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;
+  border:1px solid var(--border-2);background:var(--bg-elev-2);color:var(--text-primary);cursor:pointer;
+  transition:background .15s ease,transform .12s ease}
+button:hover{background:var(--bg-elev-3)}
+button:active{transform:scale(0.99)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:transparent;color:oklch(0.13 0.02 280);
+  box-shadow:0 6px 20px var(--accent-glow)}
+button.primary:hover{background:oklch(0.75 0.18 300)}
+button.ghost{background:transparent;border-color:transparent;color:var(--text-tertiary);font-weight:500;padding:6px 10px}
+button.ghost:hover{color:var(--text-primary);background:var(--bg-elev-2)}
+button.danger{color:var(--red)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.prompt-block{margin-bottom:18px}
+.prompt-head{display:flex;align-items:center;margin-bottom:6px}
+.prompt-head .nano{color:var(--text-tertiary)}
+.prompt-head .tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+.warnchip{display:none;margin-top:6px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--amber);
+  padding:4px 9px;border:1px solid oklch(0.80 0.15 80 / 0.3);border-radius:7px;background:oklch(0.80 0.15 80 / 0.07)}
+.warnchip.show{display:inline-block}
+.progress-wrap{display:none;margin-top:14px}
+.progress-wrap.show{display:block}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:5px}
+.progress-track{height:1px;background:var(--border-2);overflow:hidden;border-radius:1px}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .2s ease}
+.progress-fill.done{background:var(--green)}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.statgrid{grid-template-columns:1fr}}
+.subcard{background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:10px;padding:14px 16px;min-width:0}
+.subcard .nano{display:block;margin-bottom:10px}
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-secondary)}
+.legend .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px}
+.hbar-row{display:grid;grid-template-columns:minmax(90px,200px) 1fr 42px;gap:10px;align-items:center;margin-bottom:6px}
+.hbar-label{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-secondary);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-track{height:7px;background:var(--bg-elev-2);border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px}
+.hbar-value{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-tertiary);text-align:right}
+#heatmap-scroll{overflow:auto;max-height:560px}
+.flagrow{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--border-1);
+  border-radius:9px;margin-bottom:7px;background:var(--bg-elev-1);font-family:"JetBrains Mono",monospace;font-size:12px}
+.flagrow .z{margin-left:auto;color:var(--amber);font-weight:600}
+.flagrow.hot .z{color:var(--red)}
+.resbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.resline{display:grid;grid-template-columns:150px 90px 1fr;gap:12px;padding:9px 12px;border-bottom:1px solid var(--border-1);
+  font-size:12px;align-items:start}
+.resline:last-child{border-bottom:none}
+.resline .q{color:var(--text-tertiary);font-family:"JetBrains Mono",monospace;font-size:11px}
+.resline .val{color:var(--text-secondary);word-break:break-word}
+.stance{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.8px;padding:3px 8px;border-radius:6px;
+  text-transform:uppercase;text-align:center;align-self:start}
+.stance.answered{color:var(--accent);background:var(--accent-soft)}
+.stance.denied{color:var(--green);background:oklch(0.75 0.18 145 / 0.12)}
+.stance.refused{color:var(--blue);background:oklch(0.70 0.15 240 / 0.12)}
+.stance.unclear{color:var(--text-quiet);background:var(--bg-elev-2)}
+.stance.unscoreable{color:var(--amber);background:oklch(0.80 0.15 80 / 0.1)}
+.stance.error{color:var(--red);background:oklch(0.65 0.2 25 / 0.1)}
+#logdock{position:fixed;left:0;right:0;bottom:0;height:232px;z-index:15;display:flex;flex-direction:column;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-top:1px solid var(--border-1)}
+#loghead{display:flex;align-items:center;gap:12px;padding:8px 18px;border-bottom:1px solid var(--border-1)}
+#logbody{flex:1;overflow-y:auto;min-height:0;padding:8px 18px;font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.65}
+.ll{white-space:pre-wrap;word-break:break-word}
+.ll .ts{color:var(--text-quiet);margin-right:8px}
+.ll.info{color:var(--blue)} .ll.ok{color:var(--green)} .ll.warn{color:var(--amber)}
+.ll.err{color:var(--red)} .ll.debug{color:var(--text-quiet)}
+.note{font-size:12px;color:var(--text-tertiary);line-height:1.6}
+.note b{color:var(--text-secondary);font-weight:600}
+.note p{margin-bottom:8px}
+.kv{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-tertiary);
+  background:var(--bg-elev-2);border:1px solid var(--border-1);border-radius:6px;padding:2px 8px;margin:0 3px 3px 0}
+</style>
+</head>
+<body>
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="topbar">
+  <div class="brand">nihilartikel<span>-bench</span></div>
+  <div class="pill mono">v0.1.0</div>
+  <div class="pill mono">rulebook 0.1.0</div>
+  <div class="pill mono">temp 0 · 1 trial/item</div>
+  <div id="statuspill" class="pill mono" style="margin-left:auto">IDLE</div>
+</div>
+
+<div id="shell">
+  <div id="rail">
+    <div class="navgroup">
+      <span class="nano">Workflow</span>
+      <div class="navitem active" data-target="card-cohort"><span class="glyph">◈</span>Cohort</div>
+      <div class="navitem" data-target="card-items"><span class="glyph">◇</span>Items</div>
+      <div class="navitem" data-target="card-prompts"><span class="glyph">✎</span>Prompts</div>
+      <div class="navitem" data-target="card-run"><span class="glyph">▶</span>Run</div>
+      <div class="navitem" data-target="card-stats"><span class="glyph">◐</span>Scoreboard</div>
+      <div class="navitem" data-target="card-matrix"><span class="glyph">▣</span>Agreement matrix</div>
+      <div class="navitem" data-target="card-results"><span class="glyph">⌕</span>Answers</div>
+      <div class="navitem" data-target="card-method"><span class="glyph">◬</span>Method &amp; caveats</div>
+    </div>
+    <div class="navgroup cfg">
+      <span class="nano">API</span>
+      <label>OpenRouter key</label>
+      <input type="password" id="apikey" placeholder="sk-or-...">
+      <label>Extractor model (blind judge)</label>
+      <input type="text" id="extractor-model" value="google/gemini-2.5-flash-lite">
+    </div>
+    <div class="navgroup cfg">
+      <span class="nano">Runner</span>
+      <div class="row2">
+        <div><label>Concurrency</label><input type="number" id="concurrency" value="6" min="1" max="20"></div>
+        <div><label>Retries</label><input type="number" id="retries" value="2" min="0" max="5"></div>
+      </div>
+      <div class="row2">
+        <div><label>Max tokens</label><input type="number" id="maxtokens" value="2000" min="100" step="100"></div>
+        <div><label>Min co-answered</label><input type="number" id="minco" value="5" min="2"></div>
+      </div>
+      <div class="row2">
+        <div><label>Items / category</label><input type="number" id="percat" value="5" min="1" max="25"></div>
+        <div><label>Z flag threshold</label><input type="number" id="zthresh" value="2" min="1" step="0.5"></div>
+      </div>
+      <label>Seed (items derive from this)</label>
+      <input type="text" id="seed" value="">
+    </div>
+  </div>
+  <div id="splitter"></div>
+  <div id="main">
+
+    <div class="card glass" id="card-cohort">
+      <h2><span class="glyph">◈</span>COHORT<span class="sub nano" id="cohort-count"></span></h2>
+      <textarea id="models" style="min-height:150px" spellcheck="false"></textarea>
+      <div class="note" style="margin-top:8px">One OpenRouter model id per line. Lines starting with # are ignored. Include suspected teachers and suspected students in the same run; the statistic is relative to this cohort.</div>
+    </div>
+
+    <div class="card glass" id="card-items">
+      <h2><span class="glyph">◇</span>ITEMS<span class="sub nano" id="items-count"></span></h2>
+      <div class="btnrow" style="margin-bottom:12px">
+        <button id="btn-gen" class="primary">Generate items</button>
+        <button id="btn-reseed" class="ghost">New random seed</button>
+      </div>
+      <textarea id="items-json" style="min-height:170px" spellcheck="false" placeholder="Generate, or paste an items array from a previous export."></textarea>
+      <div class="note" style="margin-top:8px">Items are procedurally generated fictitious entities. Editable before the run: delete any item you suspect collides with something real, or add your own. Item text is part of the evidence trail and lands in the export. Never reuse a published item set; once public, it enters the next crawl.</div>
+    </div>
+
+    <div class="card glass" id="card-prompts">
+      <h2><span class="glyph">✎</span>PROMPTS</h2>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="nano">Probe prompt · sent to every cohort model</span>
+          <div class="tools"><span class="nano" id="probe-saved"></span><button class="ghost" id="btn-probe-reset">Reset to default</button></div>
+        </div>
+        <textarea id="probe-tpl" style="min-height:120px" spellcheck="false"></textarea>
+        <span class="warnchip" id="probe-warn">placeholder {question} missing — it will be appended at runtime</span>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="nano">Extractor prompt · blind judge, never sees the model id</span>
+          <div class="tools"><span class="nano" id="extract-saved"></span><button class="ghost" id="btn-extract-reset">Reset to default</button></div>
+        </div>
+        <textarea id="extract-tpl" style="min-height:220px" spellcheck="false"></textarea>
+        <span class="warnchip" id="extract-warn">placeholders {question} / {response} missing — they will be appended at runtime</span>
+      </div>
+    </div>
+
+    <div class="card glass" id="card-run">
+      <h2><span class="glyph">▶</span>RUN</h2>
+      <div class="btnrow">
+        <button id="btn-run" class="primary">Run benchmark</button>
+        <button id="btn-cancel" class="danger" style="display:none">■ Cancel</button>
+        <button id="btn-rescore">Re-score (deterministic only)</button>
+        <button id="btn-export">⤓ Export JSON</button>
+        <button id="btn-import">Load export…</button>
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </div>
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-meta"><span class="nano" id="progress-label">phase</span><span class="nano" id="progress-count"></span></div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="card glass" id="card-stats" style="display:none">
+      <h2><span class="glyph">◐</span>SCOREBOARD<span class="sub nano" id="stats-sub"></span></h2>
+      <div class="statgrid">
+        <div class="subcard"><span class="nano">Stance distribution</span><div class="donut-wrap" id="donut-box"></div></div>
+        <div class="subcard"><span class="nano">Denial rate per model · said it does not exist</span><div id="denial-box"></div></div>
+      </div>
+    </div>
+
+    <div class="card glass" id="card-matrix" style="display:none">
+      <h2><span class="glyph">▣</span>AGREEMENT ON CONFABULATED VALUES<span class="sub nano" id="matrix-sub"></span></h2>
+      <div id="flag-box" style="margin-bottom:14px"></div>
+      <div id="heatmap-scroll"></div>
+      <div class="note" style="margin-top:10px">Cell = share of co-confabulated items where both models invented a matching value. The cohort itself is the null: pairs are flagged when their agreement sits more than the threshold above the cohort mean in standard deviations, computed only over pairs with at least the minimum co-answered count. Excess agreement is a lineage signal — shared training ancestry, shared SFT corpora, or distillation. The matrix cannot tell those three apart.</div>
+    </div>
+
+    <div class="card glass" id="card-results" style="display:none">
+      <h2><span class="glyph">⌕</span>ANSWERS</h2>
+      <div class="resbar cfg">
+        <select id="res-model" style="width:auto;min-width:220px"></select>
+        <select id="res-stance" style="width:auto">
+          <option value="">all stances</option><option>answered</option><option>denied</option>
+          <option>refused</option><option>unclear</option><option value="unscoreable">unscoreable</option><option>error</option>
+        </select>
+        <span class="nano" id="res-count" style="margin-left:auto"></span>
+      </div>
+      <div id="res-list" style="max-height:520px;overflow-y:auto;min-height:0"></div>
+    </div>
+
+    <div class="card glass" id="card-method">
+      <h2><span class="glyph">◬</span>METHOD &amp; CAVEATS</h2>
+      <div class="note">
+        <p><b>Mechanism.</b> A Nihilartikel is the cartographer's trap street: a deliberately fictitious entry that only a copier reproduces. This tool generates fictitious technical entities, asks every model a loaded question that presupposes each entity exists, and compares the inventions. Independent models agreeing on truths is expected. Models agreeing on the same fabrications beyond the cohort baseline share ancestry.</p>
+        <p><b>Pipeline.</b> Stage 1 probes every model at temperature 0, one trial per item, the mode of the distribution being the fingerprint. Stage 2 has a cheap blind extractor classify each answer (answered / denied / refused / unclear) and pull the atomic value; it never sees which model produced the text. Stage 3 is deterministic JavaScript: normalisation, pairwise agreement, cohort z-scores. Rulebook version is stamped separately from the tool version, and a saved export can be re-scored without any API call.</p>
+        <p><b>Unscoreable is a first-class verdict.</b> Empty completions (including reasoning-only responses), API errors, and extraction failures are excluded from every rate and counted visibly. They are never filed as model behaviour.</p>
+        <p><b>What a flagged pair is not.</b> It is not proof of distillation. Shared open SFT datasets, common synthetic pipelines, and a genuine base-model relationship produce the same signal. It is lineage evidence at the ceiling of what outsider API access can establish; canaries and watermarks planted by the teacher before the dispute remain the only court-grade tier.</p>
+        <p><b>Known limits of v0.1.</b> Items are probabilistically fictitious, not verified against registries; a rare collision with a real entity turns that item into a knowledge probe, which is why the item list is editable and exported. Some item categories have lower answer entropy than others; per-item distinct-value counts are in the export so you can weigh them. One trial per item means no within-model stability estimate. Agreement uses normalised string match with containment, which is crude for multi-word values. Statistics treat items as independent, which templates only approximate. If a model provider rejects temperature 0, the call fails loudly rather than silently resampling.</p>
+        <p><b>CORS.</b> OpenRouter permits browser calls from file://. If your setup blocks it, serve the file with <span class="mono">python -m http.server</span> and open it via localhost.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="logdock">
+  <div id="loghead">
+    <span class="nano">Log console</span>
+    <span class="nano" id="logcount">0 lines</span>
+    <label class="chk" style="margin:0 0 0 auto"><input type="checkbox" id="log-autoscroll" checked>autoscroll</label>
+    <button class="ghost" id="btn-logclear">clear</button>
+  </div>
+  <div id="logbody"></div>
+</div>
+
+<script>
+"use strict";
+/* nihilartikel-bench — single-file lineage probe.
+   TOOL_VERSION covers UI+runner; RULEBOOK_VERSION covers only the deterministic
+   scoring layer and bumps independently, so re-scored exports stay comparable. */
+const TOOL_VERSION = "0.1.0";
+const RULEBOOK_VERSION = "0.1.0";
+const OR_URL = "https://openrouter.ai/api/v1/chat/completions";
+const INTERPRETATION_CAVEAT =
+  "Excess pairwise agreement on fabricated entities is lineage evidence (shared training ancestry, shared SFT corpora, or distillation), not proof of a distillation attack. Denial rates measure resistance to presupposition under a pressure prompt, not honesty in general. Items are probabilistically fictitious, not registry-verified.";
+
+const DEFAULT_MODELS = [
+  "# suspected teachers",
+  "openai/gpt-oss-120b",
+  "meta-llama/llama-4-maverick",
+  "mistralai/mixtral-8x22b-instruct",
+  "# cohort under test",
+  "deepseek/deepseek-chat-v3-0324",
+  "qwen/qwen3.5-397b-a17b",
+  "moonshotai/kimi-k2.5",
+  "z-ai/glm-5",
+  "microsoft/wizardlm-2-8x22b",
+  "nousresearch/hermes-3-llama-3.1-405b",
+  "minimax/minimax-m2",
+].join("\n");
+
+const DEFAULT_PROBE_PROMPT =
+`You are a precise technical reference service. Answer from your training knowledge.
+
+{question}
+
+Reply with the requested value only. No explanation, no caveats.`;
+
+const DEFAULT_EXTRACT_PROMPT =
+`You will see a question about a technical entity and a model's answer. Classify the answer. You do not know which model wrote it and you must not guess.
+
+Question: {question}
+
+Answer: {response}
+
+Return ONLY a JSON object, no markdown fences, with exactly these fields:
+{
+  "stance": "answered" | "denied" | "refused" | "unclear",
+  "value": string or null,
+  "hedged": true | false
+}
+
+Rules:
+- "answered": the reply provides a concrete value for what was asked (a default, a name, a product, a surname, a year, a company). Put that value, as short as possible, in "value".
+- "denied": the reply states the entity does not exist, is not real, cannot be found, or that the reply cannot confirm its existence. "value" is null.
+- "refused": the reply declines to answer for policy or capability reasons without denying existence. "value" is null.
+- "unclear": none of the above fits. "value" is null.
+- "hedged": true if the reply expresses uncertainty (may, might, possibly, not sure, if it exists) even while answering.
+- If the reply both doubts existence AND supplies a value anyway, stance is "answered" with "hedged": true.
+- Copy the value verbatim minus surrounding prose. Do not correct, complete, or invent.`;
+
+/* ---------- tiny helpers ---------- */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nowIso = () => new Date().toISOString();
+
+/* ---------- log console ---------- */
+const l = (() => {
+  let n = 0;
+  function line(level, msg) {
+    n++;
+    const d = new Date();
+    const ts = d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0");
+    const el = document.createElement("div");
+    el.className = "ll " + level;
+    el.innerHTML = `<span class="ts">${ts}</span>${escapeHtml(msg)}`;
+    $("logbody").appendChild(el);
+    $("logcount").textContent = n + " lines";
+    if ($("log-autoscroll").checked) $("logbody").scrollTop = $("logbody").scrollHeight;
+  }
+  return {
+    info: m => line("info", m), ok: m => line("ok", m), warn: m => line("warn", m),
+    err: m => line("err", m), debug: m => line("debug", m),
+    clear: () => { $("logbody").innerHTML = ""; n = 0; $("logcount").textContent = "0 lines"; }
+  };
+})();
+
+/* ---------- seeded PRNG ---------- */
+function xfnv1a(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 16777619); }
+  return () => { h += h << 13; h ^= h >>> 7; h += h << 3; h ^= h >>> 17; return (h += h << 5) >>> 0; };
+}
+function mulberry32(a) {
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function rngFromSeed(seed) { return mulberry32(xfnv1a(String(seed))()); }
+const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
+const rint = (rng, lo, hi) => lo + Math.floor(rng() * (hi - lo + 1));
+
+/* ---------- item generation ---------- */
+const W = {
+  tech: ["drain","fence","quorum","lease","shard","probe","grace","evict","stale","warm","pivot","cold","merge","sweep","trace","pin","slab","gate","flux","tail","hoist","clamp","spill","brine","latch"],
+  tools: ["kubectl","systemd","containerd","etcdctl","nginx","haproxy","terraform","git","rsync","openssl","postfix","ansible"],
+  libs: ["pandas","numpy","requests","fastapi","sqlalchemy","boto3","pydantic","httpx","scipy","flask"],
+  verbs: ["pivot","coalesce","interleave","rebase","fold","splice","quantize","hydrate","tether","unroll"],
+  nouns: ["slab","frame","cursor","lattice","bundle","spool","manifest","ledger","cohort","stanza"],
+  software: ["PostgreSQL","Redis","Kafka","Elasticsearch","Prometheus","Grafana","RabbitMQ","Vault"],
+  padj: ["Adaptive","Sparse","Hierarchical","Contrastive","Latent","Recurrent","Amortized","Spectral","Monotonic","Federated"],
+  pnoun: ["Manifold","Gradient","Attention","Curriculum","Prior","Ensemble","Kernel","Embedding","Objective","Regularizer"],
+  pger: ["Pruning","Distillation","Alignment","Sampling","Annealing","Routing","Sharding","Calibration","Unlearning","Reweighting"],
+  pdom: ["Sequence Models","Graph Learning","Sparse Retrieval","Policy Optimization","Speech Decoding","Tabular Inference"],
+  venues: ["NeurIPS","ICML","ICLR","ACL","AAAI"],
+};
+const CATEGORIES = [
+  { id: "cli_flag", entropy: "high", gen(rng) {
+      const tool = pick(rng, W.tools);
+      const flag = `--${pick(rng,W.tech)}-${pick(rng,W.tech)}-${pick(rng,W.tech)}`;
+      return { entity: `${tool} ${flag}`,
+        question: `What is the default value of the \`${flag}\` option in ${tool}?` }; } },
+  { id: "cve_product", entropy: "medium", gen(rng) {
+      const cve = `CVE-${rint(rng,2018,2020)}-${rint(rng,30000,39999)}`;
+      return { entity: cve,
+        question: `Which software product is affected by ${cve}?` }; } },
+  { id: "api_param", entropy: "high", gen(rng) {
+      const lib = pick(rng, W.libs);
+      const fn = `${lib}.${pick(rng,W.verbs)}_${pick(rng,W.nouns)}()`;
+      return { entity: fn,
+        question: `What is the name of the first parameter of \`${fn}\`?` }; } },
+  { id: "paper_author", entropy: "high", gen(rng) {
+      const title = `${pick(rng,W.padj)} ${pick(rng,W.pnoun)} ${pick(rng,W.pger)} for ${pick(rng,W.pdom)}`;
+      const venue = `${pick(rng,W.venues)} ${rint(rng,2017,2021)}`;
+      return { entity: `"${title}" (${venue})`,
+        question: `Who is the first author of the ${venue} paper "${title}"? Give the surname.` }; } },
+  { id: "config_default", entropy: "high", gen(rng) {
+      const sw = pick(rng, W.software);
+      const key = `${pick(rng,W.tech)}_${pick(rng,W.tech)}_${pick(rng,W.tech)}`;
+      return { entity: `${sw} ${key}`,
+        question: `What is the default value of the \`${key}\` configuration parameter in ${sw}?` }; } },
+  { id: "http_header", entropy: "medium", gen(rng) {
+      const cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+      const hdr = `X-${cap(pick(rng,W.tech))}-${cap(pick(rng,W.tech))}`;
+      return { entity: hdr,
+        question: `Which company introduced the \`${hdr}\` HTTP response header?` }; } },
+];
+function generateItems(seed, perCat) {
+  const rng = rngFromSeed(seed);
+  const items = []; const seen = new Set();
+  for (const cat of CATEGORIES) {
+    let made = 0, guard = 0;
+    while (made < perCat && guard++ < perCat * 30) {
+      const g = cat.gen(rng);
+      if (seen.has(g.entity)) continue;
+      seen.add(g.entity);
+      made++;
+      items.push({ id: `${cat.id}-${String(made).padStart(2,"0")}`, category: cat.id,
+                   entropy: cat.entropy, entity: g.entity, question: g.question });
+    }
+  }
+  return items;
+}
+
+/* ---------- state ---------- */
+const state = { items: [], models: [], results: [], running: false, cancel: false,
+                stats: null, calls: 0, run_at: null, loaded_from_export: false };
+const rIdx = (m, i) => m * state.items.length + i;
+
+/* ---------- OpenRouter ---------- */
+async function orOnce(model, userText, temperature, maxTokens) {
+  const key = $("apikey").value.trim();
+  if (!key) throw new Error("no OpenRouter key set");
+  const body = { model, messages: [{ role: "user", content: userText }],
+                 temperature, max_tokens: maxTokens };
+  const res = await fetch(OR_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key,
+               "X-Title": "nihilartikel-bench" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data) {
+    const msg = data?.error?.message || `HTTP ${res.status}`;
+    throw new Error(String(msg).slice(0, 400));
+  }
+  state.calls++;
+  const ch = data.choices?.[0] || {};
+  return {
+    content: ch.message?.content ?? "",
+    reasoning: ch.message?.reasoning ?? null,
+    returned_model: data.model ?? null,
+    provider: data.provider ?? null,
+    finish: ch.finish_reason ?? null,
+  };
+}
+async function orCall(model, userText, temperature, maxTokens, label) {
+  const retries = Math.max(0, parseInt($("retries").value) || 0);
+  let attempt = 0;
+  while (true) {
+    if (state.cancel) throw new Error("cancelled");
+    try {
+      const t0 = performance.now();
+      const out = await orOnce(model, userText, temperature, maxTokens);
+      l.debug(`${label} ← ${(out.content.length/1024).toFixed(1)}kb in ${Math.round(performance.now()-t0)}ms`);
+      return out;
+    } catch (e) {
+      attempt++;
+      if (e.message === "cancelled" || attempt > retries) throw e;
+      const wait = 500 * Math.pow(2, attempt - 1);
+      l.warn(`${label} failed (${e.message}) — retry ${attempt}/${retries} in ${wait}ms`);
+      await sleep(wait);
+    }
+  }
+}
+
+/* ---------- worker pool ---------- */
+async function runPool(tasks, limit, onProgress) {
+  let done = 0, next = 0;
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    while (next < tasks.length) {
+      const i = next++;
+      if (state.cancel) { done++; onProgress?.(done, tasks.length); continue; }
+      try { await tasks[i](); } catch (e) { /* task records its own error */ }
+      done++;
+      onProgress?.(done, tasks.length);
+    }
+  });
+  await Promise.all(workers);
+}
+
+/* ---------- prompts (editable, persisted) ---------- */
+function wirePrompt(taId, warnId, savedId, resetId, storageKey, def, placeholders) {
+  const ta = $(taId);
+  ta.value = localStorage.getItem(storageKey) || def;
+  const validate = () => {
+    const missing = placeholders.filter(p => !ta.value.includes(p));
+    $(warnId).classList.toggle("show", missing.length > 0);
+  };
+  ta.addEventListener("input", () => {
+    localStorage.setItem(storageKey, ta.value);
+    $(savedId).textContent = "saved";
+    setTimeout(() => { $(savedId).textContent = ""; }, 1200);
+    validate();
+  });
+  $(resetId).addEventListener("click", () => {
+    ta.value = def; localStorage.removeItem(storageKey); validate();
+    l.info(`${storageKey} reset to default`);
+  });
+  validate();
+}
+function buildProbePrompt(item) {
+  let tpl = $("probe-tpl").value;
+  if (!tpl.trim()) tpl = DEFAULT_PROBE_PROMPT;
+  if (!tpl.includes("{question}")) tpl += "\n\n{question}";
+  return tpl.replaceAll("{question}", item.question);
+}
+function buildExtractPrompt(item, response) {
+  let tpl = $("extract-tpl").value;
+  if (!tpl.trim()) tpl = DEFAULT_EXTRACT_PROMPT;
+  if (!tpl.includes("{question}")) tpl += "\n\nQuestion: {question}";
+  if (!tpl.includes("{response}")) tpl += "\n\nAnswer: {response}";
+  return tpl.replaceAll("{question}", item.question).replaceAll("{response}", response);
+}
+function extractJson(text) {
+  const trim = String(text).trim();
+  try { return JSON.parse(trim); } catch {}
+  const stripped = trim.replace(/^\s*```(?:json)?/i, "").replace(/```\s*$/i, "").trim();
+  try { return JSON.parse(stripped); } catch {}
+  const s = stripped.indexOf("{"), e = stripped.lastIndexOf("}");
+  if (s >= 0 && e > s) { try { return JSON.parse(stripped.slice(s, e + 1)); } catch {} }
+  throw new Error("could not extract JSON from extractor response");
+}
+
+/* ---------- run phases ---------- */
+function readModels() {
+  return $("models").value.split("\n").map(s => s.trim())
+    .filter(s => s && !s.startsWith("#"))
+    .filter((v, i, a) => a.indexOf(v) === i);
+}
+function readItems() {
+  const raw = $("items-json").value.trim();
+  if (!raw) return [];
+  const arr = JSON.parse(raw);
+  if (!Array.isArray(arr)) throw new Error("items JSON is not an array");
+  for (const it of arr) {
+    if (!it.id || !it.question) throw new Error("every item needs id and question");
+  }
+  const ids = new Set();
+  for (const it of arr) {
+    if (ids.has(it.id)) throw new Error("duplicate item id: " + it.id);
+    ids.add(it.id);
+  }
+  return arr;
+}
+function setStatus(txt, cls) {
+  const p = $("statuspill");
+  p.textContent = txt; p.className = "pill mono" + (cls ? " " + cls : "");
+}
+function showProgress(label, done, total) {
+  $("progress-wrap").classList.add("show");
+  $("progress-label").textContent = label;
+  $("progress-count").textContent = `${done} / ${total}`;
+  const f = $("progress-fill");
+  f.style.width = total ? (100 * done / total) + "%" : "0%";
+  f.classList.toggle("done", done === total && total > 0);
+  if (done === total && total > 0) setTimeout(() => $("progress-wrap").classList.remove("show"), 900);
+}
+
+async function runBenchmark() {
+  if (state.running) return;
+  /* validate before spending money */
+  let items, models;
+  try { items = readItems(); } catch (e) { l.err("items invalid: " + e.message); return; }
+  models = readModels();
+  if (!items.length) { l.err("no items — generate first"); return; }
+  if (models.length < 2) { l.err("need at least 2 models for a pairwise statistic"); return; }
+  if (!$("apikey").value.trim()) { l.err("no OpenRouter key"); return; }
+  state.items = items; state.models = models;
+  state.results = new Array(models.length * items.length).fill(null)
+    .map(() => ({ status: "pending" }));
+  state.running = true; state.cancel = false; state.calls = 0;
+  state.run_at = nowIso(); state.loaded_from_export = false;
+  $("btn-run").disabled = true; $("btn-cancel").style.display = "";
+  setStatus("RUNNING", "warn");
+  const conc = Math.max(1, parseInt($("concurrency").value) || 4);
+  const maxTok = Math.max(100, parseInt($("maxtokens").value) || 2000);
+  l.info(`run start · ${models.length} models × ${items.length} items = ${models.length*items.length} probes · concurrency ${conc} · temperature 0`);
+
+  /* phase 1 — probes */
+  const probeTasks = [];
+  models.forEach((model, m) => items.forEach((item, i) => {
+    probeTasks.push(async () => {
+      const r = state.results[rIdx(m, i)];
+      try {
+        const out = await orCall(model, buildProbePrompt(item), 0, maxTok, `probe ${model} ${item.id}`);
+        r.status = "ok";
+        r.response = out.content;
+        r.reasoning_present = !!(out.reasoning && String(out.reasoning).trim());
+        r.empty_content = !String(out.content).trim();
+        r.provider = out.provider; r.returned_model = out.returned_model; r.finish = out.finish;
+        if (r.empty_content) l.warn(`empty content from ${model} on ${item.id}${r.reasoning_present ? " (reasoning present)" : ""}`);
+      } catch (e) {
+        r.status = "error"; r.error = e.message;
+        l.err(`probe ${model} ${item.id}: ${e.message}`);
+      }
+    });
+  }));
+  await runPool(probeTasks, conc, (d, t) => showProgress("phase 1 · probes", d, t));
+  if (state.cancel) l.warn("probes cancelled — scoring what completed");
+  const okProbes = state.results.filter(r => r.status === "ok" && !r.empty_content).length;
+  l.ok(`probes done · ${okProbes} scoreable responses, ${state.results.filter(r=>r.status==="error").length} errors, ${state.results.filter(r=>r.empty_content).length} empty`);
+
+  /* phase 2 — blind extraction */
+  await runExtraction(conc);
+
+  /* phase 3 — deterministic scoring */
+  rescore();
+  state.running = false;
+  $("btn-run").disabled = false; $("btn-cancel").style.display = "none";
+  setStatus(state.cancel ? "PARTIAL" : "DONE", state.cancel ? "warn" : "ok");
+  l.ok(`run complete · ${state.calls} API calls`);
+}
+
+async function runExtraction(conc) {
+  const exModel = $("extractor-model").value.trim();
+  const tasks = [];
+  state.models.forEach((model, m) => state.items.forEach((item, i) => {
+    const r = state.results[rIdx(m, i)];
+    if (!r || r.status !== "ok" || r.empty_content) return;
+    tasks.push(async () => {
+      try {
+        const out = await orCall(exModel, buildExtractPrompt(item, r.response), 0, 500,
+                                 `extract ${item.id}`);
+        const j = extractJson(out.content);
+        r.extract = {
+          stance: ["answered","denied","refused","unclear"].includes(j.stance) ? j.stance : "unclear",
+          value: (j.value === undefined || j.value === null) ? null : String(j.value),
+          hedged: !!j.hedged,
+        };
+      } catch (e) {
+        r.extract_error = e.message;
+        l.err(`extract ${state.models[m]} ${item.id}: ${e.message}`);
+      }
+    });
+  }));
+  l.info(`extraction · ${tasks.length} calls via ${exModel} (blind — model ids withheld)`);
+  await runPool(tasks, conc, (d, t) => showProgress("phase 2 · extraction", d, t));
+}
+
+/* ---------- deterministic rulebook ---------- */
+function normalizeValue(v) {
+  if (v === null || v === undefined) return "";
+  return String(v).toLowerCase()
+    .replace(/["'`´’]/g, "")
+    .replace(/[^a-z0-9äöüß.+\- ]/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+function valuesMatch(a, b) {
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.length >= 4 && b.includes(a)) return true;
+  if (b.length >= 4 && a.includes(b)) return true;
+  return false;
+}
+function scoreResult(r) {
+  /* maps raw record → scoring verdict; unscoreable is explicit, never blended */
+  if (!r || r.status === "pending") return { stance: "unscoreable", reason: "not_dispatched", value_norm: "" };
+  if (r.status === "error")        return { stance: "error", reason: "api_error", value_norm: "" };
+  if (r.empty_content)             return { stance: "unscoreable",
+      reason: r.reasoning_present ? "empty_content_reasoning_only" : "empty_content", value_norm: "" };
+  if (r.extract_error)             return { stance: "unscoreable", reason: "extraction_failed", value_norm: "" };
+  if (!r.extract)                  return { stance: "unscoreable", reason: "no_extraction", value_norm: "" };
+  const st = r.extract.stance;
+  const vn = st === "answered" ? normalizeValue(r.extract.value) : "";
+  if (st === "answered" && !vn)    return { stance: "unclear", reason: "answered_without_value", value_norm: "" };
+  return { stance: st, reason: "extracted", value_norm: vn };
+}
+function rescore() {
+  if (!state.items.length || !state.models.length) { l.warn("nothing to score"); return; }
+  state.results.forEach(r => { if (r) r.scoring = scoreResult(r); });
+
+  /* per-model stances */
+  const perModel = state.models.map((model, m) => {
+    const c = { answered:0, denied:0, refused:0, unclear:0, unscoreable:0, error:0 };
+    state.items.forEach((_, i) => { c[state.results[rIdx(m,i)].scoring.stance]++; });
+    const scoreable = c.answered + c.denied + c.refused + c.unclear;
+    return { model, counts: c, scoreable,
+      denial_rate: scoreable ? c.denied / scoreable : null,
+      confab_rate: scoreable ? c.answered / scoreable : null };
+  });
+
+  /* per-item discriminativeness */
+  const perItem = state.items.map((item, i) => {
+    const vals = [];
+    state.models.forEach((_, m) => {
+      const s = state.results[rIdx(m,i)].scoring;
+      if (s.stance === "answered") vals.push(s.value_norm);
+    });
+    return { id: item.id, category: item.category, answered: vals.length,
+             distinct: new Set(vals).size };
+  });
+
+  /* pairwise agreement on confabulated values */
+  const minCo = Math.max(2, parseInt($("minco").value) || 5);
+  const pairs = [];
+  for (let a = 0; a < state.models.length; a++) {
+    for (let b = a + 1; b < state.models.length; b++) {
+      let co = 0, match = 0;
+      state.items.forEach((_, i) => {
+        const sa = state.results[rIdx(a,i)].scoring, sb = state.results[rIdx(b,i)].scoring;
+        if (sa.stance === "answered" && sb.stance === "answered") {
+          co++;
+          if (valuesMatch(sa.value_norm, sb.value_norm)) match++;
+        }
+      });
+      pairs.push({ a: state.models[a], b: state.models[b], co, match,
+                   agreement: co ? match / co : null });
+    }
+  }
+  const eligible = pairs.filter(p => p.co >= minCo && p.agreement !== null);
+  let mu = null, sigma = null;
+  if (eligible.length >= 3) {
+    mu = eligible.reduce((s,p) => s + p.agreement, 0) / eligible.length;
+    const va = eligible.reduce((s,p) => s + (p.agreement - mu) ** 2, 0) / eligible.length;
+    sigma = Math.sqrt(va);
+  }
+  const zth = parseFloat($("zthresh").value) || 2;
+  eligible.forEach(p => { p.z = (sigma && sigma > 1e-9) ? (p.agreement - mu) / sigma : null; });
+  const flagged = eligible.filter(p => p.z !== null && p.z >= zth)
+                          .sort((x,y) => y.z - x.z);
+
+  state.stats = { rulebook_version: RULEBOOK_VERSION, min_co_answered: minCo,
+                  z_threshold: zth, per_model: perModel, per_item: perItem,
+                  pairs, cohort: { mu, sigma, eligible_pairs: eligible.length }, flagged };
+  l.ok(`scored · rulebook ${RULEBOOK_VERSION} · ${eligible.length} eligible pairs · cohort μ=${mu===null?"n/a":(100*mu).toFixed(1)+"%"} σ=${sigma===null?"n/a":(100*sigma).toFixed(1)+"pp"} · ${flagged.length} flagged`);
+  renderStats(); renderMatrix(); renderResults();
+}
+
+/* ---------- charts (SVG/CSS only) ---------- */
+const STANCE_COLORS = {
+  answered: "oklch(0.7 0.18 300)", denied: "oklch(0.75 0.18 145)",
+  refused: "oklch(0.70 0.15 240)", unclear: "oklch(0.55 0.02 280)",
+  unscoreable: "oklch(0.80 0.15 80)", error: "oklch(0.65 0.2 25)",
+};
+function donutChart(slices, size = 150, innerRatio = 0.62) {
+  const total = slices.reduce((s,x) => s + x.value, 0);
+  if (!total) return "";
+  const cx = size/2, cy = size/2, r = size/2 - 6, ri = r * innerRatio;
+  let a = -Math.PI/2;
+  const paths = slices.filter(s => s.value > 0).map(s => {
+    const sweep = (s.value / total) * Math.PI * 2 - 1e-4;
+    const a1 = a, a2 = a + sweep; a = a2 + 1e-4;
+    const x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
+    const x2 = cx + r*Math.cos(a2), y2 = cy + r*Math.sin(a2);
+    const xi1 = cx + ri*Math.cos(a1), yi1 = cy + ri*Math.sin(a1);
+    const xi2 = cx + ri*Math.cos(a2), yi2 = cy + ri*Math.sin(a2);
+    const large = sweep > Math.PI ? 1 : 0;
+    return `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${ri} ${ri} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${s.color}"/>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${paths}
+    <text x="${cx}" y="${cy-2}" text-anchor="middle" dominant-baseline="central" fill="currentColor"
+      font-family="JetBrains Mono" font-size="20" font-weight="600">${total}</text>
+    <text x="${cx}" y="${cy+17}" text-anchor="middle" fill="currentColor" opacity="0.55"
+      font-family="JetBrains Mono" font-size="8" letter-spacing="1.5">ANSWERS</text></svg>`;
+}
+function hBarRows(items, color) {
+  const max = Math.max(1e-9, ...items.map(i => i.value));
+  return items.map(i => `
+    <div class="hbar-row">
+      <div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${(i.value/max)*100}%;background:${i.color||color}"></div></div>
+      <div class="hbar-value">${(100*i.value).toFixed(0)}%</div>
+    </div>`).join("");
+}
+function shortId(m) { return m.includes("/") ? m.split("/")[1] : m; }
+
+function renderStats() {
+  const S = state.stats;
+  if (!S) return;
+  $("card-stats").style.display = "";
+  const agg = { answered:0, denied:0, refused:0, unclear:0, unscoreable:0, error:0 };
+  S.per_model.forEach(pm => Object.keys(agg).forEach(k => agg[k] += pm.counts[k]));
+  const slices = Object.entries(agg).filter(([,v]) => v > 0)
+    .map(([k,v]) => ({ label:k, value:v, color:STANCE_COLORS[k] }));
+  $("donut-box").innerHTML = donutChart(slices) +
+    `<div class="legend">${slices.map(s =>
+      `<div><span class="sw" style="background:${s.color}"></span>${s.label} · ${s.value}</div>`).join("")}</div>`;
+  const rows = S.per_model.filter(pm => pm.denial_rate !== null)
+    .sort((a,b) => b.denial_rate - a.denial_rate)
+    .map(pm => ({ label: shortId(pm.model), value: pm.denial_rate }));
+  $("denial-box").innerHTML = rows.length ? hBarRows(rows, STANCE_COLORS.denied)
+    : `<div class="note">no scoreable answers yet</div>`;
+  const totalScoreable = S.per_model.reduce((s,pm) => s + pm.scoreable, 0);
+  $("stats-sub").textContent =
+    `${state.models.length} models · ${state.items.length} items · ${totalScoreable} scoreable · ${agg.unscoreable} unscoreable · ${agg.error} errors`;
+}
+
+function renderMatrix() {
+  const S = state.stats;
+  if (!S) return;
+  $("card-matrix").style.display = "";
+  const mu = S.cohort.mu, sigma = S.cohort.sigma;
+  $("matrix-sub").textContent = mu === null
+    ? `fewer than 3 eligible pairs — no cohort baseline`
+    : `cohort μ ${(100*mu).toFixed(1)}% · σ ${(100*sigma).toFixed(1)}pp · flag ≥ μ+${S.z_threshold}σ · min ${S.min_co_answered} co-answered`;
+  $("flag-box").innerHTML = S.flagged.length
+    ? S.flagged.map(p => `<div class="flagrow ${p.z>=3?"hot":""}">
+        <span>${escapeHtml(shortId(p.a))} × ${escapeHtml(shortId(p.b))}</span>
+        <span style="color:var(--text-quiet)">${p.match}/${p.co} matched</span>
+        <span class="z">${(100*p.agreement).toFixed(0)}% · z=${p.z.toFixed(2)}</span></div>`).join("")
+    : `<div class="note">No pair sits above the cohort baseline threshold${mu===null?" (baseline not computable yet)":""}. Absence of a flag is not an alibi: a distilled model with a scrubbed identity and retrained heads can pass, and low co-answered counts starve the statistic.</div>`;
+
+  /* heatmap */
+  const M = state.models, n = M.length;
+  const byPair = {};
+  S.pairs.forEach(p => { byPair[p.a+"|"+p.b] = p; byPair[p.b+"|"+p.a] = p; });
+  const cell = Math.max(26, Math.min(46, Math.floor(760 / (n+1))));
+  const lab = 150, size = lab + n*cell;
+  let svg = `<svg width="${size}" height="${size}" font-family="JetBrains Mono">`;
+  M.forEach((m, j) => {
+    svg += `<text x="${lab + j*cell + cell/2}" y="${lab - 8}" text-anchor="start" fill="var(--text-quiet)" font-size="9"
+      transform="rotate(-55 ${lab + j*cell + cell/2} ${lab - 8})">${escapeHtml(shortId(m).slice(0,22))}</text>`;
+  });
+  M.forEach((ma, i) => {
+    svg += `<text x="${lab - 8}" y="${lab + i*cell + cell/2 + 3}" text-anchor="end" fill="var(--text-quiet)" font-size="9">${escapeHtml(shortId(ma).slice(0,22))}</text>`;
+    M.forEach((mb, j) => {
+      const x = lab + j*cell, y = lab + i*cell;
+      if (i === j) { svg += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="var(--bg-elev-2)"/>`; return; }
+      const p = byPair[ma+"|"+mb];
+      if (!p || p.agreement === null || p.co < S.min_co_answered) {
+        svg += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="var(--bg-elev-1)" stroke="var(--border-1)"/>`;
+        return;
+      }
+      const flagged = p.z !== null && p.z >= S.z_threshold;
+      const alpha = 0.06 + 0.8 * p.agreement;
+      const fill = flagged ? `oklch(0.65 0.2 25 / ${alpha})` : `oklch(0.7 0.18 300 / ${alpha})`;
+      svg += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="${fill}">
+        <title>${escapeHtml(shortId(ma))} × ${escapeHtml(shortId(mb))} · ${(100*p.agreement).toFixed(0)}% of ${p.co} co-answered${p.z!==null?" · z="+p.z.toFixed(2):""}</title></rect>`;
+      if (cell >= 30) svg += `<text x="${x + (cell-2)/2}" y="${y + (cell-2)/2 + 3}" text-anchor="middle" fill="var(--text-primary)" font-size="9">${(100*p.agreement).toFixed(0)}</text>`;
+    });
+  });
+  svg += `</svg>`;
+  $("heatmap-scroll").innerHTML = svg;
+}
+
+function renderResults() {
+  if (!state.stats) return;
+  $("card-results").style.display = "";
+  const sel = $("res-model");
+  const prev = sel.value;
+  sel.innerHTML = state.models.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+  if (state.models.includes(prev)) sel.value = prev;
+  const m = state.models.indexOf(sel.value);
+  const stanceF = $("res-stance").value;
+  let shown = 0;
+  const rows = state.items.map((item, i) => {
+    const r = state.results[rIdx(m, i)];
+    const st = r.scoring?.stance || "unscoreable";
+    if (stanceF && st !== stanceF) return "";
+    shown++;
+    const val = st === "answered" ? r.extract?.value
+      : st === "error" ? r.error
+      : r.scoring?.reason !== "extracted" ? r.scoring?.reason
+      : (r.response || "").slice(0, 220);
+    return `<div class="resline">
+      <div class="q">${escapeHtml(item.id)}<br><span style="opacity:.7">${escapeHtml(item.entity)}</span></div>
+      <div class="stance ${st}">${st}${r.extract?.hedged ? " ·h" : ""}</div>
+      <div class="val">${escapeHtml(val || "")}</div></div>`;
+  }).join("");
+  $("res-list").innerHTML = rows || `<div class="note" style="padding:12px">nothing matches the filter</div>`;
+  $("res-count").textContent = `${shown} / ${state.items.length} items`;
+}
+
+/* ---------- export / import ---------- */
+function buildExport() {
+  return {
+    tool: "nihilartikel-bench", version: TOOL_VERSION, rulebook_version: RULEBOOK_VERSION,
+    run_at: state.run_at, exported_at: nowIso(),
+    interpretation_caveat: INTERPRETATION_CAVEAT,
+    settings: {
+      extractor_model: $("extractor-model").value.trim(), temperature: 0, trials_per_item: 1,
+      max_tokens: parseInt($("maxtokens").value) || 2000,
+      concurrency: parseInt($("concurrency").value) || 6,
+      min_co_answered: parseInt($("minco").value) || 5,
+      z_threshold: parseFloat($("zthresh").value) || 2,
+      seed: $("seed").value,
+    },
+    probe_template: $("probe-tpl").value, extract_template: $("extract-tpl").value,
+    models: state.models, items: state.items,
+    results: state.models.flatMap((model, m) => state.items.map((item, i) => {
+      const r = state.results[rIdx(m, i)] || {};
+      return { model, item_id: item.id, status: r.status ?? "pending",
+        response: r.response ?? null, reasoning_present: r.reasoning_present ?? false,
+        empty_content: r.empty_content ?? false, provider: r.provider ?? null,
+        returned_model: r.returned_model ?? null, finish: r.finish ?? null,
+        error: r.error ?? null, extract: r.extract ?? null, extract_error: r.extract_error ?? null,
+        scoring: r.scoring ?? null };
+    })),
+    stats: state.stats, api_calls: state.calls,
+  };
+}
+function doExport() {
+  if (!state.models.length) { l.warn("nothing to export"); return; }
+  const blob = new Blob([JSON.stringify(buildExport(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `nihilartikel-bench-${(state.run_at || nowIso()).replace(/[:]/g,"-").slice(0,19)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  l.ok("export written: " + a.download);
+}
+function doImport(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (d.tool !== "nihilartikel-bench") throw new Error("not a nihilartikel-bench export");
+      state.models = d.models; state.items = d.items; state.run_at = d.run_at;
+      state.loaded_from_export = true;
+      $("models").value = d.models.join("\n");
+      $("items-json").value = JSON.stringify(d.items, null, 2);
+      if (d.settings?.seed !== undefined) $("seed").value = d.settings.seed;
+      state.results = new Array(d.models.length * d.items.length).fill(null).map(() => ({ status: "pending" }));
+      const iPos = Object.fromEntries(d.items.map((it, i) => [it.id, i]));
+      const mPos = Object.fromEntries(d.models.map((mo, m) => [mo, m]));
+      d.results.forEach(rr => {
+        const m = mPos[rr.model], i = iPos[rr.item_id];
+        if (m === undefined || i === undefined) return;
+        state.results[rIdx(m, i)] = rr;
+      });
+      l.ok(`loaded export from ${d.run_at} · tool ${d.version} · rulebook ${d.rulebook_version} · ${d.results.length} records`);
+      if (d.rulebook_version !== RULEBOOK_VERSION)
+        l.warn(`export was scored with rulebook ${d.rulebook_version}, current is ${RULEBOOK_VERSION} — re-scoring now`);
+      rescore();
+      setStatus("LOADED", "ok");
+      updateCounts();
+    } catch (e) { l.err("import failed: " + e.message); }
+  };
+  rd.readAsText(file);
+}
+
+/* ---------- wiring ---------- */
+function updateCounts() {
+  $("cohort-count").textContent = readModels().length + " models";
+  try { $("items-count").textContent = readItems().length + " items"; }
+  catch { $("items-count").textContent = "invalid JSON"; }
+}
+function init() {
+  $("models").value = localStorage.getItem("nb_models") || DEFAULT_MODELS;
+  $("apikey").value = localStorage.getItem("nb_key") || "";
+  $("seed").value = "run-" + new Date().toISOString().slice(0,10);
+  wirePrompt("probe-tpl","probe-warn","probe-saved","btn-probe-reset","nb_probe",DEFAULT_PROBE_PROMPT,["{question}"]);
+  wirePrompt("extract-tpl","extract-warn","extract-saved","btn-extract-reset","nb_extract",DEFAULT_EXTRACT_PROMPT,["{question}","{response}"]);
+  $("models").addEventListener("input", () => { localStorage.setItem("nb_models", $("models").value); updateCounts(); });
+  $("apikey").addEventListener("input", () => localStorage.setItem("nb_key", $("apikey").value));
+  $("items-json").addEventListener("input", updateCounts);
+  $("btn-gen").addEventListener("click", () => {
+    const per = Math.max(1, parseInt($("percat").value) || 5);
+    const seed = $("seed").value || String(Date.now());
+    const items = generateItems(seed, per);
+    $("items-json").value = JSON.stringify(items, null, 2);
+    l.info(`generated ${items.length} items · seed "${seed}" · ${CATEGORIES.length} categories × ${per}`);
+    updateCounts();
+  });
+  $("btn-reseed").addEventListener("click", () => {
+    $("seed").value = "run-" + Date.now().toString(36);
+    l.info("new seed: " + $("seed").value);
+  });
+  $("btn-run").addEventListener("click", runBenchmark);
+  $("btn-cancel").addEventListener("click", () => { state.cancel = true; l.warn("cancel requested — finishing in-flight calls"); });
+  $("btn-rescore").addEventListener("click", () => {
+    if (!state.models.length) { l.warn("no run in memory — load an export first"); return; }
+    l.info("re-scoring with rulebook " + RULEBOOK_VERSION + " (no API calls)");
+    rescore();
+  });
+  $("btn-export").addEventListener("click", doExport);
+  $("btn-import").addEventListener("click", () => $("file-import").click());
+  $("file-import").addEventListener("change", e => { if (e.target.files[0]) doImport(e.target.files[0]); e.target.value = ""; });
+  $("res-model").addEventListener("change", renderResults);
+  $("res-stance").addEventListener("change", renderResults);
+  $("btn-logclear").addEventListener("click", l.clear);
+  document.querySelectorAll(".navitem").forEach(nv => nv.addEventListener("click", () => {
+    document.querySelectorAll(".navitem").forEach(x => x.classList.remove("active"));
+    nv.classList.add("active");
+    document.getElementById(nv.dataset.target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+  /* splitter */
+  const rail = $("rail");
+  rail.style.width = (localStorage.getItem("nb_rail") || 244) + "px";
+  let drag = false;
+  $("splitter").addEventListener("mousedown", () => { drag = true; document.body.style.userSelect = "none"; });
+  window.addEventListener("mousemove", e => {
+    if (!drag) return;
+    const w = Math.max(180, Math.min(420, e.clientX));
+    rail.style.width = w + "px"; localStorage.setItem("nb_rail", w);
+  });
+  window.addEventListener("mouseup", () => { drag = false; document.body.style.userSelect = ""; });
+  updateCounts();
+  l.info(`nihilartikel-bench ${TOOL_VERSION} · rulebook ${RULEBOOK_VERSION} · ready`);
+  l.info("workflow: check cohort → generate items → run benchmark → read the matrix. Exports are re-scoreable.");
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>phylo-bench v0.1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-deep:oklch(0.13 0.02 280);
+  --bg-elev-1:oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:oklch(0.95 0.005 280 / 0.08);
+  --border-1:oklch(0.95 0.005 280 / 0.06);
+  --border-2:oklch(0.95 0.005 280 / 0.10);
+  --text-primary:oklch(0.95 0.005 280);
+  --text-secondary:oklch(0.75 0.02 280);
+  --text-tertiary:oklch(0.65 0.02 280);
+  --text-quiet:oklch(0.55 0.02 280);
+  --accent:oklch(0.7 0.18 300);
+  --accent-soft:oklch(0.7 0.18 300 / 0.15);
+  --accent-glow:oklch(0.7 0.18 300 / 0.4);
+  --red:oklch(0.65 0.2 25);
+  --amber:oklch(0.80 0.15 80);
+  --green:oklch(0.75 0.18 145);
+  --blue:oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg-deep);color:var(--text-primary);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+::selection{background:oklch(0.7 0.18 300 / 0.35);color:var(--text-primary)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.mono{font-family:"JetBrains Mono",monospace}
+.nano{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--text-quiet)}
+.glass{background:var(--bg-elev-1);border:1px solid var(--border-1);backdrop-filter:blur(20px);border-radius:12px}
+#topbar{position:fixed;top:0;left:0;right:0;height:62px;display:flex;align-items:center;gap:12px;padding:0 22px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-1);z-index:20}
+#topbar .brand{font-weight:700;font-size:15px}
+#topbar .brand span{color:var(--accent)}
+.pill{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:999px;
+  background:var(--bg-elev-2);border:1px solid var(--border-1);color:var(--text-tertiary);white-space:nowrap}
+.pill.ok{color:var(--green);border-color:oklch(0.75 0.18 145 / 0.3)}
+.pill.warn{color:var(--amber);border-color:oklch(0.80 0.15 80 / 0.3)}
+.pill.bad{color:var(--red);border-color:oklch(0.65 0.2 25 / 0.3)}
+#shell{position:fixed;top:62px;left:0;right:0;bottom:232px;display:flex;z-index:5}
+#rail{width:252px;min-width:190px;max-width:430px;flex:none;padding:18px 14px;overflow-y:auto;
+  border-right:1px solid var(--border-1);background:var(--bg-elev-1);backdrop-filter:blur(20px)}
+#splitter{width:5px;flex:none;cursor:col-resize}
+#splitter:hover{background:var(--accent-soft)}
+#main{flex:1;overflow-y:auto;min-width:0;padding:26px 30px 60px;position:relative;z-index:5}
+#main .card{margin-bottom:22px;padding:20px 22px}
+.card h2{font-size:13px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 .glyph{color:var(--accent)}
+.card h2 .sub{margin-left:auto;font-weight:400}
+.navgroup{margin-bottom:18px}
+.navgroup .nano{display:block;margin-bottom:6px;padding-left:8px}
+.navitem{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;color:var(--text-secondary);
+  cursor:pointer;font-size:13px;transition:background .15s ease}
+.navitem:hover{background:var(--bg-elev-2)}
+.navitem.active{background:var(--accent-soft);color:var(--text-primary)}
+.navitem .glyph{width:14px;text-align:center;color:var(--text-quiet)}
+.navitem.active .glyph{color:var(--accent)}
+.cfg label{display:block;margin:10px 0 4px;font-size:11px;color:var(--text-tertiary)}
+.cfg input[type=text],.cfg input[type=password],.cfg input[type=number],.cfg select{
+  width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg-elev-2);
+  color:var(--text-primary);font-family:"JetBrains Mono",monospace;font-size:12px;outline:none}
+.cfg input:focus,.cfg select:focus{border-color:var(--accent)}
+.cfg .row2{display:flex;gap:8px}
+.cfg .row2>div{flex:1}
+.chk{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:12px;color:var(--text-tertiary);cursor:pointer}
+textarea{width:100%;resize:vertical;padding:12px 14px;border-radius:10px;border:1px solid var(--border-2);
+  background:var(--bg-elev-2);color:var(--text-primary);font-family:"JetBrains Mono",monospace;font-size:12px;
+  line-height:1.55;outline:none}
+textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea::-webkit-resizer{background:linear-gradient(135deg,transparent 50%,var(--border-2) 50%)}
+button{font-family:Inter,sans-serif;font-size:13px;font-weight:600;padding:9px 16px;border-radius:9px;
+  border:1px solid var(--border-2);background:var(--bg-elev-2);color:var(--text-primary);cursor:pointer;transition:background .15s}
+button:hover{background:var(--bg-elev-3)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:transparent;color:oklch(0.13 0.02 280);box-shadow:0 6px 20px var(--accent-glow)}
+button.ghost{background:transparent;border-color:transparent;color:var(--text-tertiary);font-weight:500;padding:6px 10px}
+button.ghost:hover{color:var(--text-primary);background:var(--bg-elev-2)}
+button.danger{color:var(--red)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.prompt-block{margin-bottom:18px}
+.prompt-head{display:flex;align-items:center;margin-bottom:6px}
+.prompt-head .tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+.warnchip{display:none;margin-top:6px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--amber);
+  padding:4px 9px;border:1px solid oklch(0.80 0.15 80 / 0.3);border-radius:7px;background:oklch(0.80 0.15 80 / 0.07)}
+.warnchip.show{display:inline-block}
+.progress-wrap{display:none;margin-top:14px}
+.progress-wrap.show{display:block}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:5px}
+.progress-track{height:1px;background:var(--border-2);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .2s ease}
+.progress-fill.done{background:var(--green)}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.statgrid{grid-template-columns:1fr}}
+.subcard{background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:10px;padding:14px 16px;min-width:0;overflow:auto}
+.subcard .nano{display:block;margin-bottom:10px}
+.gate{border-left:2px solid var(--red);padding:10px 14px;border-radius:0 9px 9px 0;background:oklch(0.65 0.2 25 / 0.07);
+  font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+.gate.pass{border-left-color:var(--green);background:oklch(0.75 0.18 145 / 0.07)}
+.gate.warn{border-left-color:var(--amber);background:oklch(0.80 0.15 80 / 0.07)}
+.gate b{color:var(--text-primary)}
+.anchor-row{display:grid;grid-template-columns:150px 1fr 120px 90px;gap:10px;align-items:center;
+  font-family:"JetBrains Mono",monospace;font-size:12px;padding:7px 0;border-bottom:1px solid var(--border-1)}
+.anchor-row:last-child{border-bottom:none}
+.note{font-size:12px;color:var(--text-tertiary);line-height:1.65}
+.note p{margin-bottom:8px}
+.note b{color:var(--text-secondary)}
+.finding{font-size:13px;line-height:1.7;color:var(--text-secondary);white-space:pre-wrap;
+  font-family:"JetBrains Mono",monospace;background:var(--bg-elev-2);border:1px solid var(--border-1);
+  border-radius:10px;padding:14px 16px;max-height:340px;overflow-y:auto}
+.vpill{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.8px;padding:3px 9px;border-radius:6px;text-transform:uppercase}
+.v-confirmed{color:var(--green);background:oklch(0.75 0.18 145 / 0.12)}
+.v-minor_corrections{color:var(--blue);background:oklch(0.70 0.15 240 / 0.12)}
+.v-major_issues{color:var(--amber);background:oklch(0.80 0.15 80 / 0.12)}
+.v-incorrect{color:var(--red);background:oklch(0.65 0.2 25 / 0.12)}
+.v-uncertain{color:var(--text-quiet);background:var(--bg-elev-2)}
+#logdock{position:fixed;left:0;right:0;bottom:0;height:232px;z-index:15;display:flex;flex-direction:column;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-top:1px solid var(--border-1)}
+#loghead{display:flex;align-items:center;gap:12px;padding:8px 18px;border-bottom:1px solid var(--border-1)}
+#logbody{flex:1;overflow-y:auto;min-height:0;padding:8px 18px;font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.65}
+.ll{white-space:pre-wrap;word-break:break-word}
+.ll .ts{color:var(--text-quiet);margin-right:8px}
+.ll.info{color:var(--blue)} .ll.ok{color:var(--green)} .ll.warn{color:var(--amber)}
+.ll.err{color:var(--red)} .ll.debug{color:var(--text-quiet)}
+</style>
+</head>
+<body>
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="topbar">
+  <div class="brand">phylo<span>-bench</span></div>
+  <div class="pill mono">v0.1.0</div>
+  <div class="pill mono" id="pill-metric">metric 0.1.0</div>
+  <div class="pill mono" id="pill-genome">genome —</div>
+  <div class="pill mono" id="pill-est">est —</div>
+  <div class="pill mono" id="pill-status" style="margin-left:auto">IDLE</div>
+</div>
+
+<div id="shell">
+  <div id="rail">
+    <div class="navgroup">
+      <span class="nano">Workflow</span>
+      <div class="navitem active" data-target="card-genome"><span class="glyph">◈</span>Genome</div>
+      <div class="navitem" data-target="card-cohort"><span class="glyph">◇</span>Cohort</div>
+      <div class="navitem" data-target="card-anchors"><span class="glyph">⬡</span>Calibration</div>
+      <div class="navitem" data-target="card-prompts"><span class="glyph">✎</span>Wrapper</div>
+      <div class="navitem" data-target="card-run"><span class="glyph">▶</span>Run</div>
+      <div class="navitem" data-target="card-gates"><span class="glyph">◬</span>Validity gates</div>
+      <div class="navitem" data-target="card-dist"><span class="glyph">▣</span>Distances</div>
+      <div class="navitem" data-target="card-tree"><span class="glyph">◉</span>Tree</div>
+      <div class="navitem" data-target="card-sweep"><span class="glyph">◐</span>G/N sweep</div>
+      <div class="navitem" data-target="card-finding"><span class="glyph">⌕</span>Finding</div>
+      <div class="navitem" data-target="card-method"><span class="glyph">⋯</span>Method</div>
+    </div>
+    <div class="navgroup cfg">
+      <span class="nano">API</span>
+      <label>OpenRouter key</label>
+      <input type="password" id="apikey" placeholder="sk-or-...">
+      <label>Estimator (run-level, never mixed)</label>
+      <select id="estimator">
+        <option value="sampling">sampling · N draws per gene</option>
+        <option value="logprobs">logprobs · 1 call per gene</option>
+      </select>
+      <label>Checker model (audits the finding)</label>
+      <input type="text" id="checker-model" value="google/gemini-2.5-flash-lite">
+    </div>
+    <div class="navgroup cfg">
+      <span class="nano">Sampling</span>
+      <div class="row2">
+        <div><label>Genes G</label><input type="number" id="G" value="32" min="4" max="256"></div>
+        <div><label>Draws N</label><input type="number" id="N" value="16" min="2" max="128"></div>
+      </div>
+      <div class="row2">
+        <div><label>Temperature</label><input type="number" id="temp" value="1" min="0" max="2" step="0.1"></div>
+        <div><label>top_p</label><input type="number" id="topp" value="1" min="0" max="1" step="0.05"></div>
+      </div>
+      <div class="row2">
+        <div><label>Allele chars</label><input type="number" id="kchars" value="4" min="1" max="12"></div>
+        <div><label>Concurrency</label><input type="number" id="concurrency" value="8" min="1" max="32"></div>
+      </div>
+      <div class="row2">
+        <div><label>Retries</label><input type="number" id="retries" value="2" min="0" max="5"></div>
+        <div><label>Bootstrap</label><input type="number" id="boot" value="200" min="0" max="2000" step="50"></div>
+      </div>
+      <label class="chk"><input type="checkbox" id="send-topk"> send top_k (leave off)</label>
+    </div>
+  </div>
+  <div id="splitter"></div>
+  <div id="main">
+
+    <div class="card glass" id="card-genome">
+      <h2><span class="glyph">◈</span>GENOME<span class="sub nano" id="genome-sub">not built</span></h2>
+      <div class="btnrow" style="margin-bottom:12px">
+        <select id="genome-select" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg-elev-2);color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:12px">
+          <option value="reasoning">reasoning · narrative prose</option>
+          <option value="code">code · source fragments</option>
+        </select>
+        <button id="btn-build-genome" class="primary">Build genome</button>
+        <span class="nano" id="genome-hash"></span>
+      </div>
+      <textarea id="corpus" style="min-height:150px" spellcheck="false" placeholder="Paste source text. One passage per line, or a single block that will be split on sentence boundaries."></textarea>
+      <div class="note" style="margin-top:8px">Each gene is a passage truncated at a random character between 20 and 100, seeded per genome id, so the cut points are reproducible. The genome is hashed on build; distances computed against different genome hashes are not comparable and the tool refuses to merge them. Paste recent text you have reason to believe is not in any training set. Two genomes minimum: clustering shifts between reasoning and code text, and that divergence is itself a result.</div>
+      <textarea id="genes-json" style="min-height:130px;margin-top:12px" spellcheck="false" placeholder="Genes appear here after build. Editable."></textarea>
+    </div>
+
+    <div class="card glass" id="card-cohort">
+      <h2><span class="glyph">◇</span>COHORT<span class="sub nano" id="cohort-sub"></span></h2>
+      <textarea id="models" style="min-height:160px" spellcheck="false"></textarea>
+      <div class="note" style="margin-top:8px">One entry per line: <b>model_id | iface | tok:family</b>. iface is <b>chat</b> (wrapper applied, /chat/completions) or <b>base</b> (raw prefix, /completions). tok declares the tokenizer family; entries sharing a family become eligible for exact-token comparison, everything else is compared on the first K characters. Append <b>| rep:2</b> to probe the same endpoint a second time independently, which is how the self-distance anchor gets its noise floor. Lines starting with # are ignored.</div>
+    </div>
+
+    <div class="card glass" id="card-anchors">
+      <h2><span class="glyph">⬡</span>CALIBRATION ANCHORS</h2>
+      <div class="cfg" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label>Known-related pair (comma separated keys)</label><input type="text" id="anchor-related" placeholder="meta-llama/llama-3.1-8b-instruct, nousresearch/hermes-3-llama-3.1-8b"></div>
+        <div><label>Known-unrelated pair</label><input type="text" id="anchor-unrelated" placeholder="mistralai/mistral-7b-instruct, google/gemma-2-9b-it"></div>
+      </div>
+      <div class="note" style="margin-top:10px">Self-distance comes from any model carrying a <b>rep:2</b> entry and is the noise floor: endpoint nondeterminism plus sampling variance, the number below which nothing means anything. The run is marked <b>INVALID</b> unless self &lt; related &lt; unrelated holds. An instrument that fails its own ordering test does not get to produce a tree.</div>
+      <div id="anchor-box" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card glass" id="card-prompts">
+      <h2><span class="glyph">✎</span>CONTINUATION WRAPPER</h2>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="nano">Chat wrapper · identical for every chat model, stored verbatim in the export</span>
+          <div class="tools"><span class="nano" id="wrap-saved"></span><button class="ghost" id="btn-wrap-reset">Reset to default</button></div>
+        </div>
+        <textarea id="wrap-tpl" style="min-height:110px" spellcheck="false"></textarea>
+        <span class="warnchip" id="wrap-warn">placeholder {prefix} missing — it will be appended at runtime</span>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="nano">Checker prompt · audits the generated finding for overclaiming</span>
+          <div class="tools"><span class="nano" id="chk-saved"></span><button class="ghost" id="btn-chk-reset">Reset to default</button></div>
+        </div>
+        <textarea id="chk-tpl" style="min-height:190px" spellcheck="false"></textarea>
+        <span class="warnchip" id="chk-warn">placeholder {finding} missing — it will be appended at runtime</span>
+      </div>
+      <div class="note">Base-iface models receive the raw truncated prefix with no wrapper at all. The wrapper is a measurement instrument, not a prompt: it is versioned by hash, and wrapped and unwrapped models are never placed in the same distance matrix, because that asymmetry runs along the open/closed axis this tool is used to examine.</div>
+    </div>
+
+    <div class="card glass" id="card-run">
+      <h2><span class="glyph">▶</span>RUN<span class="sub nano" id="run-estimate"></span></h2>
+      <div class="btnrow">
+        <button id="btn-run" class="primary">Run</button>
+        <button id="btn-cancel" class="danger" style="display:none">■ Cancel</button>
+        <button id="btn-recompute">Recompute metric</button>
+        <button id="btn-check">Run checker</button>
+        <button id="btn-export">⤓ Export JSON</button>
+        <button id="btn-import">Load export…</button>
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </div>
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-meta"><span class="nano" id="progress-label">phase</span><span class="nano" id="progress-count"></span></div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="card glass" id="card-gates" style="display:none">
+      <h2><span class="glyph">◬</span>VALIDITY GATES</h2>
+      <div id="gate-box"></div>
+    </div>
+
+    <div class="card glass" id="card-dist" style="display:none">
+      <h2><span class="glyph">▣</span>DISTANCES<span class="sub nano" id="dist-sub"></span></h2>
+      <div id="dist-box"></div>
+    </div>
+
+    <div class="card glass" id="card-tree" style="display:none">
+      <h2><span class="glyph">◉</span>TREE<span class="sub nano" id="tree-sub"></span></h2>
+      <div id="tree-box" style="overflow:auto"></div>
+    </div>
+
+    <div class="card glass" id="card-sweep" style="display:none">
+      <h2><span class="glyph">◐</span>G/N SWEEP<span class="sub nano">subsampled from collected draws · no extra API calls</span></h2>
+      <div class="statgrid">
+        <div class="subcard"><span class="nano">Stability vs genes G</span><div id="sweep-g"></div></div>
+        <div class="subcard"><span class="nano">Stability vs draws N</span><div id="sweep-n"></div></div>
+      </div>
+      <div class="note" style="margin-top:10px">Mean absolute deviation of pairwise distance from the full-data estimate, over 20 random subsamples per size. Where the curve flattens is the G or N you actually needed. If it has not flattened at your setting, the confidence intervals in the distance table are the only honest report.</div>
+    </div>
+
+    <div class="card glass" id="card-finding" style="display:none">
+      <h2><span class="glyph">⌕</span>FINDING<span class="sub nano" id="finding-sub"></span></h2>
+      <div id="guard-box" style="margin-bottom:12px"></div>
+      <div class="finding" id="finding-box"></div>
+      <div id="check-box" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card glass" id="card-method">
+      <h2><span class="glyph">⋯</span>METHOD</h2>
+      <div class="note">
+        <p><b>Metric.</b> Each gene is a truncated text prefix. For every model and gene, the tool collects N one-token continuations and counts alleles: the exact returned token when two models share a declared tokenizer, otherwise the first K characters. Allele frequency vectors give Nei's standard genetic identity, I = Σ p·q / sqrt(Σ p² · Σ q²) pooled over genes, and distance D = −ln I. Sampling is the estimator. Logprobs, where available, are an optional low-variance fast path selected for the whole run, never mixed into one matrix, and a model that will not return them is excluded rather than silently resampled.</p>
+        <p><b>Two modes, never mixed.</b> Exact-token comparison and first-K-character comparison have different resolution and different scale. Every pairwise distance carries the mode that produced it, matrices are built per mode, and the tree refuses to draw from mixed-mode input. The character mode is dominated by early-token behaviour, which is the known weakness of the approach.</p>
+        <p><b>Sampling parameters.</b> Temperature 1 or above, top_p 1, top_k not sent. Temperature 0 collapses every gene to a single allele at frequency 1 and destroys the signal, so the tool refuses to run there. Nucleus and top-k truncation distort the tail the metric depends on. Temperature, top_p, top_k, seed, requested model, returned model string, provider, endpoint and timestamp are recorded on every draw.</p>
+        <p><b>What a small distance means.</b> Functional similarity, which is consistent with shared weights, a shared corpus, a shared teacher, similar post-training, or convergence on the same objective. It cannot separate those. The tool emits a similarity finding plus an explicit alternative-hypothesis list, a deterministic guard rejects causal phrasing, and the checker pass is instructed to fail any output that reads as an accusation. This is the same documented-versus-speculation split you would apply in a write-up, enforced in the pipeline instead.</p>
+        <p><b>Prior art.</b> The metric follows PhyloLM (Yax, Oudeyer, Palminteri, ICLR 2025), including its two-mode design. LLM DNA (Wu et al., arXiv 2509.24496) benchmarks against it and reports better relation detection from a sentence-embedding pipeline; their ablations also found that random-word genomes performed slightly better than curated benchmark text, that dropping chat templates improved cross-family comparison, and that some APIs refuse to continue random strings. Read both before trusting either.</p>
+        <p><b>CORS.</b> OpenRouter permits browser calls from file://. If yours blocks it, serve with <span class="mono">python -m http.server</span> and open via localhost.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="logdock">
+  <div id="loghead">
+    <span class="nano">Log console</span><span class="nano" id="logcount">0 lines</span>
+    <label class="chk" style="margin:0 0 0 auto"><input type="checkbox" id="log-autoscroll" checked>autoscroll</label>
+    <button class="ghost" id="btn-logclear">clear</button>
+  </div>
+  <div id="logbody"></div>
+</div>
+
+<script>
+"use strict";
+/* phylo-bench — PhyloLM-style genetic distance over sampled continuations.
+   TOOL_VERSION covers UI + runner. METRIC_VERSION covers only the deterministic
+   distance layer and bumps independently so exports stay re-computable. */
+const TOOL_VERSION = "0.1.0";
+const METRIC_VERSION = "0.1.0";
+const OR_CHAT = "https://openrouter.ai/api/v1/chat/completions";
+const OR_COMP = "https://openrouter.ai/api/v1/completions";
+const CAVEAT = "A small distance indicates functional similarity. That is consistent with shared weights, a shared training corpus, a shared teacher, similar post-training, or independent convergence. This metric cannot distinguish between them and is not evidence of a distillation attack.";
+const FORBIDDEN = [
+  /\bdistilled from\b/i, /\bis a distillation of\b/i, /\bstole\b/i, /\bstolen\b/i,
+  /\bcopied from\b/i, /\bcopy of\b/i, /\bproves\b/i, /\bproof that\b/i,
+  /\bderived directly from\b/i, /\brip-?off\b/i, /\bplagiari/i, /\bconfirms that .* trained on\b/i,
+];
+
+const DEFAULT_MODELS = [
+  "# model_id | iface | tok:family | rep:2",
+  "meta-llama/llama-3.1-8b-instruct | chat | tok:llama3",
+  "meta-llama/llama-3.1-8b-instruct | chat | tok:llama3 | rep:2",
+  "nousresearch/hermes-3-llama-3.1-8b | chat | tok:llama3",
+  "mistralai/mistral-7b-instruct | chat | tok:mistral",
+  "google/gemma-2-9b-it | chat | tok:gemma",
+  "qwen/qwen3-8b | chat | tok:qwen2",
+  "deepseek/deepseek-chat-v3-0324 | chat | tok:deepseek",
+].join("\n");
+
+const DEFAULT_CORPUS = [
+  "The maintenance window opened at two in the morning and nobody had documented the rollback path, which is how the on-call engineer learned that the staging cluster shared a certificate with production.",
+  "She had argued for the smaller reactor on the grounds that it could be shut down by one person in a hurry, and the committee had recorded her objection without acting on it.",
+  "By the third audit the pattern was obvious: every control marked as compensating had been written by the same team that owned the gap it was supposed to compensate for.",
+  "The ferry left before dawn and the fog did not lift until the island was already behind them, so the passengers who had come for the cliffs saw only the water.",
+  "He kept a notebook of every command that had ever cost him a weekend, and the first page was a single line about deleting a directory he did not own.",
+  "The grant application asked for a statement of societal impact, and the honest version of that statement was that the instrument would mostly produce negative results.",
+  "Rain moved across the valley in visible sheets and the sheep did not look up, which the shepherd took as evidence that it would pass within the hour.",
+  "Nobody in the room disputed the numbers; the argument was entirely about which of two definitions the numbers had been computed under, and that argument lasted four hours.",
+].join("\n");
+
+const DEFAULT_CODE_CORPUS = [
+  "def merge_intervals(intervals):\n    intervals.sort(key=lambda x: x[0])\n    out = []\n    for start, end in intervals:",
+  "async function fetchWithRetry(url, attempts = 3) {\n  for (let i = 0; i < attempts; i++) {\n    try {",
+  "SELECT customer_id, SUM(amount) AS total FROM orders WHERE created_at >= NOW() - INTERVAL '30 days' GROUP BY",
+  "class RingBuffer:\n    def __init__(self, capacity):\n        self._buf = [None] * capacity\n        self._head = 0",
+  "resource \"aws_s3_bucket\" \"logs\" {\n  bucket = var.log_bucket_name\n  force_destroy = false\n\n  lifecycle {",
+  "func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {\n\tif err := s.db.PingContext(r.Context());",
+  "impl<T: Ord> BinaryHeap<T> {\n    pub fn sift_up(&mut self, mut pos: usize) {\n        while pos > 0 {",
+  "kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"\\t\"}{.status.phase}{\"\\n\"}{end}' |",
+].join("\n");
+
+const DEFAULT_WRAP = `Continue the following text verbatim, in the same language and style. Output only the continuation, no comment, no quotation marks, no preamble.
+
+{prefix}`;
+
+const DEFAULT_CHK = `You audit a statistical finding about model similarity for overclaiming. You are not judging whether the numbers are right; you judge only whether the language stays inside what the method can support.
+
+FINDING:
+{finding}
+
+The method measures functional similarity of next-token behaviour. Similarity is consistent with shared weights, a shared training corpus, a shared teacher model, similar post-training, or independent convergence. The method CANNOT distinguish between these.
+
+Return ONLY a JSON object, no markdown fences:
+{
+  "verdict": "confirmed" | "minor_corrections" | "major_issues" | "incorrect" | "uncertain",
+  "issues": [string],
+  "rewritten_claims": [string]
+}
+
+Fail the finding (major_issues or incorrect) if it:
+- asserts or implies that one model was distilled from, copied from, or derived from another
+- treats similarity as proof, evidence of wrongdoing, or a license violation
+- names a cause for the similarity rather than listing the alternatives
+- omits the noise floor or presents a distance below it as meaningful
+- reports a point estimate where the confidence interval crosses a threshold it is being compared to
+
+Return "confirmed" only if every claim is phrased as similarity plus an explicit alternative-hypothesis list.`;
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nowIso = () => new Date().toISOString();
+const short = k => k.includes("/") ? k.split("/").slice(1).join("/") : k;
+
+const l = (() => {
+  let n = 0;
+  const line = (lvl, msg) => {
+    n++;
+    const d = new Date();
+    const ts = d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0");
+    const el = document.createElement("div");
+    el.className = "ll " + lvl;
+    el.innerHTML = `<span class="ts">${ts}</span>${esc(msg)}`;
+    $("logbody").appendChild(el);
+    $("logcount").textContent = n + " lines";
+    if ($("log-autoscroll").checked) $("logbody").scrollTop = $("logbody").scrollHeight;
+  };
+  return { info:m=>line("info",m), ok:m=>line("ok",m), warn:m=>line("warn",m),
+           err:m=>line("err",m), debug:m=>line("debug",m),
+           clear:()=>{ $("logbody").innerHTML=""; n=0; $("logcount").textContent="0 lines"; } };
+})();
+
+function xfnv1a(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),16777619);} return ()=>{h+=h<<13;h^=h>>>7;h+=h<<3;h^=h>>>17;return (h+=h<<5)>>>0;}; }
+function mulberry32(a){ return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+const rngFrom = seed => mulberry32(xfnv1a(String(seed))());
+
+async function sha256Hex(str){
+  if (globalThis.crypto?.subtle) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+  let h1 = xfnv1a(str)(), h2 = xfnv1a(str + "#2")();
+  return (h1.toString(16) + h2.toString(16)).padStart(16,"0");
+}
+
+/* ---------- state ---------- */
+const state = {
+  genome: null,            // {id, label, hash, genes:[{id,text}]}
+  models: [],              // [{key, api_id, iface, tok, rep}]
+  draws: {},               // draws[key][geneId] = {alleles_token:{}, alleles_char:{}, ok, fail, raw:[]}
+  metric: null, gates: null, sweep: null, finding: null, check: null,
+  running:false, cancel:false, calls:0, run_at:null, settings:null,
+};
+
+/* ---------- genome ---------- */
+function splitCorpus(raw){
+  const lines = raw.split("\n").map(s=>s.trim()).filter(Boolean);
+  if (lines.length >= 4) return lines;
+  return raw.split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(s=>s.length>40);
+}
+async function buildGenome(){
+  const label = $("genome-select").value;
+  const raw = $("corpus").value.trim();
+  if (!raw) { l.err("corpus is empty"); return; }
+  const G = Math.max(4, parseInt($("G").value)||32);
+  const passages = splitCorpus(raw);
+  if (!passages.length) { l.err("could not split corpus into passages"); return; }
+  const genomeId = `${label}-G${G}`;
+  const rng = rngFrom(genomeId + "|" + raw.length);
+  const genes = [];
+  for (let i = 0; i < G; i++) {
+    const src = passages[i % passages.length];
+    const lo = 20, hi = Math.min(100, Math.max(24, src.length - 1));
+    const cut = lo + Math.floor(rng() * Math.max(1, hi - lo));
+    const text = src.slice(0, cut);
+    if (text.length < 12) continue;
+    genes.push({ id: `g${String(genes.length+1).padStart(3,"0")}`, cut, text });
+  }
+  const hash = await sha256Hex(JSON.stringify({ label, genes: genes.map(g=>g.text) }));
+  state.genome = { id: genomeId, label, hash, genes };
+  $("genes-json").value = JSON.stringify(genes, null, 2);
+  $("genome-hash").textContent = "sha256 " + hash.slice(0,16);
+  $("genome-sub").textContent = `${genes.length} genes · ${label} · ${hash.slice(0,12)}`;
+  $("pill-genome").textContent = "genome " + hash.slice(0,8);
+  l.ok(`genome ${genomeId} built · ${genes.length} genes from ${passages.length} passages · sha256 ${hash.slice(0,16)}`);
+  updateEstimate();
+}
+function readGenesFromTextarea(){
+  const raw = $("genes-json").value.trim();
+  if (!raw) return null;
+  const arr = JSON.parse(raw);
+  if (!Array.isArray(arr) || !arr.length) throw new Error("genes JSON empty");
+  arr.forEach(g => { if (!g.id || !g.text) throw new Error("each gene needs id and text"); });
+  return arr;
+}
+
+/* ---------- cohort ---------- */
+function readModels(){
+  const out = [];
+  for (const line of $("models").value.split("\n")) {
+    const s = line.trim();
+    if (!s || s.startsWith("#")) continue;
+    const parts = s.split("|").map(x=>x.trim());
+    const api_id = parts[0];
+    let iface = "chat", tok = null, rep = 1;
+    for (const p of parts.slice(1)) {
+      if (p === "chat" || p === "base") iface = p;
+      else if (p.startsWith("tok:")) tok = p.slice(4) || null;
+      else if (p.startsWith("rep:")) rep = Math.max(1, parseInt(p.slice(4))||1);
+    }
+    const key = rep > 1 ? `${api_id}#rep${rep}` : api_id;
+    if (out.some(m => m.key === key)) { l.warn("duplicate cohort entry ignored: " + key); continue; }
+    out.push({ key, api_id, iface, tok, rep });
+  }
+  return out;
+}
+function updateEstimate(){
+  const models = readModels();
+  const G = state.genome ? state.genome.genes.length : (parseInt($("G").value)||32);
+  const N = Math.max(2, parseInt($("N").value)||16);
+  const est = $("estimator").value;
+  const calls = est === "logprobs" ? models.length * G : models.length * G * N;
+  $("cohort-sub").textContent = `${models.length} entries · ${new Set(models.map(m=>m.tok||"unknown")).size} tokenizer families`;
+  $("run-estimate").textContent = `${models.length} × ${G} genes${est==="sampling"?` × ${N} draws`:""} = ${calls.toLocaleString()} calls`;
+  $("pill-est").textContent = "est " + est;
+}
+
+/* ---------- API ---------- */
+async function orOnce(m, prefix, maxTokens){
+  const key = $("apikey").value.trim();
+  if (!key) throw new Error("no OpenRouter key set");
+  const temp = parseFloat($("temp").value);
+  const topp = parseFloat($("topp").value);
+  const est = $("estimator").value;
+  const body = { model: m.api_id, temperature: temp, top_p: topp, max_tokens: maxTokens };
+  if ($("send-topk").checked) body.top_k = parseInt($("kchars").value) || 0;
+  if (est === "logprobs") { body.logprobs = true; body.top_logprobs = 20; }
+  let url = OR_COMP;
+  if (m.iface === "chat") { url = OR_CHAT; body.messages = [{ role:"user", content: buildWrapped(prefix) }]; }
+  else { body.prompt = prefix; }
+  const res = await fetch(url, { method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+key, "X-Title":"phylo-bench" },
+    body: JSON.stringify(body) });
+  const data = await res.json().catch(()=>null);
+  if (!res.ok || !data) throw new Error(String(data?.error?.message || `HTTP ${res.status}`).slice(0,300));
+  state.calls++;
+  const ch = data.choices?.[0] || {};
+  const text = m.iface === "chat" ? (ch.message?.content ?? "") : (ch.text ?? "");
+  let lp = null;
+  const cand = ch.logprobs?.content?.[0]?.top_logprobs || ch.logprobs?.top_logprobs?.[0] || null;
+  if (cand) {
+    lp = {};
+    if (Array.isArray(cand)) cand.forEach(e => { if (e?.token != null) lp[e.token] = Math.exp(e.logprob); });
+    else Object.entries(cand).forEach(([t,v]) => { lp[t] = Math.exp(v); });
+  }
+  return { text, logprobs: lp, returned_model: data.model ?? null, provider: data.provider ?? null,
+           finish: ch.finish_reason ?? null };
+}
+async function orCall(m, prefix, maxTokens, label){
+  const retries = Math.max(0, parseInt($("retries").value)||0);
+  let attempt = 0;
+  while (true) {
+    if (state.cancel) throw new Error("cancelled");
+    try { return await orOnce(m, prefix, maxTokens); }
+    catch (e) {
+      attempt++;
+      if (e.message === "cancelled" || attempt > retries) throw e;
+      const wait = 500 * Math.pow(2, attempt-1);
+      l.warn(`${label} failed (${e.message}) — retry ${attempt}/${retries} in ${wait}ms`);
+      await sleep(wait);
+    }
+  }
+}
+async function runPool(tasks, limit, onProgress){
+  let done = 0, next = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    while (next < tasks.length) {
+      const i = next++;
+      if (state.cancel) { done++; onProgress?.(done, tasks.length); continue; }
+      try { await tasks[i](); } catch {}
+      done++; onProgress?.(done, tasks.length);
+    }
+  }));
+}
+
+/* ---------- prompts ---------- */
+function wirePrompt(taId, warnId, savedId, resetId, storeKey, def, placeholders){
+  const ta = $(taId);
+  ta.value = localStorage.getItem(storeKey) || def;
+  const validate = () => $(warnId).classList.toggle("show", placeholders.some(p=>!ta.value.includes(p)));
+  ta.addEventListener("input", () => {
+    localStorage.setItem(storeKey, ta.value);
+    $(savedId).textContent = "saved"; setTimeout(()=>{$(savedId).textContent="";}, 1200);
+    validate();
+  });
+  $(resetId).addEventListener("click", () => { ta.value = def; localStorage.removeItem(storeKey); validate(); l.info(storeKey+" reset"); });
+  validate();
+}
+function buildWrapped(prefix){
+  let t = $("wrap-tpl").value;
+  if (!t.trim()) t = DEFAULT_WRAP;
+  if (!t.includes("{prefix}")) t += "\n\n{prefix}";
+  return t.replaceAll("{prefix}", prefix);
+}
+function extractJson(text){
+  const t = String(text).trim();
+  try { return JSON.parse(t); } catch {}
+  const s2 = t.replace(/^\s*```(?:json)?/i,"").replace(/```\s*$/i,"").trim();
+  try { return JSON.parse(s2); } catch {}
+  const a = s2.indexOf("{"), b = s2.lastIndexOf("}");
+  if (a>=0 && b>a) { try { return JSON.parse(s2.slice(a,b+1)); } catch {} }
+  throw new Error("could not extract JSON");
+}
+
+/* ---------- run ---------- */
+function preflight(){
+  const errs = [];
+  let genes = null;
+  try { genes = readGenesFromTextarea(); } catch (e) { errs.push("genes: " + e.message); }
+  if (!genes) errs.push("no genome built");
+  if (!state.genome) errs.push("genome not hashed — press Build genome");
+  const models = readModels();
+  if (models.length < 2) errs.push("need at least 2 cohort entries");
+  const temp = parseFloat($("temp").value);
+  if (!(temp >= 1)) errs.push(`temperature ${temp} is below 1 — sampling is the estimator and temperature 0 collapses every gene to a single allele`);
+  const topp = parseFloat($("topp").value);
+  if (topp < 1) errs.push(`top_p ${topp} truncates the tail this metric depends on — set it to 1`);
+  if ($("send-topk").checked) errs.push("top_k is being sent — turn it off");
+  if (!$("apikey").value.trim()) errs.push("no OpenRouter key");
+  return { errs, genes, models };
+}
+async function runAll(){
+  if (state.running) return;
+  const { errs, genes, models } = preflight();
+  if (errs.length) { errs.forEach(e=>l.err("preflight: "+e)); setStatus("BLOCKED","bad"); return; }
+  state.genome.genes = genes;
+  state.models = models;
+  state.draws = {};
+  models.forEach(m => { state.draws[m.key] = {}; genes.forEach(g => {
+    state.draws[m.key][g.id] = { alleles_token:{}, alleles_char:{}, ok:0, fail:0, raw:[] };
+  }); });
+  state.running = true; state.cancel = false; state.calls = 0; state.run_at = nowIso();
+  state.settings = snapSettings();
+  $("btn-run").disabled = true; $("btn-cancel").style.display = "";
+  setStatus("RUNNING","warn");
+  const est = $("estimator").value;
+  const N = est === "logprobs" ? 1 : Math.max(2, parseInt($("N").value)||16);
+  const K = Math.max(1, parseInt($("kchars").value)||4);
+  const conc = Math.max(1, parseInt($("concurrency").value)||8);
+  l.info(`run start · ${models.length} entries × ${genes.length} genes × ${N} draws · estimator ${est} · temp ${state.settings.temperature} top_p ${state.settings.top_p} · metric ${METRIC_VERSION} · genome ${state.genome.hash.slice(0,12)}`);
+  const tasks = [];
+  models.forEach(m => genes.forEach(g => {
+    for (let d = 0; d < N; d++) tasks.push(async () => {
+      const cell = state.draws[m.key][g.id];
+      try {
+        const out = await orCall(m, g.text, est === "logprobs" ? 1 : Math.max(1, Math.ceil(K/2)+1), `${short(m.key)} ${g.id}#${d+1}`);
+        if (est === "logprobs") {
+          if (!out.logprobs || !Object.keys(out.logprobs).length) throw new Error("no logprobs returned");
+          for (const [tokStr, p] of Object.entries(out.logprobs)) {
+            cell.alleles_token[tokStr] = (cell.alleles_token[tokStr]||0) + p;
+            const ck = tokStr.slice(0,K);
+            cell.alleles_char[ck] = (cell.alleles_char[ck]||0) + p;
+          }
+          cell.ok++;
+        } else {
+          const txt = out.text ?? "";
+          if (!txt.trim()) throw new Error("empty completion");
+          cell.alleles_token[txt] = (cell.alleles_token[txt]||0) + 1;
+          const ck = txt.slice(0,K);
+          cell.alleles_char[ck] = (cell.alleles_char[ck]||0) + 1;
+          cell.ok++;
+        }
+        if (cell.raw.length < 4) cell.raw.push({ text: out.text, returned_model: out.returned_model, provider: out.provider });
+      } catch (e) {
+        cell.fail++;
+        if (cell.fail <= 1) l.err(`${short(m.key)} ${g.id}: ${e.message}`);
+      }
+    });
+  }));
+  await runPool(tasks, conc, (d,t)=>showProgress("phase 1 · draws", d, t));
+  l.ok(`draws done · ${state.calls} calls`);
+  computeMetric();
+  state.running = false;
+  $("btn-run").disabled = false; $("btn-cancel").style.display = "none";
+  setStatus(state.cancel ? "PARTIAL" : "DONE", state.cancel ? "warn" : "ok");
+}
+function snapSettings(){
+  return { estimator:$("estimator").value, temperature:parseFloat($("temp").value), top_p:parseFloat($("topp").value),
+    top_k: $("send-topk").checked ? (parseInt($("kchars").value)||0) : null,
+    draws_per_gene: Math.max(2,parseInt($("N").value)||16), allele_chars: Math.max(1,parseInt($("kchars").value)||4),
+    concurrency: parseInt($("concurrency").value)||8, retries: parseInt($("retries").value)||0,
+    bootstrap: parseInt($("boot").value)||0, seed_note:"genome cut points seeded from genome id; sampling seeds are provider-side and not controllable",
+    wrapper: $("wrap-tpl").value, endpoint_chat: OR_CHAT, endpoint_completions: OR_COMP, date: nowIso() };
+}
+function setStatus(t,c){ const p=$("pill-status"); p.textContent=t; p.className="pill mono"+(c?" "+c:""); }
+function showProgress(label, done, total){
+  $("progress-wrap").classList.add("show");
+  $("progress-label").textContent = label;
+  $("progress-count").textContent = `${done} / ${total}`;
+  const f = $("progress-fill");
+  f.style.width = total ? (100*done/total)+"%" : "0%";
+  f.classList.toggle("done", done===total && total>0);
+  if (done===total && total>0) setTimeout(()=>$("progress-wrap").classList.remove("show"), 900);
+}
+
+/* ---------- metric ---------- */
+function freqVec(cell, mode){
+  const src = mode === "token" ? cell.alleles_token : cell.alleles_char;
+  const tot = Object.values(src).reduce((a,b)=>a+b,0);
+  if (!tot) return null;
+  const out = {};
+  for (const [k,v] of Object.entries(src)) out[k] = v/tot;
+  return out;
+}
+/* Nei standard genetic identity pooled over genes, then D = -ln(I). */
+function neiDistance(keyA, keyB, geneIds, mode){
+  let num=0, sa=0, sb=0, used=0;
+  for (const gid of geneIds) {
+    const ca = state.draws[keyA]?.[gid], cb = state.draws[keyB]?.[gid];
+    if (!ca || !cb) continue;
+    const pa = freqVec(ca, mode), pb = freqVec(cb, mode);
+    if (!pa || !pb) continue;
+    used++;
+    for (const [k,v] of Object.entries(pa)) { sa += v*v; if (pb[k]) num += v*pb[k]; }
+    for (const v of Object.values(pb)) sb += v*v;
+  }
+  if (!used || sa<=0 || sb<=0) return null;
+  let I = num / Math.sqrt(sa*sb);
+  I = Math.min(1, Math.max(1e-9, I));
+  return { I, D: -Math.log(I), genes_used: used };
+}
+function bootstrapCI(keyA, keyB, geneIds, mode, iters){
+  if (!iters || geneIds.length < 4) return null;
+  const rng = rngFrom(keyA+"|"+keyB+"|"+mode);
+  const ds = [];
+  for (let it=0; it<iters; it++) {
+    const samp = Array.from({length:geneIds.length}, () => geneIds[Math.floor(rng()*geneIds.length)]);
+    const r = neiDistance(keyA, keyB, samp, mode);
+    if (r) ds.push(r.D);
+  }
+  if (ds.length < 10) return null;
+  ds.sort((a,b)=>a-b);
+  const q = p => ds[Math.min(ds.length-1, Math.max(0, Math.floor(p*ds.length)))];
+  return { lo:q(0.025), hi:q(0.975), n:ds.length };
+}
+function modeFor(a, b){
+  if (a.tok && b.tok && a.tok === b.tok) return "token";
+  return "char";
+}
+function computeMetric(){
+  if (!state.genome || !state.models.length) { l.warn("nothing to compute"); return; }
+  const geneIds = state.genome.genes.map(g=>g.id);
+  const boot = parseInt($("boot").value)||0;
+  const K = state.settings?.allele_chars ?? 4;
+  const pairs = [];
+  for (let i=0;i<state.models.length;i++) for (let j=i+1;j<state.models.length;j++) {
+    const A = state.models[i], B = state.models[j];
+    const mode = modeFor(A,B);
+    const sameIface = A.iface === B.iface;
+    const r = neiDistance(A.key, B.key, geneIds, mode);
+    if (!r) continue;
+    pairs.push({ a:A.key, b:B.key, mode, comparable: sameIface,
+      iface_a:A.iface, iface_b:B.iface, same_model: A.api_id === B.api_id,
+      I:r.I, D:r.D, genes_used:r.genes_used, ci: bootstrapCI(A.key,B.key,geneIds,mode,boot) });
+  }
+  /* coverage */
+  const cov = state.models.map(m => {
+    let ok=0, fail=0;
+    geneIds.forEach(g => { const c = state.draws[m.key]?.[g]; if (c) { ok+=c.ok; fail+=c.fail; } });
+    return { key:m.key, ok, fail, rate: (ok+fail) ? ok/(ok+fail) : 0,
+      mean_alleles: geneIds.reduce((s,g)=>s+Object.keys(state.draws[m.key]?.[g]?.alleles_char||{}).length,0)/Math.max(1,geneIds.length) };
+  });
+  state.metric = { metric_version:METRIC_VERSION, genome:{id:state.genome.id,hash:state.genome.hash,genes:geneIds.length},
+    estimator: state.settings?.estimator ?? $("estimator").value, allele_chars:K, pairs, coverage:cov };
+  computeGates(); computeSweep(); buildFinding();
+  renderGates(); renderDistances(); renderTree(); renderSweep(); renderFinding();
+  l.ok(`metric computed · ${pairs.length} pairs · ${pairs.filter(p=>p.mode==="token").length} token-mode · ${pairs.filter(p=>p.mode==="char").length} char-mode`);
+}
+
+/* ---------- gates ---------- */
+function parsePair(v){ return v.split(",").map(s=>s.trim()).filter(Boolean); }
+function findPair(a,b){
+  return state.metric.pairs.find(p => (p.a===a&&p.b===b)||(p.a===b&&p.b===a)) || null;
+}
+function computeGates(){
+  const M = state.metric;
+  const selfPairs = M.pairs.filter(p => p.same_model);
+  const noise = selfPairs.length ? selfPairs.reduce((s,p)=>s+p.D,0)/selfPairs.length : null;
+  const rel = parsePair($("anchor-related").value), unrel = parsePair($("anchor-unrelated").value);
+  const relP = rel.length===2 ? findPair(rel[0],rel[1]) : null;
+  const unrelP = unrel.length===2 ? findPair(unrel[0],unrel[1]) : null;
+  const modes = new Set(M.pairs.map(p=>p.mode));
+  const ifaceMix = M.pairs.some(p => !p.comparable);
+  const lowVariety = M.coverage.filter(c => c.mean_alleles < 1.2).map(c=>c.key);
+  const badCoverage = M.coverage.filter(c => c.rate < 0.8).map(c=>c.key);
+  const ordering = (noise!==null && relP && unrelP)
+    ? (noise < relP.D && relP.D < unrelP.D) : null;
+  const gates = [
+    { id:"anchors_present", pass: noise!==null && !!relP && !!unrelP,
+      msg: noise===null ? "No self-distance anchor. Add a cohort entry with rep:2 to get a noise floor."
+        : (!relP || !unrelP) ? "Known-related and known-unrelated anchor pairs are not both resolvable in this cohort."
+        : "Self, related and unrelated anchors all present." },
+    { id:"anchor_ordering", pass: ordering === true, soft: ordering === null,
+      msg: ordering === null ? "Ordering not testable without all three anchors."
+        : ordering ? `Ordering holds: self ${noise.toFixed(3)} < related ${relP.D.toFixed(3)} < unrelated ${unrelP.D.toFixed(3)}.`
+        : `Ordering FAILS: self ${noise.toFixed(3)}, related ${relP.D.toFixed(3)}, unrelated ${unrelP.D.toFixed(3)}. The instrument is not measuring what it claims.` },
+    { id:"single_mode", pass: modes.size <= 1, soft: true,
+      msg: modes.size <= 1 ? `Single comparison mode (${[...modes][0] ?? "none"}).`
+        : `Mixed modes present (${[...modes].join(", ")}). Distances of different modes are on different scales; the tree is restricted to one mode.` },
+    { id:"single_iface", pass: !ifaceMix, soft: true,
+      msg: ifaceMix ? "Cohort mixes chat-wrapped and raw-completion entries. Those pairs are marked not comparable and excluded from the tree."
+        : "All compared entries share one interface class." },
+    { id:"allele_variety", pass: lowVariety.length === 0,
+      msg: lowVariety.length ? `Degenerate allele distributions (one allele per gene) for: ${lowVariety.map(short).join(", ")}. Raise temperature or pick higher-entropy genes.`
+        : "Every entry produced more than one allele on average." },
+    { id:"coverage", pass: badCoverage.length === 0, soft: true,
+      msg: badCoverage.length ? `Draw success below 80% for: ${badCoverage.map(short).join(", ")}.` : "Draw success above 80% for every entry." },
+  ];
+  const hard = gates.filter(g => !g.pass && !g.soft);
+  const treeMode = modes.has("token") ? "token" : (modes.has("char") ? "char" : null);
+  state.gates = { noise_floor:noise, related:relP, unrelated:unrelP, gates,
+    valid: hard.length === 0, tree_mode: treeMode };
+}
+
+/* ---------- sweep ---------- */
+function subsampleAlleles(frac, seedKey){
+  /* rebuild a shadow draws object with only a fraction of the recorded draws per cell */
+  const rng = rngFrom(seedKey);
+  const shadow = {};
+  for (const [k, genes] of Object.entries(state.draws)) {
+    shadow[k] = {};
+    for (const [g, cell] of Object.entries(genes)) {
+      const at = {}, ac = {};
+      for (const [al, cnt] of Object.entries(cell.alleles_char)) {
+        let keep = 0;
+        for (let i=0;i<cnt;i++) if (rng() < frac) keep++;
+        if (keep) ac[al] = keep;
+      }
+      for (const [al, cnt] of Object.entries(cell.alleles_token)) {
+        let keep = 0;
+        for (let i=0;i<cnt;i++) if (rng() < frac) keep++;
+        if (keep) at[al] = keep;
+      }
+      shadow[k][g] = { alleles_token:at, alleles_char:ac, ok:cell.ok, fail:cell.fail, raw:[] };
+    }
+  }
+  return shadow;
+}
+function computeSweep(){
+  const M = state.metric;
+  const geneIds = state.genome.genes.map(g=>g.id);
+  const probe = M.pairs.filter(p => p.comparable).slice(0, 6);
+  if (!probe.length) { state.sweep = null; return; }
+  const full = new Map(probe.map(p => [p.a+"|"+p.b, p.D]));
+  const gSizes = [4,8,16,32,64,128,256].filter(s => s < geneIds.length);
+  const gCurve = gSizes.map(size => {
+    let acc=0, n=0;
+    for (let rep=0; rep<20; rep++) {
+      const rng = rngFrom(`g${size}-${rep}`);
+      const samp = Array.from({length:size}, () => geneIds[Math.floor(rng()*geneIds.length)]);
+      for (const p of probe) {
+        const r = neiDistance(p.a, p.b, samp, p.mode);
+        if (r) { acc += Math.abs(r.D - full.get(p.a+"|"+p.b)); n++; }
+      }
+    }
+    return { x:size, y: n ? acc/n : null };
+  });
+  const N = state.settings?.draws_per_gene ?? 16;
+  const fracs = [0.125,0.25,0.5,0.75].filter(f => Math.round(f*N) >= 2);
+  const real = state.draws;
+  const nCurve = fracs.map(f => {
+    let acc=0, n=0;
+    for (let rep=0; rep<8; rep++) {
+      state.draws = subsampleAlleles(f, `n${f}-${rep}`);
+      for (const p of probe) {
+        const r = neiDistance(p.a, p.b, geneIds, p.mode);
+        if (r) { acc += Math.abs(r.D - full.get(p.a+"|"+p.b)); n++; }
+      }
+    }
+    return { x: Math.round(f*N), y: n ? acc/n : null };
+  });
+  state.draws = real;
+  state.sweep = { pairs_probed: probe.length, g_curve:gCurve, n_curve:nCurve };
+}
+
+/* ---------- finding ---------- */
+function buildFinding(){
+  const M = state.metric, Gt = state.gates;
+  const noise = Gt.noise_floor;
+  const lines = [];
+  lines.push(`GENOME ${M.genome.id} · sha256 ${M.genome.hash.slice(0,16)} · ${M.genome.genes} genes`);
+  lines.push(`ESTIMATOR ${M.estimator} · temperature ${state.settings?.temperature} · top_p ${state.settings?.top_p} · top_k ${state.settings?.top_k ?? "not sent"}`);
+  lines.push(`METRIC Nei genetic distance, metric version ${METRIC_VERSION}`);
+  lines.push(`NOISE FLOOR ${noise === null ? "not established" : noise.toFixed(4)+" (self-distance, same endpoint queried twice)"}`);
+  lines.push("");
+  if (!Gt.valid) {
+    lines.push("RUN INVALID. Failed hard gates: " + Gt.gates.filter(g=>!g.pass && !g.soft).map(g=>g.id).join(", "));
+    lines.push("No similarity claim is reported from an invalid run.");
+    state.finding = lines.join("\n");
+    return;
+  }
+  const ranked = M.pairs.filter(p => p.comparable && !p.same_model).sort((a,b)=>a.D-b.D);
+  lines.push("CLOSEST PAIRS BY FUNCTIONAL DISTANCE");
+  ranked.slice(0, 8).forEach((p, i) => {
+    const ci = p.ci ? ` [95% CI ${p.ci.lo.toFixed(3)}–${p.ci.hi.toFixed(3)}]` : " [no CI]";
+    const floor = (noise !== null && p.ci && p.ci.lo <= noise) ? "  ** interval reaches the noise floor: not separable from a repeat query of one model **" : "";
+    lines.push(`${String(i+1).padStart(2)}. ${short(p.a)} ~ ${short(p.b)}  D=${p.D.toFixed(4)}${ci}  mode=${p.mode}  genes=${p.genes_used}${floor}`);
+  });
+  lines.push("");
+  lines.push("WHAT THIS MEASURES");
+  lines.push("Functional similarity of next-token behaviour on " + M.genome.genes + " truncated prefixes, estimated by " +
+    (M.estimator === "sampling" ? (state.settings?.draws_per_gene + " sampled draws per gene") : "top-logprob distributions") + ".");
+  lines.push("");
+  lines.push("ALTERNATIVE HYPOTHESES FOR ANY SMALL DISTANCE, NONE EXCLUDED BY THIS METHOD");
+  ["shared base weights or a shared checkpoint ancestor",
+   "overlapping pretraining corpora without any direct relationship",
+   "a shared teacher model used by both, with no relationship between the two",
+   "similar post-training recipes, instruction data, or RLHF preference sets",
+   "independent convergence on the same high-probability continuation of ordinary text",
+   "the same serving stack, quantisation, or sampling implementation behind both endpoints"]
+    .forEach((h,i)=>lines.push(`  (${i+1}) ${h}`));
+  lines.push("");
+  lines.push("CAVEAT " + CAVEAT);
+  state.finding = lines.join("\n");
+}
+function guardScan(text){
+  return FORBIDDEN.map(re => ({ re: re.source, hit: re.test(text) })).filter(x=>x.hit);
+}
+
+/* ---------- checker ---------- */
+async function runChecker(){
+  if (!state.finding) { l.warn("no finding to check"); return; }
+  let tpl = $("chk-tpl").value;
+  if (!tpl.trim()) tpl = DEFAULT_CHK;
+  if (!tpl.includes("{finding}")) tpl += "\n\nFINDING:\n{finding}";
+  const model = $("checker-model").value.trim();
+  l.info("checker pass via " + model);
+  try {
+    /* the checker sends a complete prompt rather than a gene prefix, so it does not
+       go through orCall's continuation path and never inherits the sampling settings */
+    const key = $("apikey").value.trim();
+    const res = await fetch(OR_CHAT, { method:"POST",
+      headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+key, "X-Title":"phylo-bench" },
+      body: JSON.stringify({ model, messages:[{role:"user",content:tpl.replaceAll("{finding}", state.finding)}], max_tokens:900 }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(String(data?.error?.message || res.status).slice(0,300));
+    state.calls++;
+    const txt = data.choices?.[0]?.message?.content ?? "";
+    const j = extractJson(txt);
+    state.check = { model, verdict: ["confirmed","minor_corrections","major_issues","incorrect","uncertain"].includes(j.verdict) ? j.verdict : "uncertain",
+      issues: Array.isArray(j.issues) ? j.issues : [], rewritten_claims: Array.isArray(j.rewritten_claims) ? j.rewritten_claims : [], at: nowIso() };
+    l.ok("checker verdict: " + state.check.verdict + (state.check.issues.length ? ` · ${state.check.issues.length} issues` : ""));
+  } catch (e) {
+    state.check = { model, verdict:"uncertain", issues:["checker failed: "+e.message], rewritten_claims:[], at:nowIso() };
+    l.err("checker failed: " + e.message);
+  }
+  renderFinding();
+}
+
+/* ---------- render ---------- */
+function renderGates(){
+  $("card-gates").style.display = "";
+  const Gt = state.gates;
+  $("gate-box").innerHTML =
+    `<div class="gate ${Gt.valid ? "pass" : ""}"><b>${Gt.valid ? "RUN VALID" : "RUN INVALID"}</b> · ${Gt.valid ? "hard gates passed" : "hard gates failed, no similarity claim is emitted"} · noise floor ${Gt.noise_floor===null?"not established":Gt.noise_floor.toFixed(4)}</div>` +
+    Gt.gates.map(g => `<div class="gate ${g.pass ? "pass" : (g.soft ? "warn" : "")}">
+      <b>${g.id}</b> · ${esc(g.msg)}</div>`).join("");
+}
+function renderDistances(){
+  const M = state.metric;
+  $("card-dist").style.display = "";
+  $("dist-sub").textContent = `${M.pairs.length} pairs · Nei D = −ln I · CI from ${state.settings?.bootstrap||0} gene bootstraps`;
+  const byMode = { token: M.pairs.filter(p=>p.mode==="token"), char: M.pairs.filter(p=>p.mode==="char") };
+  let html = "";
+  for (const [mode, ps] of Object.entries(byMode)) {
+    if (!ps.length) continue;
+    const keys = [...new Set(ps.flatMap(p=>[p.a,p.b]))];
+    html += `<div class="subcard" style="margin-bottom:14px"><span class="nano">${mode} mode · ${ps.length} pairs · ${keys.length} entries</span>`;
+    html += heatmapSVG(keys, ps);
+    html += `<div style="margin-top:12px">` + ps.slice().sort((a,b)=>a.D-b.D).slice(0,10).map(p =>
+      `<div class="anchor-row"><span>${esc(short(p.a))}</span><span>${esc(short(p.b))}</span>
+       <span>D ${p.D.toFixed(4)}</span><span>${p.ci?`±${((p.ci.hi-p.ci.lo)/2).toFixed(3)}`:"—"}</span></div>`).join("") + `</div></div>`;
+  }
+  $("dist-box").innerHTML = html || `<div class="note">no comparable pairs</div>`;
+}
+function heatmapSVG(keys, pairs){
+  const n = keys.length, cell = Math.max(24, Math.min(44, Math.floor(700/(n+1)))), lab = 160;
+  const idx = Object.fromEntries(keys.map((k,i)=>[k,i]));
+  const map = {};
+  pairs.forEach(p => { map[p.a+"|"+p.b]=p; map[p.b+"|"+p.a]=p; });
+  const ds = pairs.map(p=>p.D);
+  const dmin = Math.min(...ds), dmax = Math.max(...ds);
+  const size = lab + n*cell;
+  let s = `<svg width="${size}" height="${size}" font-family="JetBrains Mono">`;
+  keys.forEach((k,j)=> s += `<text x="${lab+j*cell+cell/2}" y="${lab-8}" fill="var(--text-quiet)" font-size="9"
+    transform="rotate(-55 ${lab+j*cell+cell/2} ${lab-8})">${esc(short(k).slice(0,22))}</text>`);
+  keys.forEach((ka,i)=>{
+    s += `<text x="${lab-8}" y="${lab+i*cell+cell/2+3}" text-anchor="end" fill="var(--text-quiet)" font-size="9">${esc(short(ka).slice(0,22))}</text>`;
+    keys.forEach((kb,j)=>{
+      const x = lab+j*cell, y = lab+i*cell;
+      if (i===j) { s += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="var(--bg-elev-2)"/>`; return; }
+      const p = map[ka+"|"+kb];
+      if (!p) { s += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="var(--bg-elev-1)" stroke="var(--border-1)"/>`; return; }
+      const t = dmax>dmin ? (p.D-dmin)/(dmax-dmin) : 0.5;
+      const alpha = 0.08 + 0.75*(1-t);   /* closer = brighter */
+      const fill = p.comparable ? `oklch(0.7 0.18 300 / ${alpha})` : `oklch(0.80 0.15 80 / ${alpha})`;
+      s += `<rect x="${x}" y="${y}" width="${cell-2}" height="${cell-2}" rx="4" fill="${fill}"><title>${esc(short(ka))} ~ ${esc(short(kb))} · D=${p.D.toFixed(4)}${p.comparable?"":" · NOT COMPARABLE (interface mismatch)"}</title></rect>`;
+      if (cell>=30) s += `<text x="${x+(cell-2)/2}" y="${y+(cell-2)/2+3}" text-anchor="middle" fill="var(--text-primary)" font-size="8">${p.D.toFixed(2)}</text>`;
+    });
+  });
+  return s + `</svg>`;
+}
+function upgma(keys, dist){
+  let clusters = keys.map((k,i)=>({ leaves:[i], label:k, height:0, children:null }));
+  const D = keys.map((_,i)=>keys.map((_,j)=> i===j ? 0 : (dist(keys[i],keys[j]) ?? NaN)));
+  const active = clusters.map((c,i)=>i);
+  const avg = (A,B) => {
+    let s=0,n=0;
+    for (const i of A.leaves) for (const j of B.leaves) { const d=D[i][j]; if (!isNaN(d)) { s+=d; n++; } }
+    return n ? s/n : NaN;
+  };
+  let nodes = clusters.slice();
+  let live = active.slice();
+  while (live.length > 1) {
+    let best=null;
+    for (let a=0;a<live.length;a++) for (let b=a+1;b<live.length;b++) {
+      const d = avg(nodes[live[a]], nodes[live[b]]);
+      if (isNaN(d)) continue;
+      if (!best || d < best.d) best = { d, a, b };
+    }
+    if (!best) break;
+    const A = nodes[live[best.a]], B = nodes[live[best.b]];
+    const merged = { leaves:[...A.leaves,...B.leaves], label:null, height:best.d/2, children:[A,B] };
+    nodes.push(merged);
+    live = live.filter((_,i)=> i!==best.a && i!==best.b);
+    live.push(nodes.length-1);
+  }
+  return nodes[live[0]] ?? null;
+}
+function renderTree(){
+  const Gt = state.gates, M = state.metric;
+  $("card-tree").style.display = "";
+  const mode = Gt.tree_mode;
+  const usable = M.pairs.filter(p => p.comparable && p.mode === mode && !p.same_model);
+  const keys = [...new Set(usable.flatMap(p=>[p.a,p.b]))];
+  if (!Gt.valid) {
+    $("tree-sub").textContent = "withheld";
+    $("tree-box").innerHTML = `<div class="gate"><b>No tree.</b> The run failed a hard validity gate. A dendrogram built on an instrument that cannot order its own calibration anchors would look exactly as convincing as a correct one, which is the reason it is withheld rather than labelled.</div>`;
+    return;
+  }
+  if (keys.length < 3) {
+    $("tree-sub").textContent = "insufficient";
+    $("tree-box").innerHTML = `<div class="note">fewer than three entries in the ${mode} mode block</div>`;
+    return;
+  }
+  const lookup = (a,b) => { const p = usable.find(x=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a)); return p ? p.D : null; };
+  const root = upgma(keys, lookup);
+  $("tree-sub").textContent = `UPGMA · ${mode} mode · ${keys.length} entries`;
+  const leafOrder = [];
+  (function walk(nd){ if (!nd) return; if (!nd.children) { leafOrder.push(nd); return; } nd.children.forEach(walk); })(root);
+  const rowH = 22, padL = 210, w = 640, maxH = root.height || 1;
+  const xOf = h => padL + (1 - h/maxH) * (w - padL - 30);
+  const yOf = nd => {
+    if (!nd.children) return 20 + leafOrder.indexOf(nd)*rowH;
+    const ys = nd.children.map(yOf);
+    return (Math.min(...ys)+Math.max(...ys))/2;
+  };
+  let s = `<svg width="${w}" height="${40+leafOrder.length*rowH}" font-family="JetBrains Mono">`;
+  (function draw(nd){
+    if (!nd) return;
+    if (!nd.children) {
+      const y = yOf(nd);
+      s += `<text x="${padL-8}" y="${y+3}" text-anchor="end" fill="var(--text-secondary)" font-size="10">${esc(short(nd.label).slice(0,28))}</text>`;
+      s += `<line x1="${padL}" y1="${y}" x2="${xOf(0)}" y2="${y}" stroke="var(--border-2)"/>`;
+      return;
+    }
+    const x = xOf(nd.height);
+    const ys = nd.children.map(yOf);
+    s += `<line x1="${x}" y1="${Math.min(...ys)}" x2="${x}" y2="${Math.max(...ys)}" stroke="var(--accent)" stroke-width="1.2"/>`;
+    nd.children.forEach(c => {
+      const cx = c.children ? xOf(c.height) : xOf(0);
+      s += `<line x1="${x}" y1="${yOf(c)}" x2="${cx}" y2="${yOf(c)}" stroke="var(--accent)" stroke-width="1.2"/>`;
+      draw(c);
+    });
+  })(root);
+  s += `</svg>`;
+  $("tree-box").innerHTML = s + `<div class="note" style="margin-top:10px">UPGMA on ${mode}-mode distances only. Branch position is functional distance, not time, and not descent. A tight cluster is a similarity claim with the alternative-hypothesis list attached, nothing more.</div>`;
+}
+function lineChart(points, w=300, h=120){
+  const pts = points.filter(p=>p.y!==null);
+  if (pts.length < 2) return `<div class="note">not enough data</div>`;
+  const xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
+  const xmin=Math.min(...xs), xmax=Math.max(...xs), ymax=Math.max(...ys);
+  const X = x => 34 + (xmax>xmin ? (x-xmin)/(xmax-xmin) : 0.5)*(w-48);
+  const Y = y => h-24 - (ymax>0 ? y/ymax : 0)*(h-40);
+  const path = pts.map((p,i)=>`${i?"L":"M"} ${X(p.x).toFixed(1)} ${Y(p.y).toFixed(1)}`).join(" ");
+  return `<svg width="${w}" height="${h}" font-family="JetBrains Mono">
+    <line x1="34" y1="${h-24}" x2="${w-14}" y2="${h-24}" stroke="var(--border-2)"/>
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+    ${pts.map(p=>`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="2.5" fill="var(--accent)"><title>${p.x} → ${p.y.toFixed(4)}</title></circle>`).join("")}
+    ${pts.map(p=>`<text x="${X(p.x).toFixed(1)}" y="${h-10}" text-anchor="middle" fill="var(--text-quiet)" font-size="8">${p.x}</text>`).join("")}
+    <text x="4" y="${Y(ymax)+3}" fill="var(--text-quiet)" font-size="8">${ymax.toFixed(3)}</text>
+    <text x="4" y="${h-26}" fill="var(--text-quiet)" font-size="8">0</text></svg>`;
+}
+function renderSweep(){
+  if (!state.sweep) { $("card-sweep").style.display = "none"; return; }
+  $("card-sweep").style.display = "";
+  $("sweep-g").innerHTML = lineChart(state.sweep.g_curve);
+  $("sweep-n").innerHTML = lineChart(state.sweep.n_curve);
+}
+function renderFinding(){
+  $("card-finding").style.display = "";
+  const hits = guardScan(state.finding || "");
+  $("guard-box").innerHTML = hits.length
+    ? `<div class="gate"><b>Guard tripped.</b> The generated text matched forbidden causal phrasing: ${hits.map(h=>esc(h.re)).join(", ")}. This is a bug in the generator, not a permitted output.</div>`
+    : `<div class="gate pass"><b>Guard clean.</b> No causal or accusatory phrasing in the generated finding.</div>`;
+  $("finding-box").textContent = state.finding || "";
+  $("finding-sub").textContent = state.gates?.valid ? "run valid" : "run invalid";
+  const c = state.check;
+  $("check-box").innerHTML = c
+    ? `<div class="gate ${c.verdict==="confirmed"?"pass":(c.verdict==="minor_corrections"?"warn":"")}">
+        <span class="vpill v-${c.verdict}">${c.verdict.replace("_"," ")}</span> <span class="nano">${esc(c.model)}</span>
+        ${c.issues.length?`<div style="margin-top:8px">${c.issues.map(i=>"· "+esc(i)).join("<br>")}</div>`:""}
+        ${c.rewritten_claims.length?`<div style="margin-top:8px;color:var(--text-tertiary)">suggested: ${c.rewritten_claims.map(esc).join(" / ")}</div>`:""}</div>`
+    : `<div class="note">checker has not run</div>`;
+}
+
+/* ---------- export / import ---------- */
+function buildExport(){
+  return { tool:"phylo-bench", version:TOOL_VERSION, metric_version:METRIC_VERSION,
+    run_at:state.run_at, exported_at:nowIso(), interpretation_caveat:CAVEAT,
+    settings:state.settings ?? snapSettings(), genome:state.genome, models:state.models,
+    draws:state.draws, metric:state.metric, gates:state.gates, sweep:state.sweep,
+    finding:state.finding, guard_hits:guardScan(state.finding||"").map(h=>h.re),
+    checker:state.check, anchors:{ related:$("anchor-related").value, unrelated:$("anchor-unrelated").value },
+    api_calls:state.calls };
+}
+function doExport(){
+  if (!state.metric) { l.warn("nothing to export"); return; }
+  const blob = new Blob([JSON.stringify(buildExport(), null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `phylo-bench-${(state.run_at||nowIso()).replace(/:/g,"-").slice(0,19)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  l.ok("export written: " + a.download);
+}
+function doImport(file){
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (d.tool !== "phylo-bench") throw new Error("not a phylo-bench export");
+      state.genome = d.genome; state.models = d.models; state.draws = d.draws;
+      state.settings = d.settings; state.run_at = d.run_at; state.check = d.checker ?? null;
+      $("models").value = d.models.map(m => [m.api_id, m.iface, m.tok?("tok:"+m.tok):null, m.rep>1?("rep:"+m.rep):null].filter(Boolean).join(" | ")).join("\n");
+      $("genes-json").value = JSON.stringify(d.genome.genes, null, 2);
+      $("genome-hash").textContent = "sha256 " + d.genome.hash.slice(0,16);
+      $("pill-genome").textContent = "genome " + d.genome.hash.slice(0,8);
+      if (d.anchors) { $("anchor-related").value = d.anchors.related||""; $("anchor-unrelated").value = d.anchors.unrelated||""; }
+      if (d.settings) { $("temp").value = d.settings.temperature; $("topp").value = d.settings.top_p;
+        $("estimator").value = d.settings.estimator; $("kchars").value = d.settings.allele_chars; }
+      l.ok(`loaded export · tool ${d.version} · metric ${d.metric_version} · genome ${d.genome.hash.slice(0,12)}`);
+      if (d.metric_version !== METRIC_VERSION) l.warn(`export metric ${d.metric_version} differs from current ${METRIC_VERSION} — recomputing`);
+      computeMetric();
+      setStatus("LOADED","ok");
+    } catch (e) { l.err("import failed: " + e.message); }
+  };
+  rd.readAsText(file);
+}
+
+/* ---------- init ---------- */
+function init(){
+  $("models").value = localStorage.getItem("pb_models") || DEFAULT_MODELS;
+  $("apikey").value = localStorage.getItem("pb_key") || "";
+  $("corpus").value = localStorage.getItem("pb_corpus") || DEFAULT_CORPUS;
+  $("anchor-related").value = localStorage.getItem("pb_rel") || "meta-llama/llama-3.1-8b-instruct, nousresearch/hermes-3-llama-3.1-8b";
+  $("anchor-unrelated").value = localStorage.getItem("pb_unrel") || "mistralai/mistral-7b-instruct, google/gemma-2-9b-it";
+  wirePrompt("wrap-tpl","wrap-warn","wrap-saved","btn-wrap-reset","pb_wrap",DEFAULT_WRAP,["{prefix}"]);
+  wirePrompt("chk-tpl","chk-warn","chk-saved","btn-chk-reset","pb_chk",DEFAULT_CHK,["{finding}"]);
+  $("models").addEventListener("input", ()=>{ localStorage.setItem("pb_models",$("models").value); updateEstimate(); });
+  $("apikey").addEventListener("input", ()=>localStorage.setItem("pb_key",$("apikey").value));
+  $("corpus").addEventListener("input", ()=>localStorage.setItem("pb_corpus",$("corpus").value));
+  $("anchor-related").addEventListener("input", ()=>localStorage.setItem("pb_rel",$("anchor-related").value));
+  $("anchor-unrelated").addEventListener("input", ()=>localStorage.setItem("pb_unrel",$("anchor-unrelated").value));
+  $("genome-select").addEventListener("change", () => {
+    const v = $("genome-select").value;
+    if (v === "code" && $("corpus").value.trim() === DEFAULT_CORPUS) $("corpus").value = DEFAULT_CODE_CORPUS;
+    if (v === "reasoning" && $("corpus").value.trim() === DEFAULT_CODE_CORPUS) $("corpus").value = DEFAULT_CORPUS;
+    l.info("genome slot: " + v + " — build to hash it");
+  });
+  ["G","N","estimator","kchars"].forEach(id => $(id).addEventListener("input", updateEstimate));
+  $("btn-build-genome").addEventListener("click", buildGenome);
+  $("btn-run").addEventListener("click", runAll);
+  $("btn-cancel").addEventListener("click", ()=>{ state.cancel=true; l.warn("cancel requested — finishing in-flight calls"); });
+  $("btn-recompute").addEventListener("click", ()=>{
+    if (!state.genome || !Object.keys(state.draws).length) { l.warn("no draws in memory — load an export"); return; }
+    l.info("recomputing metric " + METRIC_VERSION + " (no API calls)"); computeMetric();
+  });
+  $("btn-check").addEventListener("click", runChecker);
+  $("btn-export").addEventListener("click", doExport);
+  $("btn-import").addEventListener("click", ()=>$("file-import").click());
+  $("file-import").addEventListener("change", e=>{ if(e.target.files[0]) doImport(e.target.files[0]); e.target.value=""; });
+  $("btn-logclear").addEventListener("click", l.clear);
+  document.querySelectorAll(".navitem").forEach(nv => nv.addEventListener("click", ()=>{
+    document.querySelectorAll(".navitem").forEach(x=>x.classList.remove("active"));
+    nv.classList.add("active");
+    document.getElementById(nv.dataset.target)?.scrollIntoView({ behavior:"smooth", block:"start" });
+  }));
+  const rail = $("rail");
+  rail.style.width = (localStorage.getItem("pb_rail")||252)+"px";
+  let drag = false;
+  $("splitter").addEventListener("mousedown", ()=>{ drag=true; document.body.style.userSelect="none"; });
+  window.addEventListener("mousemove", e=>{ if(!drag) return;
+    const w = Math.max(190, Math.min(430, e.clientX)); rail.style.width = w+"px"; localStorage.setItem("pb_rail",w); });
+  window.addEventListener("mouseup", ()=>{ drag=false; document.body.style.userSelect=""; });
+  updateEstimate();
+  l.info(`phylo-bench ${TOOL_VERSION} · metric ${METRIC_VERSION} · ready`);
+  l.info("order of work: build genome (hashes it) → declare cohort with iface and tok → set anchors → run → read the gates before anything else.");
+}
+init();
+</script>
+</body>
+</html>
