@@ -198,7 +198,7 @@ button.danger{color:var(--red);border-color:oklch(0.65 0.2 25 / 0.3)}
     <span class="pill mono" id="pill-state">IDLE</span>
     <span class="pill mono" id="pill-count">0 BILDER</span>
     <span class="grow"></span>
-    <span class="pill mono" id="pill-build">v1.4.0</span>
+    <span class="pill mono" id="pill-build">v1.4.1</span>
   </div>
 
   <div id="mid">
@@ -1231,7 +1231,7 @@ function download(blob, name){
 
 $("btn-export-run").onclick = () => {
   const payload = {
-    tool: "meme-archivar", version: "1.4.0",
+    tool: "meme-archivar", version: "1.4.1",
     exported: new Date().toISOString(),
     model: $("model").value,
     grounding: $("grounding").checked,
@@ -1757,7 +1757,9 @@ function siteIndexHtml(title){
     <span class="counter" id="visits">0000000</span> visitors since 1998<br>
     <span class="blink">*</span> <span id="total">?</span> pictures in the archive
     <span class="blink">*</span><br>
-    <a href="impressum.html">Impressum &amp; image rights</a> &middot; Made with Notepad and love
+    <a href="impressum.html">Impressum &amp; image rights</a> &middot;
+    <a href="https://github.com/christoph-puppe/funstuff/blob/main/meme-archivar_1.html">built with meme-archivar</a>
+    &middot; Made with Notepad and love
   </footer>
 </div>
 
@@ -1824,8 +1826,10 @@ function siteIndexHtml(title){
       if (en.history) h += '<p><b>History.</b> ' + esc(en.history) + '</p>';
       if (it.flags && it.flags.length)
         h += '<p class="flag">flagged for review: ' + esc(it.flags.join(', ')) + '</p>';
-      h += '<p style="font-size:11px;color:#555">Text written by an AI model. '
-        + 'Treat dates and origin stories as a starting point, not as a source.</p>';
+      h += '<p style="font-size:11px;color:#555">Text written by an AI model with '
+        + '<a href="https://github.com/christoph-puppe/funstuff/blob/main/meme-archivar_1.html">'
+        + 'meme-archivar</a>. Treat dates and origin stories as a starting point, '
+        + 'not as a source.</p>';
     } else {
       h = '<p class="tags">' + esc(it.n) + ' | ' + it.w + 'x' + it.h + ' | ' + kb(it.s) + '</p>'
         + '<p>No description for this one.</p>';
@@ -1987,7 +1991,7 @@ function siteIndexHtml(title){
 /* ============================================================ boot */
 renderResults();
 updateButtons();
-l.info("Meme Archivar v1.4.0 bereit.");
+l.info("Meme Archivar v1.4.1 bereit.");
 l.info("Ablauf: Ordner wählen → Texte erzeugen → optional prüfen → Galerie schreiben.");
 if (!window.showDirectoryPicker)
   l.warn("Dieser Browser kann keine Ordner schreiben — nur ZIP-Download. Chrome oder Edge nutzen.");
