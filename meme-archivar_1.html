@@ -1,0 +1,1998 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meme Archivar · Gemini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-deep:oklch(0.13 0.02 280);
+  --bg-elev-1:oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:oklch(0.95 0.005 280 / 0.08);
+  --border-1:oklch(0.95 0.005 280 / 0.06);
+  --border-2:oklch(0.95 0.005 280 / 0.10);
+  --text-primary:oklch(0.95 0.005 280);
+  --text-secondary:oklch(0.75 0.02 280);
+  --text-tertiary:oklch(0.65 0.02 280);
+  --text-quiet:oklch(0.55 0.02 280);
+  --accent:oklch(0.7 0.18 300);
+  --accent-soft:oklch(0.7 0.18 300 / 0.15);
+  --accent-glow:oklch(0.7 0.18 300 / 0.4);
+  --red:oklch(0.65 0.2 25);
+  --amber:oklch(0.80 0.15 80);
+  --green:oklch(0.75 0.18 145);
+  --blue:oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg-deep);color:var(--text-primary);
+  font-family:Inter,system-ui,sans-serif;font-size:13.5px;line-height:1.5;
+  overflow:hidden;
+}
+::selection{background:oklch(0.7 0.18 300 / 0.35);color:oklch(0.95 0.005 280)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg-elev-3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.nano{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--text-quiet)}
+.glass{background:var(--bg-elev-1);border:1px solid var(--border-2);
+  backdrop-filter:blur(20px);border-radius:12px}
+
+/* ---------- shell ---------- */
+#shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+#topbar{height:62px;flex:0 0 62px;display:flex;align-items:center;gap:14px;padding:0 20px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-1)}
+#topbar .brand{font-weight:600;font-size:15px;letter-spacing:-0.2px}
+#topbar .brand span{color:var(--accent)}
+.pill{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.8px;
+  padding:3px 9px;border-radius:99px;background:var(--bg-elev-2);border:1px solid var(--border-2);
+  color:var(--text-tertiary);white-space:nowrap}
+.pill.on{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft)}
+.grow{flex:1}
+#mid{flex:1;display:flex;min-height:0}
+#rail{width:252px;flex:0 0 252px;overflow-y:auto;padding:16px;border-right:1px solid var(--border-1);
+  background:var(--bg-elev-1);backdrop-filter:blur(20px)}
+#splitter{width:5px;cursor:col-resize;background:transparent;flex:0 0 5px}
+#splitter:hover{background:var(--accent-soft)}
+#main{flex:1;overflow-y:auto;padding:24px 28px 40px;min-width:0}
+#logcard{height:216px;flex:0 0 216px;display:flex;flex-direction:column;
+  border-top:1px solid var(--border-1);background:var(--bg-elev-1);backdrop-filter:blur(20px)}
+
+/* ---------- rail ---------- */
+.rail-group{margin-bottom:20px}
+.rail-group>.nano{margin-bottom:9px;display:block}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:11px;color:var(--text-tertiary);margin-bottom:4px}
+input[type=text],input[type=password],input[type=number],select,textarea{
+  width:100%;background:var(--bg-elev-2);color:var(--text-primary);
+  border:1px solid var(--border-2);border-radius:8px;padding:7px 9px;
+  font-family:Inter,sans-serif;font-size:12.5px;outline:none;transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px oklch(0.7 0.18 300 / 0.18)}
+textarea{font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.55;resize:vertical}
+select option{background:#1b1526;color:#eee}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);
+  margin-bottom:8px;cursor:pointer}
+.check input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.hint{font-size:10.5px;color:var(--text-quiet);line-height:1.45;margin-top:5px}
+
+/* ---------- buttons ---------- */
+button{font-family:Inter,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;
+  background:var(--bg-elev-2);color:var(--text-primary);border:1px solid var(--border-2);
+  border-radius:8px;padding:7px 13px;transition:all .15s ease}
+button:hover:not(:disabled){background:var(--bg-elev-3);border-color:var(--border-2);transform:translateY(-1px)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:transparent;color:oklch(0.16 0.02 300);
+  font-weight:600;box-shadow:0 6px 20px var(--accent-glow)}
+button.primary:hover:not(:disabled){background:oklch(0.75 0.18 300)}
+button.ghost{background:transparent}
+button.tiny{font-size:11px;padding:4px 9px}
+button.danger{color:var(--red);border-color:oklch(0.65 0.2 25 / 0.3)}
+
+/* ---------- cards ---------- */
+.card{background:var(--bg-elev-1);border:1px solid var(--border-2);backdrop-filter:blur(20px);
+  border-radius:12px;padding:18px;margin-bottom:18px}
+.card>h2{margin:0 0 3px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card>h2 .ic{color:var(--accent)}
+.card>.sub{margin:0 0 14px;font-size:11.5px;color:var(--text-quiet)}
+.drop{border:1px dashed var(--border-2);border-radius:10px;padding:22px;text-align:center;
+  background:var(--bg-elev-1);transition:all .15s ease}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+
+/* ---------- prompts ---------- */
+.prompt-block{margin-bottom:16px}
+.prompt-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.prompt-head .grow{flex:1}
+.warnchip{display:none;font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--amber);
+  border:1px solid oklch(0.8 0.15 80 / 0.35);background:oklch(0.8 0.15 80 / 0.10);
+  padding:3px 8px;border-radius:6px;margin-top:6px}
+.warnchip.show{display:inline-block}
+.saved{font-size:10px;color:var(--green);opacity:0;transition:opacity .3s ease}
+.saved.show{opacity:.85}
+
+/* ---------- progress ---------- */
+#progress-wrap{display:none;margin-top:14px}
+#progress-wrap.show{display:block}
+.progress-head{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;
+  font-size:10.5px;color:var(--text-tertiary);margin-bottom:6px}
+.progress-track{height:1px;background:var(--border-1);overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .2s ease}
+.progress-fill.done{background:var(--green)}
+
+/* ---------- stats ---------- */
+#stats-card{display:none}
+#stats-card.show{display:block}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){.stat-grid{grid-template-columns:1fr}}
+.sub-card{background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:10px;padding:14px}
+.sub-card>.nano{display:block;margin-bottom:10px}
+.donut-wrap{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:5px;font-size:11px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px}
+.hbar-row{display:grid;grid-template-columns:118px 1fr 34px;gap:9px;align-items:center;
+  font-size:11px;margin-bottom:6px}
+.hbar-label{color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-track{height:7px;background:var(--bg-elev-2);border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px;transition:width .3s ease}
+.hbar-value{font-family:"JetBrains Mono",monospace;color:var(--text-tertiary);text-align:right}
+
+/* ---------- results ---------- */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.res{display:grid;grid-template-columns:132px 1fr;gap:14px;padding:14px;margin-bottom:12px;
+  background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:10px}
+@media(max-width:640px){.res{grid-template-columns:1fr}}
+.res img{width:132px;height:132px;object-fit:cover;border-radius:8px;background:#000;
+  border:1px solid var(--border-2)}
+.res h3{margin:0 0 3px;font-size:13.5px;font-weight:600}
+.res .fname{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--text-quiet);
+  word-break:break-all;margin-bottom:8px}
+.res p{margin:0 0 8px;font-size:12.5px;color:var(--text-secondary)}
+.res p b{color:var(--text-primary);font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.validation-block{margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--border-1);
+  background:oklch(0.95 0.005 280 / 0.03);border-left-width:3px}
+.validation-block.ok{border-left-color:oklch(0.75 0.18 145 / 0.8)}
+.validation-block.warn{border-left-color:oklch(0.8 0.15 80 / 0.8)}
+.validation-block.danger{border-left-color:oklch(0.65 0.2 25 / 0.8)}
+.validation-block.neutral{border-left-color:var(--text-quiet)}
+.validation-block ul{margin:6px 0 0;padding-left:18px;font-size:12px;color:var(--text-secondary)}
+
+/* ---------- log ---------- */
+#loghead{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--border-1)}
+#logbody{flex:1;overflow-y:auto;padding:8px 16px 12px;font-family:"JetBrains Mono",monospace;
+  font-size:11px;line-height:1.62}
+.lg{display:flex;gap:10px}
+.lg .t{color:var(--text-quiet);flex:0 0 92px}
+.lg.info .m{color:var(--blue)}
+.lg.ok .m{color:var(--green)}
+.lg.warn .m{color:var(--amber)}
+.lg.err .m{color:var(--red)}
+.lg.debug .m{color:var(--text-quiet)}
+</style>
+</head>
+<body>
+
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);
+  top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);
+  bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="shell">
+
+  <div id="topbar">
+    <div class="brand">◈ Meme <span>Archivar</span></div>
+    <span class="pill mono" id="pill-model">gemini-3-flash-preview</span>
+    <span class="pill mono" id="pill-state">IDLE</span>
+    <span class="pill mono" id="pill-count">0 BILDER</span>
+    <span class="grow"></span>
+    <span class="pill mono" id="pill-build">v1.4.0</span>
+  </div>
+
+  <div id="mid">
+    <div id="rail">
+
+      <div class="rail-group">
+        <span class="nano">◉ Verbindung</span>
+        <div class="field">
+          <label for="apikey">Gemini API-Key</label>
+          <input type="password" id="apikey" placeholder="AIza…" autocomplete="off">
+          <div class="hint">Bleibt im Browser (localStorage), geht nur an Google.</div>
+        </div>
+        <div class="field">
+          <label for="model">Modell</label>
+          <select id="model">
+            <option value="gemini-3-flash-preview" selected>gemini-3-flash-preview (Free Tier)</option>
+            <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (schnell)</option>
+            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (bestes Wissen, kostenpflichtig)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">◇ Ausführung</span>
+        <div class="row2">
+          <div class="field">
+            <label for="concurrency">Parallel</label>
+            <input type="number" id="concurrency" value="4" min="1" max="16">
+          </div>
+          <div class="field">
+            <label for="retries">Retries</label>
+            <input type="number" id="retries" value="2" min="0" max="6">
+          </div>
+        </div>
+        <div class="field">
+          <label for="thinking">Thinking-Level</label>
+          <select id="thinking">
+            <option value="minimal">minimal</option>
+            <option value="low" selected>low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="imgpx">Bildkante an Gemini (px)</label>
+          <input type="number" id="imgpx" value="768" min="256" max="1600" step="64">
+          <div class="hint">Verkleinert vor dem Senden. Spart Tokens, kostet bei Memes nichts.</div>
+        </div>
+        <div class="field">
+          <label for="limit">Nur die ersten N Bilder (0 = alle)</label>
+          <input type="number" id="limit" value="0" min="0">
+        </div>
+        <label class="check"><input type="checkbox" id="only-missing" checked>
+          Nur Bilder ohne Text analysieren</label>
+        <label class="check"><input type="checkbox" id="grounding">
+          Google-Suche zur Recherche</label>
+        <div class="hint">Genauere Datierung, aber langsamer und teurer. Für einen kuratierten
+          Teil sinnvoll, für 8.000 Bilder eher nicht.</div>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="makerchecker">
+          Maker-Checker (2. Prüf-Durchlauf)</label>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">▣ Galerie-Ausgabe</span>
+        <div class="field">
+          <label for="site-title">Titel der Seite</label>
+          <input type="text" id="site-title" value="The Meme Archive">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="thumbpx">Thumbnail px</label>
+            <input type="number" id="thumbpx" value="320" min="120" max="600" step="20">
+          </div>
+          <div class="field">
+            <label for="pagesize">Bilder/Seite</label>
+            <input type="number" id="pagesize" value="60" min="12" max="200">
+          </div>
+        </div>
+        <div class="field">
+          <label for="maxside">Originale verkleinern auf px (0 = aus)</label>
+          <input type="number" id="maxside" value="0" min="0" max="4000" step="100">
+        </div>
+      </div>
+
+      <div class="rail-group">
+        <span class="nano">⌕ Sitzung</span>
+        <button class="tiny ghost" id="btn-export-run" style="width:100%;margin-bottom:6px">⤓ Lauf als JSON sichern</button>
+        <button class="tiny ghost" id="btn-import-run" style="width:100%">↗ Lauf-JSON laden (Resume)</button>
+        <input type="file" id="import-file" accept=".json" style="display:none">
+        <div class="hint">Das JSON ist deine Sicherung. Texte kommen nach dem erneuten
+          Auswählen des Ordners per Hash wieder an die richtigen Bilder.</div>
+      </div>
+    </div>
+
+    <div id="splitter"></div>
+
+    <div id="main">
+
+      <div class="card">
+        <h2><span class="ic">◐</span> 1 · Bilder-Ordner</h2>
+        <p class="sub">Der Ordner wird nur im Browser gelesen. Unterordner werden mitgenommen,
+          Duplikate per SHA-256 erkannt.</p>
+        <div class="drop" id="drop">
+          <button class="primary" id="btn-pick">Ordner auswählen</button>
+          <input type="file" id="folder-input" webkitdirectory directory multiple style="display:none">
+          <div class="hint" style="margin-top:10px">
+            Alternativ Dateien hierher ziehen. Erkannt werden jpg, png, gif, webp, bmp, tif.
+          </div>
+        </div>
+        <div class="kv" id="input-summary"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ic">✎</span> 2 · Prompts</h2>
+        <p class="sub">Beides geht wörtlich so an das Modell. Änderungen werden lokal gespeichert.</p>
+
+        <div class="prompt-block">
+          <div class="prompt-head">
+            <span class="nano">Maker-Prompt · Bildbeschreibung</span>
+            <span class="grow"></span>
+            <span class="saved" id="saved-maker">gespeichert</span>
+            <button class="tiny ghost" id="reset-maker">Reset</button>
+          </div>
+          <textarea id="p-maker" style="min-height:220px"></textarea>
+          <div class="warnchip" id="warn-maker">Platzhalter {filename} fehlt — wird beim Senden angehängt.</div>
+        </div>
+
+        <div class="prompt-block">
+          <div class="prompt-head">
+            <span class="nano">Checker-Prompt · Prüfung</span>
+            <span class="grow"></span>
+            <span class="saved" id="saved-checker">gespeichert</span>
+            <button class="tiny ghost" id="reset-checker">Reset</button>
+          </div>
+          <textarea id="p-checker" style="min-height:180px"></textarea>
+          <div class="warnchip" id="warn-checker">Platzhalter {pairs} fehlt — wird beim Senden angehängt.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ic">▶</span> 3 · Analyse</h2>
+        <p class="sub">Ein Aufruf pro Bild. Ergebnisse erscheinen live, der Lauf ist jederzeit abbrechbar.</p>
+        <div class="toolbar">
+          <button class="primary" id="btn-run" disabled>▶ Texte erzeugen</button>
+          <button id="btn-validate" disabled>◬ Prüfdurchlauf</button>
+          <button class="danger" id="btn-cancel" style="display:none">■ Abbrechen</button>
+        </div>
+        <div id="progress-wrap">
+          <div class="progress-head"><span id="prog-label">bereit</span><span id="prog-num"></span></div>
+          <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="card" id="stats-card">
+        <h2><span class="ic">⬡</span> Verteilung</h2>
+        <p class="sub">Über alle fertigen Analysen.</p>
+        <div class="stat-grid" id="stat-grid"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ic">▣</span> 4 · Galerie schreiben</h2>
+        <p class="sub">Erzeugt Thumbnails, kopiert die Bilder und schreibt eine fertige statische
+          Seite im Web-Look der 90er. Der Ordner geht anschließend 1:1 per SFTP hoch.</p>
+        <div class="toolbar">
+          <button class="primary" id="btn-build-dir" disabled>▣ In Zielordner schreiben</button>
+          <button id="btn-build-zip" disabled>⤓ Als ZIP herunterladen</button>
+        </div>
+        <div class="toolbar">
+          <button id="btn-refresh-dir" disabled>↻ Nur Seite + Texte aktualisieren</button>
+          <button class="tiny ghost" id="btn-dl-index">⤓ index.html einzeln</button>
+          <button class="tiny ghost" id="btn-dl-data" disabled>⤓ data.json einzeln</button>
+        </div>
+        <div class="hint">Der Zielordner funktioniert in Chrome und Edge und schreibt direkt auf
+          die Platte — für 2 GB der richtige Weg. Der ZIP-Download hält alles im
+          Arbeitsspeicher und ist nur für kleinere Bestände gedacht.
+          <br>„Nur Seite aktualisieren" schreibt index.html, data.json und die Nebendateien neu,
+          ohne die Bilder anzufassen — für neue Texte oder einen neuen Titel. Die beiden
+          Einzel-Downloads sind der Notausgang, falls der Browser beim Ordnerzugriff zickt:
+          Datei einfach per SFTP in den Galerie-Ordner legen.</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ic">◈</span> 5 · Ergebnisse</h2>
+        <div class="toolbar">
+          <select id="filter" style="width:auto;min-width:200px">
+            <option value="all">alle</option>
+            <option value="done">fertig</option>
+            <option value="pending">offen</option>
+            <option value="error">Fehler</option>
+            <option value="flagged">rechtlich prüfen</option>
+            <option value="issues">Prüfung beanstandet</option>
+          </select>
+          <input type="text" id="search" placeholder="suchen…" style="width:auto;flex:1;min-width:160px">
+          <button class="tiny ghost" id="btn-md">⤓ Markdown</button>
+          <button class="tiny ghost" id="btn-csv">⤓ CSV</button>
+        </div>
+        <div id="results"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="logcard">
+    <div id="loghead">
+      <span class="nano">⌕ Konsole</span>
+      <span class="pill mono" id="log-count">0</span>
+      <span class="grow"></span>
+      <label class="check" style="margin:0"><input type="checkbox" id="autoscroll" checked> autoscroll</label>
+      <button class="tiny ghost" id="btn-clearlog">leeren</button>
+    </div>
+    <div id="logbody"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================ helpers */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g,
+  c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]));
+const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|tiff?|jfif)$/i;
+const ANIM_EXT = /\.(gif|webp)$/i;
+
+function human(n){
+  const u = ["B","KB","MB","GB","TB"]; let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return (i === 0 ? n.toFixed(0) : n.toFixed(1)) + " " + u[i];
+}
+
+const state = {
+  files: [],        // {file, rel, name, dir, hash, size}
+  results: [],      // {item, analysis, validation, error, validationError}
+  running: false,
+  cancel: false,
+  resumed: 0,
+  saved: new Map(), // hash -> {analysis, validation} aus geladenem Lauf-JSON
+};
+
+/* ============================================================ log */
+const logbody = $("logbody");
+let logN = 0;
+const l = {
+  line(level, msg){
+    const now = new Date();
+    const t = now.toTimeString().slice(0,8) + "." +
+      String(now.getMilliseconds()).padStart(3,"0");
+    const d = document.createElement("div");
+    d.className = "lg " + level;
+    d.innerHTML = '<span class="t">' + t + '</span><span class="m">' + esc(msg) + '</span>';
+    logbody.appendChild(d);
+    logN++; $("log-count").textContent = logN;
+    if (logbody.children.length > 3000) logbody.removeChild(logbody.firstChild);
+    if ($("autoscroll").checked) logbody.scrollTop = logbody.scrollHeight;
+  },
+  info(m){ this.line("info", m); },
+  ok(m){ this.line("ok", m); },
+  warn(m){ this.line("warn", m); },
+  err(m){ this.line("err", m); },
+  debug(m){ this.line("debug", m); },
+};
+
+/* ============================================================ prompts */
+const DEFAULT_MAKER_PROMPT =
+`You are an internet historian and archivist specialising in the visual culture of the
+early web (roughly 1993 to 2010): Usenet, IRC, GeoCities, eBaum's World, Something Awful,
+4chan, YTMND, Newgrounds, early YouTube, German boards like Mediengestalter or Krautchan.
+
+You are looking at ONE image from a private archive of old memes and funny pictures.
+Write for a reader who was not there — someone born after 2005 who needs the joke and the
+context explained without condescension.
+
+Filename: {filename}
+Folder:   {folder}
+
+Use the filename as a hint, never as a fact. Old archives are full of misleading names.
+
+Produce:
+
+1. title — a short, plain English title for the image (max 8 words). If the image IS a
+   known meme, use its established name (e.g. "All Your Base Are Belong To Us").
+2. summary — one or two sentences describing literally what is visible.
+3. explanation — 2 to 4 sentences: what the joke is, why people found it funny, what the
+   image was typically used to express in a conversation.
+4. historical_context — 3 to 6 sentences: where it came from, roughly when it appeared,
+   which community or site spread it, what technology or event made it possible, and what
+   it says about the internet of that moment. Name concrete sites, games, films, or events
+   where you can.
+5. known_meme_name — the canonical name if this is a documented meme, otherwise "".
+6. origin_year — best estimate as a year or range, e.g. "1999" or "2003-2005", or "unknown".
+7. era — the bucket the image most likely belongs to.
+8. category — the visual form of the image.
+9. confidence — how sure you are of the identification and dating.
+10. content_flags — legal and safety review flags. Be strict and literal here; this list is
+    used to decide what a human must look at before publishing. Use "none" only when no
+    other flag applies.
+
+RULES
+
+- Write everything in English, plain and concrete. No marketing tone, no "in today's
+  digital landscape". Short sentences.
+- Never invent a specific origin you are not reasonably sure of. If you do not recognise
+  the image, say so in the explanation, set known_meme_name to "", origin_year to
+  "unknown", and confidence to "low". A truthful "this appears to be an unremarkable
+  photoshop from an unknown forum" is far more useful than an invented backstory.
+- Describe offensive content factually and flag it. Do not reproduce slurs; refer to them.
+- Do not moralise. The archive documents what people actually posted, including material
+  that has aged badly. Explaining why something was considered funny in 2002 is not
+  endorsing it.`;
+
+const DEFAULT_CHECKER_PROMPT =
+`You are a fact-checking editor reviewing an internet historian's work before publication.
+You receive image analyses (you cannot see the images themselves, only the filenames and
+the written analysis). Audit each one for claims that are likely wrong.
+
+Look specifically for:
+
+- Invented origin stories. A confident specific claim ("created by user X on Something
+  Awful in March 2001") for an image that is probably unidentifiable is the single most
+  common failure. Flag it.
+- Dating that contradicts itself or the described technology (a smartphone screenshot
+  dated 2001, a meme dated before the site that hosted it existed).
+- A known_meme_name that does not match the described content.
+- Confidence that is out of line with the evidence: a detailed origin story paired with
+  "high" confidence but no identifiable meme, or a well-known meme marked "low".
+- content_flags that look incomplete given the description — especially identifiable
+  people, and material that would be illegal to publish in Germany.
+
+Be precise and sparing. If an analysis is sound, say so with verdict "confirmed" and an
+empty issues list. Do not invent problems to look thorough. Use "uncertain" when you
+genuinely cannot judge without seeing the image.
+
+Analyses to audit:
+
+{pairs}`;
+
+/* ============================================================ schemas */
+const ERA = ["pre-1995","1995-1999","2000-2004","2005-2009","2010-2014","2015+","unknown"];
+const CATEGORY = ["image macro","reaction image","photoshop edit","drawing or webcomic",
+  "animated gif","screenshot","ascii or text","photograph","banner or advertisement","other"];
+const FLAGS = ["none","identifiable_person","nazi_symbol","nudity","gore","slur",
+  "minor_depicted","copyrighted_character","other_legal_risk"];
+
+const MAKER_SCHEMA = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    summary: { type: "string" },
+    explanation: { type: "string" },
+    historical_context: { type: "string" },
+    known_meme_name: { type: "string" },
+    origin_year: { type: "string" },
+    era: { type: "string", enum: ERA },
+    category: { type: "string", enum: CATEGORY },
+    confidence: { type: "string", enum: ["high","medium","low"] },
+    content_flags: { type: "array", items: { type: "string", enum: FLAGS } },
+  },
+  required: ["title","summary","explanation","historical_context","era","category",
+             "confidence","content_flags"],
+};
+
+const VALIDATE_SCHEMA = {
+  type: "object",
+  properties: {
+    validations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          item_id: { type: "string" },
+          verdict: { type: "string",
+            enum: ["confirmed","minor_corrections","major_issues","incorrect","uncertain"] },
+          issues: { type: "array", items: { type: "string" } },
+          corrections: { type: "string" },
+          confidence_check: { type: "string", enum: ["appropriate","too_high","too_low"] },
+          reviewer_notes: { type: "string" },
+        },
+        required: ["item_id","verdict","issues","corrections","confidence_check","reviewer_notes"],
+      },
+    },
+  },
+  required: ["validations"],
+};
+
+/* ============================================================ colors */
+const ERA_COLORS = {
+  "pre-1995":"oklch(0.55 0.02 280)", "1995-1999":"oklch(0.7 0.18 300)",
+  "2000-2004":"oklch(0.70 0.15 240)", "2005-2009":"oklch(0.75 0.18 145)",
+  "2010-2014":"oklch(0.80 0.15 80)", "2015+":"oklch(0.65 0.20 25)",
+  "unknown":"oklch(0.45 0.02 280)",
+};
+const CONF_COLORS = { high:"oklch(0.75 0.18 145)", medium:"oklch(0.80 0.15 80)",
+  low:"oklch(0.65 0.20 25)" };
+const VALIDATION_COLORS = {
+  confirmed:"oklch(0.75 0.18 145)", minor_corrections:"oklch(0.80 0.15 80)",
+  major_issues:"oklch(0.65 0.20 50)", incorrect:"oklch(0.65 0.20 25)",
+  uncertain:"oklch(0.55 0.02 280)",
+};
+const FLAG_COLOR = "oklch(0.65 0.20 25)";
+const PALETTE = ["oklch(0.7 0.18 300)","oklch(0.70 0.15 240)","oklch(0.75 0.18 145)",
+  "oklch(0.80 0.15 80)","oklch(0.65 0.20 25)","oklch(0.65 0.12 330)",
+  "oklch(0.60 0.10 200)","oklch(0.55 0.02 280)"];
+
+/* ============================================================ persistence */
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : v; }
+             catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+};
+
+function initPrompt(id, defVal, lsKey, placeholder, warnId, savedId){
+  const ta = $(id);
+  ta.value = LS.get(lsKey, defVal);
+  const check = () => $(warnId).classList.toggle("show", !ta.value.includes(placeholder));
+  let timer = null;
+  ta.addEventListener("input", () => {
+    LS.set(lsKey, ta.value); check();
+    $(savedId).classList.add("show");
+    clearTimeout(timer); timer = setTimeout(() => $(savedId).classList.remove("show"), 1200);
+  });
+  check();
+}
+initPrompt("p-maker", DEFAULT_MAKER_PROMPT, "ma.maker", "{filename}", "warn-maker", "saved-maker");
+initPrompt("p-checker", DEFAULT_CHECKER_PROMPT, "ma.checker", "{pairs}", "warn-checker", "saved-checker");
+$("reset-maker").onclick = () => { $("p-maker").value = DEFAULT_MAKER_PROMPT;
+  LS.set("ma.maker", DEFAULT_MAKER_PROMPT); $("warn-maker").classList.remove("show");
+  l.info("Maker-Prompt zurückgesetzt"); };
+$("reset-checker").onclick = () => { $("p-checker").value = DEFAULT_CHECKER_PROMPT;
+  LS.set("ma.checker", DEFAULT_CHECKER_PROMPT); $("warn-checker").classList.remove("show");
+  l.info("Checker-Prompt zurückgesetzt"); };
+
+["apikey","model","concurrency","retries","thinking","imgpx","limit","site-title",
+ "thumbpx","pagesize","maxside"].forEach(id => {
+  const el = $(id);
+  el.value = LS.get("ma." + id, el.value);
+  el.addEventListener("input", () => LS.set("ma." + id, el.value));
+  el.addEventListener("change", () => LS.set("ma." + id, el.value));
+});
+["only-missing","grounding","makerchecker"].forEach(id => {
+  const el = $(id);
+  el.checked = LS.get("ma." + id, el.checked ? "1" : "0") === "1";
+  el.addEventListener("change", () => LS.set("ma." + id, el.checked ? "1" : "0"));
+});
+$("model").addEventListener("change", () => $("pill-model").textContent = $("model").value);
+$("pill-model").textContent = $("model").value;
+
+/* ============================================================ splitter */
+(function(){
+  const rail = $("rail"), sp = $("splitter");
+  const w = parseInt(LS.get("ma.railw", "252"), 10);
+  if (w >= 200 && w <= 460) { rail.style.width = w + "px"; rail.style.flexBasis = w + "px"; }
+  let drag = false;
+  sp.addEventListener("mousedown", e => { drag = true; e.preventDefault();
+    document.body.style.cursor = "col-resize"; });
+  window.addEventListener("mousemove", e => {
+    if (!drag) return;
+    const nw = Math.min(460, Math.max(200, e.clientX));
+    rail.style.width = nw + "px"; rail.style.flexBasis = nw + "px";
+  });
+  window.addEventListener("mouseup", () => {
+    if (!drag) return; drag = false; document.body.style.cursor = "";
+    LS.set("ma.railw", String(parseInt(rail.style.width, 10) || 252));
+  });
+})();
+
+/* ============================================================ input */
+async function sha256(buf){
+  const d = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function ingest(fileList){
+  const files = Array.from(fileList).filter(f => IMG_EXT.test(f.name));
+  if (!files.length) { l.err("Keine Bilddateien gefunden."); return; }
+  l.info("Ordner eingelesen: " + files.length + " Bilddateien, prüfe auf Duplikate…");
+  files.sort((a, b) => {
+    const pa = a.webkitRelativePath || a.name, pb = b.webkitRelativePath || b.name;
+    const da = (pa.match(/\//g) || []).length, db = (pb.match(/\//g) || []).length;
+    return da - db || pa.length - pb.length || pa.localeCompare(pb);
+  });
+
+  const seen = new Set();
+  const out = [];
+  let dupes = 0, bytes = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    let hash;
+    try { hash = await sha256(await f.arrayBuffer()); }
+    catch (e) { l.err("Lesefehler " + f.name + ": " + e.message); continue; }
+    if (seen.has(hash)) { dupes++; continue; }
+    seen.add(hash);
+    let rel = f.webkitRelativePath || f.name;
+    const cut = rel.indexOf("/");
+    if (cut > -1) rel = rel.slice(cut + 1);   // obersten Ordnernamen abschneiden
+    const dir = rel.includes("/") ? rel.slice(0, rel.lastIndexOf("/")) : "";
+    out.push({ file: f, rel, name: f.name, dir, hash, size: f.size });
+    bytes += f.size;
+    if (i % 200 === 0 && i) l.debug("… " + i + " von " + files.length + " gehasht");
+  }
+
+  state.files = out;
+  state.results = out.map(item => {
+    const prev = state.saved.get(item.hash);
+    return { item,
+      analysis: prev ? prev.analysis : null,
+      validation: prev ? prev.validation : null,
+      error: null, validationError: null };
+  });
+  const restored = state.results.filter(r => r.analysis).length;
+  if (restored) l.ok(restored + " Texte aus dem geladenen Lauf wieder zugeordnet");
+
+  l.ok("Bereit: " + out.length + " Bilder, " + human(bytes) + ", " + dupes + " Duplikate verworfen");
+  $("pill-count").textContent = out.length + " BILDER";
+  $("input-summary").innerHTML =
+    '<span class="pill">' + out.length + ' Bilder</span>' +
+    '<span class="pill">' + human(bytes) + '</span>' +
+    '<span class="pill">' + dupes + ' Duplikate verworfen</span>' +
+    (restored ? '<span class="pill on">' + restored + ' Texte aus Resume</span>' : '');
+  updateButtons(); renderResults(); renderStats();
+}
+
+$("btn-pick").onclick = () => $("folder-input").click();
+$("folder-input").addEventListener("change", e => { if (e.target.files.length) ingest(e.target.files); });
+const drop = $("drop");
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files.length) ingest(e.dataTransfer.files); });
+
+/* ============================================================ image scaling */
+async function scaleToBlob(file, maxSide, type, quality){
+  let bmp;
+  try { bmp = await createImageBitmap(file); }
+  catch (e) { throw new Error("nicht dekodierbar: " + e.message); }
+  const scale = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+  const w = Math.max(1, Math.round(bmp.width * scale));
+  const h = Math.max(1, Math.round(bmp.height * scale));
+  const cv = new OffscreenCanvas(w, h);
+  const ctx = cv.getContext("2d");
+  ctx.drawImage(bmp, 0, 0, w, h);
+  const blob = await cv.convertToBlob({ type, quality });
+  const dims = { w: bmp.width, h: bmp.height };
+  bmp.close();
+  return { blob, dims, out: { w, h } };
+}
+
+async function squareThumb(file, size, quality){
+  const bmp = await createImageBitmap(file);
+  const side = Math.min(bmp.width, bmp.height);
+  const sx = (bmp.width - side) / 2, sy = (bmp.height - side) / 2;
+  const cv = new OffscreenCanvas(size, size);
+  cv.getContext("2d").drawImage(bmp, sx, sy, side, side, 0, 0, size, size);
+  const blob = await cv.convertToBlob({ type: "image/webp", quality });
+  const dims = { w: bmp.width, h: bmp.height };
+  bmp.close();
+  return { blob, dims };
+}
+
+const blobToBase64 = blob => new Promise((res, rej) => {
+  const fr = new FileReader();
+  fr.onload = () => res(String(fr.result).split(",")[1]);
+  fr.onerror = () => rej(new Error("FileReader"));
+  fr.readAsDataURL(blob);
+});
+
+/* ============================================================ Gemini */
+const stripFences = s => s.replace(/^\s*```(?:json)?/i, "").replace(/```\s*$/i, "").trim();
+
+function extractJson(text){
+  const trim = String(text).trim();
+  try { return JSON.parse(trim); } catch(e){}
+  const stripped = stripFences(trim);
+  try { return JSON.parse(stripped); } catch(e){}
+  const s = stripped.indexOf("{"), e2 = stripped.lastIndexOf("}");
+  if (s >= 0 && e2 > s) { try { return JSON.parse(stripped.slice(s, e2 + 1)); } catch(e){} }
+  throw new Error("konnte kein JSON aus der Antwort lesen");
+}
+
+async function llmOnce(parts, schema){
+  const key = $("apikey").value.trim();
+  if (!key) throw new Error("kein API-Key eingetragen");
+  const model = $("model").value;
+  const grounding = $("grounding").checked;
+  const body = {
+    contents: [{ role: "user", parts }],
+    generationConfig: {
+      thinkingConfig: { thinkingLevel: $("thinking").value },
+    },
+  };
+  if (grounding) body.tools = [{ googleSearch: {} }];
+  else {
+    body.generationConfig.responseMimeType = "application/json";
+    body.generationConfig.responseJsonSchema = schema;
+  }
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
+    { method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify(body) });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 400); } catch(e){}
+    throw new Error("HTTP " + res.status + " " + detail);
+  }
+  const data = await res.json();
+  const cand = (data.candidates || [])[0];
+  if (!cand) throw new Error("keine Antwort (evtl. Safety-Filter)");
+  const text = (cand.content && cand.content.parts || []).map(p => p.text || "").join("\n");
+  if (!text.trim()) throw new Error("leere Antwort (finishReason: " + (cand.finishReason || "?") + ")");
+  return text;
+}
+
+async function llm(parts, schema, label){
+  const retries = Math.max(0, parseInt($("retries").value, 10) || 0);
+  let attempt = 0;
+  while (true) {
+    if (state.cancel) throw new Error("abgebrochen");
+    try {
+      const t0 = performance.now();
+      const text = await llmOnce(parts, schema);
+      l.debug(label + " ← " + (text.length / 1024).toFixed(1) + "kb in " +
+              Math.round(performance.now() - t0) + "ms");
+      return text;
+    } catch (e) {
+      attempt++;
+      if (attempt > retries || /abgebrochen|kein API-Key/.test(e.message)) throw e;
+      const wait = 500 * Math.pow(2, attempt - 1);
+      l.warn(label + " fehlgeschlagen (" + e.message.slice(0,160) + ") — Retry " +
+             attempt + "/" + retries + " in " + wait + "ms");
+      await sleep(wait);
+    }
+  }
+}
+
+async function runPool(tasks, limit, onProgress){
+  const results = new Array(tasks.length);
+  let done = 0, next = 0;
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    while (next < tasks.length) {
+      const i = next++;
+      if (state.cancel) { results[i] = { cancelled: true }; done++; onProgress && onProgress(done, tasks.length); continue; }
+      try { results[i] = await tasks[i](); }
+      catch (e) { results[i] = { error: e }; }
+      done++; onProgress && onProgress(done, tasks.length);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+/* ============================================================ progress */
+let hideTimer = null;
+function showProgress(phase, done, total){
+  clearTimeout(hideTimer);
+  $("progress-wrap").classList.add("show");
+  $("prog-label").textContent = phase;
+  $("prog-num").textContent = done + " / " + total;
+  const pct = total ? (done / total) * 100 : 0;
+  $("prog-fill").style.width = pct + "%";
+  $("prog-fill").classList.toggle("done", done >= total && total > 0);
+  if (done >= total) hideTimer = setTimeout(() => $("progress-wrap").classList.remove("show"), 900);
+}
+
+function setRunning(on, phaseLabel){
+  state.running = on;
+  $("btn-cancel").style.display = on ? "" : "none";
+  $("pill-state").textContent = on ? phaseLabel : (state.resumed ?
+    "RESUMED · " + state.results.filter(r=>r.analysis).length + " ANALYSIERT · " +
+    state.results.filter(r=>r.validation).length + " GEPRÜFT" : "IDLE");
+  $("pill-state").classList.toggle("on", on);
+  updateButtons();
+}
+
+function updateButtons(){
+  const have = state.files.length > 0;
+  const analyzed = state.results.filter(r => r.analysis).length;
+  $("btn-run").disabled = !have || state.running;
+  $("btn-validate").disabled = !analyzed || state.running;
+  $("btn-build-dir").disabled = !have || state.running;
+  $("btn-build-zip").disabled = !have || state.running;
+  $("btn-refresh-dir").disabled = !have || state.running;
+  $("btn-dl-index").disabled = state.running;
+  $("btn-dl-data").disabled = state.running || !state.results.some(r => r.entry);
+}
+
+/* ============================================================ Maker */
+function buildMakerPrompt(item){
+  let tpl = $("p-maker").value;
+  if (!tpl.trim()) tpl = DEFAULT_MAKER_PROMPT;
+  if (!tpl.includes("{filename}")) tpl += "\n\nFilename: {filename}";
+  if (!tpl.includes("{folder}")) tpl += "\nFolder: {folder}";
+  if ($("grounding").checked) {
+    tpl += "\n\nReturn ONLY a single JSON object with these keys: title, summary, " +
+      "explanation, historical_context, known_meme_name, origin_year, era (" + ERA.join(" | ") +
+      "), category (" + CATEGORY.join(" | ") + "), confidence (high | medium | low), " +
+      "content_flags (array from: " + FLAGS.join(" | ") + "). No markdown, no commentary.";
+  }
+  return tpl.replace("{filename}", item.name).replace("{folder}", item.dir || "(root)");
+}
+
+$("btn-run").onclick = async () => {
+  if (!$("apikey").value.trim()) { l.err("Bitte zuerst einen Gemini API-Key eintragen."); return; }
+  const onlyMissing = $("only-missing").checked;
+  const limit = parseInt($("limit").value, 10) || 0;
+  let idxs = state.results.map((r, i) => i).filter(i => !onlyMissing || !state.results[i].analysis);
+  if (limit > 0 && idxs.length > limit) {
+    l.warn("Begrenzung aktiv: nur die ersten " + limit + " von " + idxs.length +
+           " offenen Bildern werden analysiert");
+    idxs = idxs.slice(0, limit);
+  }
+  if (!idxs.length) { l.warn("Nichts zu tun — alle ausgewählten Bilder haben bereits einen Text."); return; }
+
+  state.cancel = false;
+  setRunning(true, "ANALYSE");
+  const conc = Math.max(1, parseInt($("concurrency").value, 10) || 4);
+  const px = Math.max(256, parseInt($("imgpx").value, 10) || 768);
+  l.info("Analyse startet: " + idxs.length + " Bilder, " + conc + " parallel, Modell " +
+         $("model").value + ", Grounding " + ($("grounding").checked ? "an" : "aus"));
+
+  const tasks = idxs.map((idx, n) => async () => {
+    const r = state.results[idx];
+    r.error = null;
+    const label = "[" + (n + 1) + "/" + idxs.length + "] " + r.item.name;
+    try {
+      const scaled = await scaleToBlob(r.item.file, px, "image/jpeg", 0.85);
+      const b64 = await blobToBase64(scaled.blob);
+      r.item.w = scaled.dims.w; r.item.h = scaled.dims.h;
+      const parts = [
+        { inline_data: { mime_type: "image/jpeg", data: b64 } },
+        { text: buildMakerPrompt(r.item) },
+      ];
+      l.debug(label + " → " + human(scaled.blob.size) + " Bild");
+      const text = await llm(parts, MAKER_SCHEMA, label);
+      const obj = extractJson(text);
+      if (!obj.title) throw new Error("Antwort ohne title-Feld");
+      if (!Array.isArray(obj.content_flags)) obj.content_flags = [];
+      r.analysis = obj;
+      l.ok(label + " ✓ " + (obj.known_meme_name || obj.title) +
+           " · " + obj.era + " · " + obj.confidence);
+    } catch (e) {
+      r.error = e.message;
+      l.err(label + " ✗ " + e.message.slice(0, 240));
+    }
+  });
+
+  await runPool(tasks, conc, (d, t) => { showProgress("Bilder analysiert", d, t);
+    renderResults(); renderStats(); });
+  idxs.forEach(i => { const r = state.results[i];
+    if (!r.analysis && !r.error) r.error = "abgebrochen"; });
+
+  const ok = state.results.filter(r => r.analysis).length;
+  const bad = state.results.filter(r => r.error).length;
+  l.ok("Analyse fertig — " + ok + " mit Text, " + bad + " Fehler");
+  setRunning(false);
+  renderResults(); renderStats();
+
+  if ($("makerchecker").checked && ok && !state.cancel) {
+    l.info("Maker-Checker ist aktiv — starte Prüfdurchlauf");
+    await runValidation();
+  }
+};
+
+/* ============================================================ Checker */
+function formatPairs(pairs){
+  return pairs.map((p, i) =>
+    "=== ITEM " + p.id + " ===\n" +
+    "Filename: " + p.item.name + "\n" +
+    "Folder: " + (p.item.dir || "(root)") + "\n\n" +
+    "ANALYSIS TO AUDIT:\n" + JSON.stringify(p.analysis, null, 1)
+  ).join("\n\n");
+}
+
+function buildCheckerPrompt(pairs){
+  let tpl = $("p-checker").value;
+  if (!tpl.trim()) tpl = DEFAULT_CHECKER_PROMPT;
+  if (!tpl.includes("{pairs}")) tpl += "\n\nAnalyses to audit:\n\n{pairs}";
+  if ($("grounding").checked) {
+    tpl += "\n\nReturn ONLY a JSON object {\"validations\":[{item_id, verdict, issues, " +
+      "corrections, confidence_check, reviewer_notes}]} — verdict one of confirmed | " +
+      "minor_corrections | major_issues | incorrect | uncertain, confidence_check one of " +
+      "appropriate | too_high | too_low. No markdown.";
+  }
+  return tpl.replace("{pairs}", formatPairs(pairs));
+}
+
+async function runValidation(){
+  const idxs = state.results.map((r, i) => i).filter(i => state.results[i].analysis);
+  if (!idxs.length) { l.warn("Nichts zu prüfen."); return; }
+  idxs.forEach(i => { state.results[i].validation = null; state.results[i].validationError = null; });
+
+  state.cancel = false;
+  setRunning(true, "PRÜFUNG");
+  const conc = Math.max(1, parseInt($("concurrency").value, 10) || 4);
+  const CH = 6;
+  const chunks = [];
+  for (let i = 0; i < idxs.length; i += CH) chunks.push(idxs.slice(i, i + CH));
+  l.info("Prüfdurchlauf: " + idxs.length + " Analysen in " + chunks.length +
+         " Paketen à " + CH + ", " + conc + " parallel");
+
+  const tasks = chunks.map((chunk, ci) => async () => {
+    const label = "[check " + (ci + 1) + "/" + chunks.length + "]";
+    const pairs = chunk.map(i => ({ id: String(i), item: state.results[i].item,
+                                    analysis: state.results[i].analysis }));
+    try {
+      const text = await llm([{ text: buildCheckerPrompt(pairs) }], VALIDATE_SCHEMA, label);
+      const obj = extractJson(text);
+      const list = obj.validations || [];
+      let hit = 0;
+      list.forEach(v => {
+        const i = parseInt(v.item_id, 10);
+        if (!Number.isNaN(i) && state.results[i]) { state.results[i].validation = v; hit++; }
+      });
+      chunk.forEach(i => { if (!state.results[i].validation)
+        state.results[i].validationError = "keine Rückmeldung für dieses Bild"; });
+      l.ok(label + " ✓ " + hit + "/" + chunk.length + " Bewertungen zugeordnet");
+    } catch (e) {
+      chunk.forEach(i => state.results[i].validationError = e.message);
+      l.err(label + " ✗ " + e.message.slice(0, 240));
+    }
+  });
+
+  await runPool(tasks, conc, (d, t) => { showProgress("Analysen geprüft", d, t);
+    renderResults(); renderStats(); });
+  idxs.forEach(i => { const r = state.results[i];
+    if (!r.validation && !r.validationError) r.validationError = "abgebrochen"; });
+  l.ok("Prüfung fertig — " + state.results.filter(r => r.validation).length + " bewertet");
+  setRunning(false);
+  renderResults(); renderStats();
+}
+$("btn-validate").onclick = () => runValidation();
+$("btn-cancel").onclick = () => { state.cancel = true;
+  l.warn("Abbruch angefordert — laufende Aufrufe werden noch zu Ende geführt"); };
+
+/* ============================================================ stats */
+function donutChart(slices, size, innerRatio){
+  size = size || 160; innerRatio = innerRatio || 0.6;
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (total === 0) return '<svg width="' + size + '" height="' + size + '"></svg>';
+  const cx = size/2, cy = size/2, r = size/2 - 8, ri = r * innerRatio;
+  let a = -Math.PI/2;
+  const paths = slices.filter(s => s.value > 0).map(s => {
+    const sweep = (s.value / total) * Math.PI * 2;
+    const a1 = a, a2 = a + sweep; a = a2;
+    const x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
+    const x2 = cx + r*Math.cos(a2), y2 = cy + r*Math.sin(a2);
+    const xi1 = cx + ri*Math.cos(a1), yi1 = cy + ri*Math.sin(a1);
+    const xi2 = cx + ri*Math.cos(a2), yi2 = cy + ri*Math.sin(a2);
+    const large = sweep > Math.PI ? 1 : 0;
+    return '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' +
+      x2 + ' ' + y2 + ' L ' + xi2 + ' ' + yi2 + ' A ' + ri + ' ' + ri + ' 0 ' + large +
+      ' 0 ' + xi1 + ' ' + yi1 + ' Z" fill="' + s.color + '" />';
+  }).join("");
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '">' +
+    paths + '<text x="' + cx + '" y="' + (cy-2) + '" text-anchor="middle" ' +
+    'dominant-baseline="central" fill="currentColor" font-family="JetBrains Mono" ' +
+    'font-size="22" font-weight="600">' + total + '</text><text x="' + cx + '" y="' + (cy+18) +
+    '" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="JetBrains Mono" ' +
+    'font-size="9" letter-spacing="1.5">TOTAL</text></svg>';
+}
+
+function hBarRows(items){
+  const max = Math.max(1, ...items.map(i => i.value));
+  return items.map(i =>
+    '<div class="hbar-row"><div class="hbar-label" title="' + esc(i.label) + '">' + esc(i.label) +
+    '</div><div class="hbar-track"><div class="hbar-fill" style="width:' +
+    (i.value / max * 100) + '%;background:' + i.color + '"></div></div>' +
+    '<div class="hbar-value">' + i.value + '</div></div>').join("");
+}
+
+function tally(list){
+  const m = new Map();
+  list.forEach(v => m.set(v, (m.get(v) || 0) + 1));
+  return m;
+}
+
+function renderStats(){
+  const done = state.results.filter(r => r.analysis);
+  const card = $("stats-card");
+  if (done.length < 3) { card.classList.remove("show"); return; }
+  card.classList.add("show");
+
+  const eras = tally(done.map(r => r.analysis.era || "unknown"));
+  const eraSlices = ERA.filter(e => eras.get(e))
+    .map(e => ({ label: e, value: eras.get(e), color: ERA_COLORS[e] }));
+
+  const cats = [...tally(done.map(r => r.analysis.category || "other"))]
+    .sort((a,b) => b[1] - a[1]);
+  const catRows = cats.slice(0, 8).map((c, i) =>
+    ({ label: c[0], value: c[1], color: PALETTE[i % PALETTE.length] }));
+  const catMore = cats.length > 8 ? cats.slice(8).reduce((s,c) => s + c[1], 0) : 0;
+
+  const conf = tally(done.map(r => r.analysis.confidence || "low"));
+  const confRows = ["high","medium","low"].filter(k => conf.get(k))
+    .map(k => ({ label: k, value: conf.get(k), color: CONF_COLORS[k] }));
+
+  const flags = tally(done.flatMap(r => (r.analysis.content_flags || [])
+    .filter(f => f && f !== "none")));
+  const flagRows = [...flags].sort((a,b) => b[1] - a[1]).slice(0, 8)
+    .map(f => ({ label: f[0], value: f[1], color: FLAG_COLOR }));
+
+  const vals = state.results.filter(r => r.validation);
+  const vTally = tally(vals.map(r => r.validation.verdict || "uncertain"));
+  const vRows = Object.keys(VALIDATION_COLORS).filter(k => vTally.get(k))
+    .map(k => ({ label: k, value: vTally.get(k), color: VALIDATION_COLORS[k] }));
+
+  let html =
+    '<div class="sub-card"><span class="nano">Epochen-Verteilung</span>' +
+      '<div class="donut-wrap">' + donutChart(eraSlices) +
+      '<div class="legend">' + eraSlices.map(s =>
+        '<div><i style="background:' + s.color + '"></i>' + esc(s.label) + ' · ' + s.value + '</div>'
+      ).join("") + '</div></div></div>' +
+    '<div class="sub-card"><span class="nano">Bildform</span>' + hBarRows(catRows) +
+      (catMore ? '<div class="hint">…und ' + catMore + ' weitere</div>' : '') + '</div>' +
+    '<div class="sub-card"><span class="nano">Sicherheit der Zuordnung</span>' +
+      hBarRows(confRows) +
+      '<div class="hint">Viel "low" heißt: das Modell erkennt die Bilder nicht — dann lohnt ' +
+      'Google-Suche oder das Pro-Modell.</div></div>' +
+    '<div class="sub-card"><span class="nano">Rechtlich zu prüfen</span>' +
+      (flagRows.length ? hBarRows(flagRows) :
+        '<div class="hint">Keine Flags gesetzt.</div>') +
+      '<div class="hint">Diese Bilder solltest du vor der Veröffentlichung selbst ansehen.</div></div>';
+
+  if (vRows.length) {
+    html += '<div class="sub-card" style="grid-column:1/-1"><span class="nano">Ergebnis der Prüfung</span>' +
+      hBarRows(vRows) + '</div>';
+  }
+  $("stat-grid").innerHTML = html;
+}
+
+/* ============================================================ results */
+const thumbUrls = new Map();
+function thumbUrl(item){
+  if (!thumbUrls.has(item.hash)) thumbUrls.set(item.hash, URL.createObjectURL(item.file));
+  return thumbUrls.get(item.hash);
+}
+
+const VERDICT_CLASS = { confirmed:"ok", minor_corrections:"warn", major_issues:"danger",
+  incorrect:"danger", uncertain:"neutral" };
+
+function renderResults(){
+  const filter = $("filter").value;
+  const q = $("search").value.trim().toLowerCase();
+  const wrap = $("results");
+  let list = state.results;
+  if (filter === "done") list = list.filter(r => r.analysis);
+  if (filter === "pending") list = list.filter(r => !r.analysis && !r.error);
+  if (filter === "error") list = list.filter(r => r.error);
+  if (filter === "flagged") list = list.filter(r => r.analysis &&
+    (r.analysis.content_flags || []).some(f => f && f !== "none"));
+  if (filter === "issues") list = list.filter(r => r.validation &&
+    ["minor_corrections","major_issues","incorrect"].includes(r.validation.verdict));
+  if (q) list = list.filter(r => {
+    const a = r.analysis || {};
+    return (r.item.rel + " " + (a.title||"") + " " + (a.known_meme_name||"") + " " +
+            (a.explanation||"") + " " + (a.historical_context||"")).toLowerCase().includes(q);
+  });
+
+  if (!state.results.length) {
+    wrap.innerHTML = '<div class="hint">Noch kein Ordner ausgewählt.</div>'; return;
+  }
+  const shown = list.slice(0, 300);
+  wrap.innerHTML = shown.map(r => {
+    const a = r.analysis;
+    let badges = '';
+    let body = '';
+    if (a) {
+      const flags = (a.content_flags || []).filter(f => f && f !== "none");
+      badges = '<span class="pill">' + esc(a.era || "?") + '</span>' +
+        '<span class="pill">' + esc(a.category || "?") + '</span>' +
+        '<span class="pill" style="color:' + (CONF_COLORS[a.confidence] || "") + '">' +
+        esc(a.confidence || "?") + '</span>' +
+        (a.origin_year ? '<span class="pill">' + esc(a.origin_year) + '</span>' : '') +
+        flags.map(f => '<span class="pill" style="color:' + FLAG_COLOR +
+          ';border-color:oklch(0.65 0.2 25 / 0.35)">⚑ ' + esc(f) + '</span>').join("") +
+        (r.validation ? '<span class="pill" style="color:' +
+          (VALIDATION_COLORS[r.validation.verdict] || "") + '">◬ ' +
+          esc(r.validation.verdict) + '</span>' : '');
+      body =
+        '<h3>' + esc(a.title || "(ohne Titel)") + '</h3>' +
+        '<div class="fname">' + esc(r.item.rel) +
+          (a.known_meme_name ? ' · known as: ' + esc(a.known_meme_name) : '') + '</div>' +
+        '<div class="badges">' + badges + '</div>' +
+        '<p>' + esc(a.summary || "") + '</p>' +
+        '<p>' + esc(a.explanation || "") + '</p>' +
+        '<p><b>History:</b> ' + esc(a.historical_context || "") + '</p>';
+      if (r.validation) {
+        const v = r.validation;
+        body += '<div class="validation-block ' + (VERDICT_CLASS[v.verdict] || "neutral") + '">' +
+          '<span class="nano">Prüfung · ' + esc(v.verdict) + ' · Konfidenz ' +
+          esc(v.confidence_check || "?") + '</span>' +
+          (v.issues && v.issues.length ? '<ul>' + v.issues.map(i => '<li>' + esc(i) + '</li>').join("") + '</ul>' : '') +
+          (v.corrections ? '<p style="margin:7px 0 0"><b>Korrektur:</b> ' + esc(v.corrections) + '</p>' : '') +
+          (v.reviewer_notes ? '<p style="margin:6px 0 0;font-size:11.5px;color:var(--text-quiet)">' +
+            esc(v.reviewer_notes) + '</p>' : '') + '</div>';
+      } else if (r.validationError) {
+        body += '<div class="validation-block danger"><span class="nano">Prüfung fehlgeschlagen</span>' +
+          '<p style="margin:6px 0 0">' + esc(r.validationError) + '</p></div>';
+      }
+    } else if (r.error) {
+      body = '<h3 style="color:var(--red)">Fehler</h3>' +
+        '<div class="fname">' + esc(r.item.rel) + '</div>' +
+        '<p>' + esc(String(r.error).slice(0, 400)) + '</p>';
+    } else {
+      body = '<h3 style="color:var(--text-quiet)">Offen</h3>' +
+        '<div class="fname">' + esc(r.item.rel) + '</div>' +
+        '<div class="badges"><span class="pill">' + human(r.item.size) + '</span></div>';
+    }
+    return '<div class="res"><img loading="lazy" src="' + thumbUrl(r.item) + '" alt="">' +
+      '<div>' + body + '</div></div>';
+  }).join("");
+  if (list.length > shown.length) {
+    wrap.innerHTML += '<div class="hint">' + (list.length - shown.length) +
+      ' weitere Treffer nicht angezeigt — Suche verfeinern.</div>';
+  }
+}
+$("filter").addEventListener("change", renderResults);
+$("search").addEventListener("input", renderResults);
+
+/* ============================================================ exports */
+function download(blob, name){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  l.ok("Download: " + name);
+}
+
+$("btn-export-run").onclick = () => {
+  const payload = {
+    tool: "meme-archivar", version: "1.4.0",
+    exported: new Date().toISOString(),
+    model: $("model").value,
+    grounding: $("grounding").checked,
+    items: state.results.filter(r => r.analysis || r.error).map(r => ({
+      hash: r.item.hash, rel: r.item.rel, name: r.item.name, dir: r.item.dir,
+      size: r.item.size, analysis: r.analysis, validation: r.validation,
+      error: r.error, validationError: r.validationError,
+    })),
+  };
+  download(new Blob([JSON.stringify(payload, null, 1)], { type: "application/json" }),
+    "meme-archivar-lauf.json");
+};
+
+$("btn-import-run").onclick = () => $("import-file").click();
+$("import-file").addEventListener("change", async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    state.saved = new Map((data.items || []).map(i =>
+      [i.hash, { analysis: i.analysis, validation: i.validation }]));
+    state.resumed = state.saved.size;
+    l.ok("Lauf geladen: " + state.saved.size + " gespeicherte Analysen");
+    if (state.files.length) {
+      let n = 0;
+      state.results.forEach(r => {
+        const prev = state.saved.get(r.item.hash);
+        if (prev && prev.analysis) { r.analysis = prev.analysis; r.validation = prev.validation; n++; }
+      });
+      l.ok(n + " Texte den geladenen Bildern zugeordnet");
+    } else {
+      l.info("Jetzt den Bilder-Ordner auswählen — die Texte hängen sich per Hash wieder an.");
+    }
+    setRunning(false); renderResults(); renderStats(); updateButtons();
+  } catch (err) { l.err("Lauf-JSON nicht lesbar: " + err.message); }
+  e.target.value = "";
+});
+
+$("btn-md").onclick = () => {
+  const lines = ["# " + $("site-title").value, ""];
+  state.results.filter(r => r.analysis).forEach(r => {
+    const a = r.analysis;
+    lines.push("## " + a.title, "", "`" + r.item.rel + "`", "",
+      "- Era: " + a.era + " (" + (a.origin_year || "?") + ")",
+      "- Category: " + a.category,
+      "- Confidence: " + a.confidence,
+      "- Known as: " + (a.known_meme_name || "—"),
+      "- Flags: " + ((a.content_flags || []).join(", ") || "none"), "",
+      a.summary, "", a.explanation, "", "**History.** " + a.historical_context, "");
+    if (r.validation) {
+      lines.push("**Validation: " + r.validation.verdict + "**", "",
+        ...(r.validation.issues || []).map(i => "- " + i),
+        r.validation.corrections ? "\nCorrection: " + r.validation.corrections : "", "");
+    }
+    lines.push("---", "");
+  });
+  download(new Blob([lines.join("\n")], { type: "text/markdown" }), "meme-texte.md");
+};
+
+$("btn-csv").onclick = () => {
+  const q = s => '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"';
+  const rows = [["file","folder","title","known_meme_name","era","origin_year","category",
+    "confidence","flags","summary","explanation","historical_context",
+    "validation_verdict","validation_issues","validation_corrections"].join(",")];
+  state.results.filter(r => r.analysis).forEach(r => {
+    const a = r.analysis, v = r.validation || {};
+    rows.push([r.item.name, r.item.dir, a.title, a.known_meme_name, a.era, a.origin_year,
+      a.category, a.confidence, (a.content_flags || []).join("|"), a.summary, a.explanation,
+      a.historical_context, v.verdict || "", (v.issues || []).join(" | "), v.corrections || ""]
+      .map(q).join(","));
+  });
+  download(new Blob(["﻿" + rows.join("\n")], { type: "text/csv" }), "meme-texte.csv");
+};
+
+/* ============================================================ ZIP (store, no deps) */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipBuilder(){
+  const parts = [], central = [];
+  let offset = 0;
+  const enc = new TextEncoder();
+  function dv(len){ const b = new ArrayBuffer(len); return { b, v: new DataView(b) }; }
+  return {
+    async add(path, blob){
+      const u8 = new Uint8Array(await blob.arrayBuffer());
+      const name = enc.encode(path);
+      const crc = crc32(u8);
+      const { b: lh, v } = dv(30);
+      v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true);
+      v.setUint16(8, 0, true); v.setUint16(10, 0, true); v.setUint16(12, 0x21, true);
+      v.setUint32(14, crc, true); v.setUint32(18, u8.length, true);
+      v.setUint32(22, u8.length, true); v.setUint16(26, name.length, true); v.setUint16(28, 0, true);
+      parts.push(lh, name, u8);
+      const { b: ch, v: cv } = dv(46);
+      cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+      cv.setUint16(8, 0x0800, true); cv.setUint16(10, 0, true); cv.setUint16(12, 0, true);
+      cv.setUint16(14, 0x21, true); cv.setUint32(16, crc, true);
+      cv.setUint32(20, u8.length, true); cv.setUint32(24, u8.length, true);
+      cv.setUint16(28, name.length, true); cv.setUint32(42, offset, true);
+      central.push(ch, name);
+      offset += 30 + name.length + u8.length;
+    },
+    finish(){
+      let cdSize = 0;
+      central.forEach(p => cdSize += p.byteLength);
+      const { b: eo, v } = dv(22);
+      v.setUint32(0, 0x06054b50, true);
+      v.setUint16(8, central.length / 2, true); v.setUint16(10, central.length / 2, true);
+      v.setUint32(12, cdSize, true); v.setUint32(16, offset, true);
+      return new Blob([...parts, ...central, eo], { type: "application/zip" });
+    },
+  };
+}
+
+/* ============================================================ site build */
+function siteData(entries){
+  return { title: $("site-title").value,
+           pageSize: Math.max(12, parseInt($("pagesize").value, 10) || 60),
+           generated: new Date().toISOString(),
+           items: entries };
+}
+
+const TEXT_ENC = new TextEncoder();
+const textBlob = (s, type) => new Blob([TEXT_ENC.encode(s)],
+  { type: type || "text/plain;charset=utf-8" });
+
+function analysisToEntry(a){
+  return { title: a.title, summary: a.summary, explanation: a.explanation,
+           history: a.historical_context, name: a.known_meme_name || "",
+           year: a.origin_year || "", era: a.era, cat: a.category,
+           conf: a.confidence };
+}
+
+async function imgDims(file){
+  const bmp = await createImageBitmap(file);
+  const d = { w: bmp.width, h: bmp.height };
+  bmp.close();
+  return d;
+}
+
+// Schreibt eine Datei und meldet Erfolg oder Fehler einzeln, damit ein
+// abgelehnter Schreibzugriff (z. B. auf .htaccess) nie den Rest mitreisst.
+async function writeSafe(writer, path, blob, critical){
+  try {
+    await writer.write(path, blob);
+    l.ok("geschrieben: " + path + " (" + human(blob.size) + ")");
+    return true;
+  } catch (err) {
+    l[critical ? "err" : "warn"]("NICHT geschrieben: " + path + " — " + err.message);
+    if (critical) l.err("Notausgang: Button „" + path + " einzeln\" benutzen und die Datei " +
+      "per SFTP in den Galerie-Ordner legen.");
+    return false;
+  }
+}
+
+async function buildSite(writer, opts){
+  opts = opts || {};
+  const metaOnly = !!opts.metaOnly;
+  state.cancel = false;
+  setRunning(true, metaOnly ? "SEITE" : "GALERIE");
+  const thumbPx = Math.max(120, parseInt($("thumbpx").value, 10) || 320);
+  const maxSide = Math.max(0, parseInt($("maxside").value, 10) || 0);
+  const entries = [];
+  const report = [];
+  let bytesImg = 0, bytesThumb = 0, failed = 0, wroteIndex = false;
+
+  // Die Seite selbst zuerst — dann steht sie auch, wenn der Bilderlauf
+  // später abbricht oder abgebrochen wird.
+  wroteIndex = await writeSafe(writer, "index.html",
+    textBlob(siteIndexHtml($("site-title").value), "text/html;charset=utf-8"), true);
+  await writeSafe(writer, "impressum.html",
+    textBlob(siteImpressumHtml(), "text/html;charset=utf-8"), false);
+  await writeSafe(writer, ".htaccess", textBlob(HTACCESS), false);
+
+  l.info((metaOnly ? "Seite wird aktualisiert: " : "Galerie wird gebaut: ") +
+    state.results.length + " Bilder" +
+    (metaOnly ? " (Bilder bleiben unangetastet)" :
+      ", Thumbnails " + thumbPx + "px" + (maxSide ? ", Originale auf " + maxSide + "px" : "")));
+
+  for (let i = 0; i < state.results.length; i++) {
+    if (state.cancel) { l.warn("Lauf abgebrochen — die bereits geschriebenen Dateien bleiben"); break; }
+    const r = state.results[i];
+    const it = r.item;
+    const shard = it.hash.slice(0, 2), base = it.hash.slice(0, 16);
+    let ext = (it.name.match(IMG_EXT) || [".jpg"])[0].toLowerCase();
+    if (ext === ".jpeg" || ext === ".jfif") ext = ".jpg";
+    const animated = ANIM_EXT.test(it.name);
+    try {
+      let e;
+      if (metaOnly) {
+        if (r.entry) {
+          e = Object.assign({}, r.entry);
+        } else {
+          const dims = await imgDims(it.file);
+          e = { f: "img/" + shard + "/" + base + ext, t: "thumb/" + shard + "/" + base + ".webp",
+                n: it.name, d: it.dir, w: dims.w, h: dims.h, s: it.size };
+          if (animated) e.a = 1;
+        }
+        delete e.en; delete e.flags;
+      } else {
+        const th = await squareThumb(it.file, thumbPx, 0.78);
+        let blob = it.file, dims = th.dims;
+        if (maxSide && !animated && Math.max(dims.w, dims.h) > maxSide) {
+          const sc = await scaleToBlob(it.file, maxSide, "image/jpeg", 0.86);
+          blob = sc.blob; ext = ".jpg"; dims = { w: sc.out.w, h: sc.out.h };
+        }
+        e = { f: "img/" + shard + "/" + base + ext, t: "thumb/" + shard + "/" + base + ".webp",
+              n: it.name, d: it.dir, w: dims.w, h: dims.h, s: blob.size };
+        if (animated) e.a = 1;
+        await writer.write(e.f, blob);
+        await writer.write(e.t, th.blob);
+        bytesImg += blob.size; bytesThumb += th.blob.size;
+      }
+      const a = r.analysis;
+      if (a) {
+        e.en = analysisToEntry(a);
+        const flags = (a.content_flags || []).filter(f => f && f !== "none");
+        if (flags.length) { e.flags = flags; report.push("FLAG\t" + it.rel + "\t" + flags.join(",")); }
+      } else {
+        report.push("OHNE TEXT\t" + it.rel + (r.error ? "\t" + r.error : ""));
+      }
+      r.entry = e;
+      entries.push(e);
+    } catch (err) {
+      failed++;
+      report.push("FEHLER\t" + it.rel + "\t" + err.message);
+      l.err("Galerie: " + it.name + " übersprungen — " + err.message);
+    }
+    if (i % 25 === 0 || i === state.results.length - 1) {
+      showProgress(metaOnly ? "Einträge gesammelt" : "Bilder geschrieben",
+        i + 1, state.results.length);
+      await sleep(0);
+    }
+  }
+
+  entries.sort((a, b) => (a.d || "").localeCompare(b.d || "") || a.n.localeCompare(b.n));
+  await writeSafe(writer, "data.json",
+    new Blob([JSON.stringify(siteData(entries))], { type: "application/json" }), true);
+  await writeSafe(writer, "build-report.txt", textBlob([
+    "Titel:          " + $("site-title").value,
+    "Erzeugt:        " + new Date().toISOString(),
+    "Modus:          " + (metaOnly ? "nur Seite + Texte" : "vollständig"),
+    "Bilder:         " + entries.length,
+    "Mit Text:       " + entries.filter(e => e.en).length,
+    "Fehlgeschlagen: " + failed,
+    "Bilder gesamt:  " + (metaOnly ? "(unverändert)" : human(bytesImg)),
+    "Thumbnails:     " + (metaOnly ? "(unverändert)" : human(bytesThumb)),
+    "", "Hinweise:", ...report,
+  ].join("\n")), false);
+
+  try { await writer.done(); }
+  catch (err) { l.err("Abschluss fehlgeschlagen: " + err.message); }
+
+  showProgress("fertig", state.results.length, state.results.length);
+  l.ok((metaOnly ? "Seite aktualisiert: " : "Galerie fertig: ") + entries.length +
+    " Einträge, " + entries.filter(e => e.en).length + " mit englischem Text" +
+    (metaOnly ? "" : ", " + human(bytesImg) + " Bilder + " + human(bytesThumb) + " Thumbnails"));
+  if (!wroteIndex) l.err("ACHTUNG: index.html konnte nicht geschrieben werden — bitte einzeln " +
+    "herunterladen und per SFTP hochladen.");
+  setRunning(false);
+  updateButtons();
+}
+
+async function directoryWriter(){
+  if (!window.showDirectoryPicker) {
+    l.err("Dieser Browser kann keine Ordner schreiben. Chrome oder Edge nutzen, " +
+          "oder den ZIP-Download bzw. die Einzel-Downloads.");
+    return null;
+  }
+  let root;
+  try { root = await window.showDirectoryPicker({ mode: "readwrite" }); }
+  catch (e) { l.warn("Ordnerauswahl abgebrochen"); return null; }
+  l.info("Zielordner gewählt: " + (root.name || "(ohne Namen)"));
+  const dirCache = new Map();
+  async function dirFor(path){
+    const parts = path.split("/").slice(0, -1);
+    let handle = root, key = "";
+    for (const p of parts) {
+      key += p + "/";
+      if (!dirCache.has(key)) dirCache.set(key, await handle.getDirectoryHandle(p, { create: true }));
+      handle = dirCache.get(key);
+    }
+    return handle;
+  }
+  return {
+    async write(path, blob){
+      const dir = await dirFor(path);
+      const fh = await dir.getFileHandle(path.split("/").pop(), { create: true });
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+    },
+    async done(){ l.ok("Zielordner fertig — er kann unverändert per SFTP hoch."); },
+  };
+}
+
+$("btn-build-dir").onclick = async () => {
+  const w = await directoryWriter();
+  if (w) await buildSite(w);
+};
+
+$("btn-refresh-dir").onclick = async () => {
+  const w = await directoryWriter();
+  if (!w) return;
+  l.info("Denselben Galerie-Ordner wählen wie beim vollen Lauf — Bilder werden nicht angefasst.");
+  await buildSite(w, { metaOnly: true });
+};
+
+$("btn-dl-index").onclick = () => {
+  download(textBlob(siteIndexHtml($("site-title").value), "text/html;charset=utf-8"), "index.html");
+};
+
+$("btn-dl-data").onclick = () => {
+  const entries = state.results.map(r => {
+    if (!r.entry) return null;
+    const e = Object.assign({}, r.entry);
+    if (r.analysis) {
+      e.en = analysisToEntry(r.analysis);
+      const flags = (r.analysis.content_flags || []).filter(f => f && f !== "none");
+      if (flags.length) e.flags = flags; else delete e.flags;
+    }
+    return e;
+  }).filter(Boolean);
+  if (!entries.length) {
+    l.err("Noch keine Galerie gebaut — data.json braucht die Bildmaße aus einem Lauf.");
+    return;
+  }
+  entries.sort((a, b) => (a.d || "").localeCompare(b.d || "") || a.n.localeCompare(b.n));
+  download(new Blob([JSON.stringify(siteData(entries))], { type: "application/json" }), "data.json");
+};
+
+$("btn-build-zip").onclick = async () => {
+  const total = state.files.reduce((s, f) => s + f.size, 0);
+  if (total > 700 * 1024 * 1024) {
+    l.warn("Achtung: " + human(total) + " als ZIP im Arbeitsspeicher. Das kann den Tab " +
+           "abschießen — besser 'In Zielordner schreiben' nutzen.");
+  }
+  const z = zipBuilder();
+  await buildSite({
+    async write(path, blob){ await z.add(path, blob); },
+    async done(){ download(z.finish(), "meme-galerie.zip"); },
+  });
+};
+
+/* ============================================================ generated site */
+const HTACCESS =
+"# Bilder lange cachen - der Dateiname enthaelt den Hash, sie aendern sich nie\n" +
+"<IfModule mod_expires.c>\n  ExpiresActive On\n" +
+"  ExpiresByType image/webp \"access plus 1 year\"\n" +
+"  ExpiresByType image/jpeg \"access plus 1 year\"\n" +
+"  ExpiresByType image/png  \"access plus 1 year\"\n" +
+"  ExpiresByType image/gif  \"access plus 1 year\"\n</IfModule>\n" +
+"<IfModule mod_deflate.c>\n" +
+"  AddOutputFilterByType DEFLATE text/html application/json application/javascript\n" +
+"</IfModule>\nOptions -Indexes\n";
+
+function siteImpressumHtml(){
+  return '<!DOCTYPE html>\n<html lang="de"><head><meta charset="utf-8">\n' +
+  '<title>Impressum &amp; Bildrechte</title>\n<style>\n' +
+  'body{background:#000;color:#c0c0c0;font-family:"MS Sans Serif",Tahoma,Verdana,sans-serif;' +
+  'font-size:13px;padding:24px;max-width:720px;margin:0 auto}\n' +
+  'a{color:#ffff00}h1,h2{color:#00ffff;font-family:"Arial Black",Impact,sans-serif}\n' +
+  '.box{border:3px ridge #808080;background:#000080;padding:14px;margin:14px 0}\n' +
+  '</style></head><body>\n<h1>Impressum</h1>\n<div class="box">\n' +
+  '<p>Angaben gem&auml;&szlig; &sect; 5 DDG:</p>\n' +
+  '<p>NAME<br>STRASSE<br>PLZ ORT<br>E-Mail: MAIL@DOMAIN.DE</p></div>\n' +
+  '<h2>Bildrechte und Beschwerden</h2>\n<div class="box">\n' +
+  '<p>This archive documents images from early internet culture. In many cases the ' +
+  'rights holders can no longer be identified.</p>\n' +
+  '<p>Wenn Sie Rechte an einem Bild halten oder auf einem Bild erkennbar sind und die ' +
+  'Ver&ouml;ffentlichung nicht w&uuml;nschen, schreiben Sie an die oben genannte Adresse ' +
+  'und nennen Sie die Bild-URL. Das Bild wird ohne Diskussion entfernt.</p></div>\n' +
+  '<p><a href="index.html">&laquo; back to the archive</a></p>\n</body></html>\n';
+}
+
+function siteIndexHtml(title){
+  const t = String(title || "The Meme Archive").replace(/[<>&]/g, "");
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${t}</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23000080'/><circle cx='8' cy='8' r='5' fill='%23ffcc00'/></svg>">
+<style>
+  :root{ --silver:#c0c0c0; --navy:#000080; }
+  *{ box-sizing:border-box }
+  body{ margin:0; padding:0 0 40px; color:var(--silver);
+    background:#000 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><rect width='60' height='60' fill='%23000010'/><circle cx='7' cy='11' r='1' fill='%23ffffff' opacity='.7'/><circle cx='41' cy='29' r='.8' fill='%23aaccff' opacity='.6'/><circle cx='23' cy='47' r='1.1' fill='%23ffffff' opacity='.45'/><circle cx='53' cy='7' r='.7' fill='%23ffeeaa' opacity='.55'/></svg>") repeat;
+    font-family:"MS Sans Serif",Tahoma,Verdana,Geneva,sans-serif; font-size:13px }
+  a{ color:#ffff00 } a:visited{ color:#ff88ff }
+  .wrap{ max-width:1000px; margin:0 auto; padding:10px }
+  .panel{ border:3px ridge #909090; background:var(--navy); padding:10px; margin-bottom:10px }
+  h1{ margin:.2em 0; text-align:center; font-family:"Arial Black",Impact,sans-serif;
+    font-size:clamp(26px,6vw,52px);
+    background:linear-gradient(90deg,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#ff00ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(2px 2px 0 #000) }
+  .tagline{ text-align:center; color:#00ffff; margin:0 0 6px }
+  .rule{ height:6px; margin:8px 0; border:0;
+    background:linear-gradient(90deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
+    background-size:200% 100%; animation:slide 6s linear infinite }
+  @keyframes slide{ to{ background-position:200% 0 } }
+  .marquee{ overflow:hidden; white-space:nowrap; border:2px inset #808080; background:#000;
+    color:#00ff00; font-family:"Courier New",monospace; padding:3px 0 }
+  .marquee span{ display:inline-block; padding-left:100%; animation:mq 24s linear infinite }
+  @keyframes mq{ to{ transform:translateX(-100%) } }
+  .bar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center }
+  button,.btn{ font-family:inherit; font-size:13px; padding:3px 12px; cursor:pointer;
+    background:var(--silver); color:#000; border:2px outset #fff }
+  button:active:not(:disabled){ border-style:inset }
+  button:disabled{ color:#808080; cursor:default }
+  input[type=text]{ font-family:"Courier New",monospace; font-size:13px; padding:3px 6px;
+    border:2px inset #808080; background:#000; color:#00ff00; width:190px }
+  select{ font-family:inherit; font-size:12px; padding:2px 4px; background:var(--silver);
+    color:#000; border:2px outset #fff; max-width:190px }
+  .filterbar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; justify-content:center }
+  .filterbar label{ font-size:11px; color:#00ffff; font-family:"Courier New",monospace }
+  .counter{ font-family:"Courier New",monospace; background:#000; color:#00ff00;
+    border:2px inset #808080; padding:2px 6px; letter-spacing:2px }
+  .grid{ display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)) }
+  .cell{ border:2px outset #d0d0d0; background:#000; padding:3px; cursor:pointer;
+    position:relative; line-height:0 }
+  .cell:hover{ border-style:inset; background:#202060 }
+  .cell img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; background:#111 }
+  .cell .cap{ font-size:10px; line-height:1.25; color:#c0c0c0; word-break:break-word;
+    max-height:2.5em; overflow:hidden; margin-top:3px }
+  .badge{ position:absolute; top:5px; right:5px; background:#ff0000; color:#fff;
+    font-size:9px; font-weight:bold; padding:1px 3px; line-height:1.2; border:1px solid #fff }
+  #lb{ position:fixed; inset:0; background:rgba(0,0,0,.85); display:none;
+    align-items:center; justify-content:center; padding:12px; z-index:50 }
+  #lb.on{ display:flex }
+  .win{ background:var(--silver); border:2px outset #fff; max-width:960px; width:96vw;
+    max-height:94vh; display:flex; flex-direction:column }
+  .title{ background:linear-gradient(90deg,var(--navy),#1084d0); color:#fff; font-weight:bold;
+    padding:3px 4px; display:flex; gap:8px; align-items:center }
+  .title .t{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .title button{ padding:0 7px; font-weight:bold }
+  .win .body{ overflow:auto; background:#000; text-align:center; flex:1 }
+  .win .body img{ max-width:100%; max-height:56vh; display:block; margin:0 auto }
+  .story{ background:var(--silver); color:#000; padding:10px 12px; text-align:left;
+    font-size:12.5px; line-height:1.5; max-height:34vh; overflow:auto }
+  .story a{ color:#000080 }
+  .story h2{ margin:0 0 4px; font-size:15px }
+  .story .tags{ margin:0 0 8px; font-family:"Courier New",monospace; font-size:11px; color:#000080 }
+  .story p{ margin:0 0 8px }
+  .story .flag{ background:#ffcccc; border:1px solid #cc0000; padding:4px 6px; font-size:11px }
+  footer{ text-align:center; font-size:11px; color:#909090; margin-top:12px; line-height:1.7 }
+  .blink{ animation:bl 1.1s steps(1) infinite } @keyframes bl{ 50%{ opacity:0 } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+    <h1>${t}</h1>
+    <p class="tagline">~ * ~ funny pictures from the old internet, explained ~ * ~</p>
+    <hr class="rule">
+    <div class="marquee"><span>Welcome! Best viewed with Netscape Navigator 4.0 at 800x600.
+      Every picture comes with an explanation and a bit of history. Please do not feed the trolls.</span></div>
+  </div>
+
+  <div class="panel filterbar">
+    <input type="text" id="q" placeholder="search text...">
+    <label for="f-era">era</label>
+    <select id="f-era"><option value="">all</option></select>
+    <label for="f-cat">kind</label>
+    <select id="f-cat"><option value="">all</option></select>
+    <label for="f-dir">folder</label>
+    <select id="f-dir"><option value="">all</option></select>
+    <label for="f-flag">show</label>
+    <select id="f-flag">
+      <option value="">everything</option>
+      <option value="text">with description</option>
+      <option value="notext">without description</option>
+      <option value="gif">animated only</option>
+      <option value="flag">flagged for review</option>
+    </select>
+    <label for="f-sort">sort</label>
+    <select id="f-sort">
+      <option value="folder">folder &amp; name</option>
+      <option value="title">title A-Z</option>
+      <option value="year">oldest first</option>
+      <option value="yeardesc">newest first</option>
+      <option value="size">biggest first</option>
+      <option value="shuffle">shuffled</option>
+    </select>
+    <button id="rand">random picture</button>
+    <button id="clear">reset</button>
+    <span class="counter" id="hits">0 / 0</span>
+  </div>
+
+  <div class="panel bar">
+    <button id="first">&laquo;&laquo; first</button>
+    <button id="prev">&laquo; back</button>
+    <span class="counter" id="pageinfo">page ? / ?</span>
+    <button id="next">next &raquo;</button>
+    <button id="last">last &raquo;&raquo;</button>
+  </div>
+
+  <div class="panel"><div class="grid" id="grid"></div></div>
+
+  <div class="panel bar">
+    <button id="first2">&laquo;&laquo; first</button>
+    <button id="prev2">&laquo; back</button>
+    <span class="counter" id="pageinfo2">page ? / ?</span>
+    <button id="next2">next &raquo;</button>
+    <button id="last2">last &raquo;&raquo;</button>
+  </div>
+
+  <footer>
+    <span class="counter" id="visits">0000000</span> visitors since 1998<br>
+    <span class="blink">*</span> <span id="total">?</span> pictures in the archive
+    <span class="blink">*</span><br>
+    <a href="impressum.html">Impressum &amp; image rights</a> &middot; Made with Notepad and love
+  </footer>
+</div>
+
+<div id="lb">
+  <div class="win">
+    <div class="title">
+      <span class="t" id="lbname">picture.jpg</span>
+      <button id="lbprev">&lt;</button><button id="lbnext">&gt;</button><button id="lbclose">X</button>
+    </div>
+    <div class="body"><img id="lbimg" alt=""></div>
+    <div class="story" id="lbstory"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var all = [], view = [], pageSize = 60, page = 0, cur = -1;
+  var grid = document.getElementById('grid'), lb = document.getElementById('lb');
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+  function pages(){ return Math.max(1, Math.ceil(view.length / pageSize)); }
+  function kb(b){ return b > 1048576 ? (b/1048576).toFixed(1) + ' MB' : Math.round(b/1024) + ' KB'; }
+
+  function render(){
+    page = Math.min(Math.max(0, page), pages() - 1);
+    var start = page * pageSize, slice = view.slice(start, start + pageSize), h = '';
+    for (var i = 0; i < slice.length; i++) {
+      var it = slice[i];
+      var cap = it.en && it.en.title ? it.en.title : it.n;
+      h += '<div class="cell" data-i="' + (start + i) + '">'
+        + (it.a ? '<span class="badge">GIF</span>' : '')
+        + '<img loading="lazy" src="' + it.t + '" alt="' + esc(cap) + '">'
+        + '<div class="cap">' + esc(cap) + '</div></div>';
+    }
+    grid.innerHTML = h || '<p style="color:#ff8080">nothing found.</p>';
+    var info = 'page ' + (page + 1) + ' / ' + pages();
+    document.getElementById('pageinfo').textContent = info;
+    document.getElementById('pageinfo2').textContent = info;
+    ['prev','prev2','first','first2'].forEach(function(id){
+      document.getElementById(id).disabled = page === 0; });
+    ['next','next2','last','last2'].forEach(function(id){
+      document.getElementById(id).disabled = page >= pages() - 1; });
+    window.scrollTo(0, 0);
+  }
+
+  function open(i){
+    if (i < 0 || i >= view.length) return;
+    cur = i;
+    var it = view[i], en = it.en;
+    document.getElementById('lbimg').src = it.f;
+    document.getElementById('lbname').textContent = (en && en.title) ? en.title : it.n;
+    var h = '';
+    if (en) {
+      h += '<h2>' + esc(en.title) + '</h2>';
+      h += '<p class="tags">' + esc(it.n) + (it.d ? ' | ' + esc(it.d) : '')
+        + ' | ' + it.w + 'x' + it.h + ' | ' + kb(it.s)
+        + (en.era ? ' | ' + esc(en.era) : '') + (en.year ? ' (' + esc(en.year) + ')' : '')
+        + (en.cat ? ' | ' + esc(en.cat) : '')
+        + (en.name ? ' | known as: ' + esc(en.name) : '')
+        + (en.conf ? ' | confidence: ' + esc(en.conf) : '') + '</p>';
+      if (en.summary) h += '<p>' + esc(en.summary) + '</p>';
+      if (en.explanation) h += '<p>' + esc(en.explanation) + '</p>';
+      if (en.history) h += '<p><b>History.</b> ' + esc(en.history) + '</p>';
+      if (it.flags && it.flags.length)
+        h += '<p class="flag">flagged for review: ' + esc(it.flags.join(', ')) + '</p>';
+      h += '<p style="font-size:11px;color:#555">Text written by an AI model. '
+        + 'Treat dates and origin stories as a starting point, not as a source.</p>';
+    } else {
+      h = '<p class="tags">' + esc(it.n) + ' | ' + it.w + 'x' + it.h + ' | ' + kb(it.s) + '</p>'
+        + '<p>No description for this one.</p>';
+    }
+    h += '<p><a href="' + it.f + '" target="_blank">open the original in a new window</a></p>';
+    document.getElementById('lbstory').innerHTML = h;
+    document.getElementById('lbstory').scrollTop = 0;
+    lb.classList.add('on');
+  }
+  function close(){ lb.classList.remove('on'); document.getElementById('lbimg').src = ''; }
+  function step(d){
+    var n = cur + d;
+    if (n < 0 || n >= view.length) return;
+    open(n);
+    var p = Math.floor(n / pageSize);
+    if (p !== page) { page = p; render(); }
+  }
+
+  function fillSelect(id, values, labelFor){
+    var sel = document.getElementById(id);
+    values.forEach(function(v){
+      var o = document.createElement('option');
+      o.value = v[0];
+      o.textContent = (labelFor ? labelFor(v[0]) : v[0]) + ' (' + v[1] + ')';
+      sel.appendChild(o);
+    });
+  }
+
+  function buildFilters(){
+    function counted(pick){
+      var m = {};
+      all.forEach(function(it){
+        var v = pick(it);
+        if (v) m[v] = (m[v] || 0) + 1;
+      });
+      return Object.keys(m).sort().map(function(k){ return [k, m[k]]; });
+    }
+    fillSelect('f-era', counted(function(it){ return it.en && it.en.era; }));
+    fillSelect('f-cat', counted(function(it){ return it.en && it.en.cat; }));
+    fillSelect('f-dir', counted(function(it){ return it.d; }));
+  }
+
+  function firstYear(it){
+    var y = it.en && it.en.year ? String(it.en.year).match(/\d{4}/) : null;
+    return y ? parseInt(y[0], 10) : 9999;
+  }
+
+  function applyFilters(){
+    var q = document.getElementById('q').value.trim().toLowerCase();
+    var era = document.getElementById('f-era').value;
+    var cat = document.getElementById('f-cat').value;
+    var dir = document.getElementById('f-dir').value;
+    var mode = document.getElementById('f-flag').value;
+    var sort = document.getElementById('f-sort').value;
+
+    view = all.filter(function(it){
+      var en = it.en || {};
+      if (era && en.era !== era) return false;
+      if (cat && en.cat !== cat) return false;
+      if (dir && it.d !== dir) return false;
+      if (mode === 'text' && !it.en) return false;
+      if (mode === 'notext' && it.en) return false;
+      if (mode === 'gif' && !it.a) return false;
+      if (mode === 'flag' && !(it.flags && it.flags.length)) return false;
+      if (q) {
+        var hay = (it.n + ' ' + (it.d||'') + ' ' + (en.title||'') + ' ' + (en.name||'') + ' '
+          + (en.summary||'') + ' ' + (en.explanation||'') + ' ' + (en.history||'') + ' '
+          + (en.era||'') + ' ' + (en.cat||'') + ' ' + (en.year||'')).toLowerCase();
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+
+    if (sort === 'title') {
+      view.sort(function(a, b){
+        return ((a.en && a.en.title) || a.n).localeCompare((b.en && b.en.title) || b.n); });
+    } else if (sort === 'year') {
+      view.sort(function(a, b){ return firstYear(a) - firstYear(b); });
+    } else if (sort === 'yeardesc') {
+      view.sort(function(a, b){
+        var ya = firstYear(a), yb = firstYear(b);
+        if (ya === 9999) return 1;
+        if (yb === 9999) return -1;
+        return yb - ya; });
+    } else if (sort === 'size') {
+      view.sort(function(a, b){ return b.s - a.s; });
+    } else if (sort === 'shuffle') {
+      for (var i = view.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = view[i]; view[i] = view[j]; view[j] = t;
+      }
+    }
+
+    document.getElementById('hits').textContent = view.length + ' / ' + all.length;
+    page = 0; render();
+  }
+
+  grid.addEventListener('click', function(e){
+    var c = e.target.closest('.cell');
+    if (c) open(parseInt(c.dataset.i, 10));
+  });
+  document.getElementById('lbclose').onclick = close;
+  document.getElementById('lbprev').onclick = function(){ step(-1); };
+  document.getElementById('lbnext').onclick = function(){ step(1); };
+  lb.addEventListener('click', function(e){ if (e.target === lb) close(); });
+  document.addEventListener('keydown', function(e){
+    if (lb.classList.contains('on')) {
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') step(-1);
+      if (e.key === 'ArrowRight') step(1);
+      return;
+    }
+    if (document.activeElement && document.activeElement.id === 'q') return;
+    if (e.key === 'ArrowLeft') { page--; render(); }
+    if (e.key === 'ArrowRight') { page++; render(); }
+  });
+  ['first','first2'].forEach(function(id){
+    document.getElementById(id).onclick = function(){ page = 0; render(); }; });
+  ['last','last2'].forEach(function(id){
+    document.getElementById(id).onclick = function(){ page = pages() - 1; render(); }; });
+  ['prev','prev2'].forEach(function(id){
+    document.getElementById(id).onclick = function(){ page--; render(); }; });
+  ['next','next2'].forEach(function(id){
+    document.getElementById(id).onclick = function(){ page++; render(); }; });
+  document.getElementById('q').addEventListener('input', applyFilters);
+  ['f-era','f-cat','f-dir','f-flag','f-sort'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', applyFilters); });
+  document.getElementById('clear').onclick = function(){
+    document.getElementById('q').value = '';
+    ['f-era','f-cat','f-dir','f-flag'].forEach(function(id){
+      document.getElementById(id).value = ''; });
+    document.getElementById('f-sort').value = 'folder';
+    applyFilters();
+  };
+  document.getElementById('rand').onclick = function(){
+    if (view.length) open(Math.floor(Math.random() * view.length)); };
+
+  fetch('data.json').then(function(r){ return r.json(); }).then(function(d){
+    all = d.items || []; view = all.slice();
+    pageSize = d.pageSize || 60;
+    document.getElementById('total').textContent = all.length;
+    document.getElementById('visits').textContent =
+      String(1337000 + all.length * 42).slice(0, 7);
+    buildFilters();
+    applyFilters();
+  }).catch(function(err){
+    grid.innerHTML = '<p style="color:#ff8080;line-height:1.5">data.json could not be loaded. '
+      + 'When opening the file straight from disk, Chrome blocks this (file:// rule). '
+      + 'Use <code>python -m http.server</code> or view it on the webspace.<br>('
+      + esc(err.message) + ')</p>';
+  });
+})();
+<\/script>
+</body>
+</html>
+`;
+}
+
+/* ============================================================ boot */
+renderResults();
+updateButtons();
+l.info("Meme Archivar v1.4.0 bereit.");
+l.info("Ablauf: Ordner wählen → Texte erzeugen → optional prüfen → Galerie schreiben.");
+if (!window.showDirectoryPicker)
+  l.warn("Dieser Browser kann keine Ordner schreiben — nur ZIP-Download. Chrome oder Edge nutzen.");
+if (location.protocol === "file:")
+  l.warn("Als file:// geöffnet. Wenn der API-Aufruf an CORS scheitert: python -m http.server 8000");
+</script>
+</body>
+</html>
