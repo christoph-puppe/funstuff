@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>md2linkedin · v1.0.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg-deep:      oklch(0.13 0.02 280);
+  --bg-elev-1:    oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:    oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:    oklch(0.95 0.005 280 / 0.08);
+  --border-1:     oklch(0.95 0.005 280 / 0.06);
+  --border-2:     oklch(0.95 0.005 280 / 0.10);
+  --text-primary:   oklch(0.95 0.005 280);
+  --text-secondary: oklch(0.75 0.02 280);
+  --text-tertiary:  oklch(0.65 0.02 280);
+  --text-quiet:     oklch(0.55 0.02 280);
+  --accent:         oklch(0.7  0.18 300);
+  --accent-soft:    oklch(0.7  0.18 300 / 0.15);
+  --accent-glow:    oklch(0.7  0.18 300 / 0.4);
+  --red:   oklch(0.65 0.2 25);
+  --amber: oklch(0.80 0.15 80);
+  --green: oklch(0.75 0.18 145);
+  --blue:  oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg-deep);color:var(--text-primary);
+  font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;
+  overflow:hidden;
+}
+::selection{background:oklch(0.7 0.18 300 / 0.35);color:oklch(0.95 0.005 280)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg-elev-3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-soft)}
+
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.nano{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text-quiet)}
+
+/* shell */
+#shell{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+#topbar{
+  height:62px;flex:0 0 62px;display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border-2);
+}
+.brand{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.brand span{color:var(--accent)}
+.pill{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+  padding:4px 9px;border-radius:6px;background:var(--bg-elev-2);
+  border:1px solid var(--border-2);color:var(--text-tertiary);white-space:nowrap;
+}
+.pill.on{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.pill.warn{color:var(--amber);border-color:oklch(0.80 0.15 80 / .3)}
+.pill.bad{color:var(--red);border-color:oklch(0.65 0.2 25 / .35)}
+.spacer{flex:1}
+
+#body{flex:1;display:flex;min-height:0}
+#rail{
+  width:250px;flex:0 0 250px;overflow-y:auto;min-height:0;
+  padding:18px 16px 40px;border-right:1px solid var(--border-1);
+}
+#splitter{width:5px;flex:0 0 5px;cursor:col-resize;background:transparent}
+#splitter:hover{background:var(--accent-soft)}
+#main{flex:1;min-width:0;min-height:0;overflow-y:auto;padding:24px 28px 40px}
+
+.group{margin-bottom:22px}
+.group>.nano{margin-bottom:10px;display:block}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.row label{color:var(--text-secondary);font-size:12.5px}
+select,input[type=text],input[type=number]{
+  background:var(--bg-elev-2);border:1px solid var(--border-2);color:var(--text-primary);
+  border-radius:7px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  outline:none;transition:border-color 150ms ease;
+}
+select{cursor:pointer}
+select:focus,input:focus{border-color:var(--accent)}
+input[type=text]{width:76px;text-align:center}
+
+/* toggle */
+.tg{position:relative;width:34px;height:19px;flex:0 0 34px;border-radius:10px;
+  background:var(--bg-elev-3);border:1px solid var(--border-2);cursor:pointer;
+  transition:background 150ms ease}
+.tg::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
+  background:var(--text-quiet);transition:all 150ms ease}
+.tg.on{background:var(--accent-soft);border-color:transparent}
+.tg.on::after{left:17px;background:var(--accent)}
+
+.card{
+  background:var(--bg-elev-1);border:1px solid var(--border-2);
+  backdrop-filter:blur(20px);border-radius:12px;padding:18px;margin-bottom:18px;
+}
+.card h2{margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.01em;
+  display:flex;align-items:center;gap:8px}
+.card h2 .ico{color:var(--accent)}
+.hint{color:var(--text-quiet);font-size:11.5px;margin:0 0 12px}
+
+textarea{
+  width:100%;resize:vertical;background:var(--bg-elev-2);border:1px solid var(--border-2);
+  color:var(--text-primary);border-radius:9px;padding:12px 13px;
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.62;
+  outline:none;transition:border-color 150ms ease;
+}
+textarea:focus{border-color:var(--accent)}
+#src{min-height:230px}
+
+#out{
+  min-height:200px;max-height:520px;overflow-y:auto;min-width:0;
+  white-space:pre-wrap;word-wrap:break-word;
+  background:var(--bg-elev-2);border:1px solid var(--border-2);border-radius:9px;
+  padding:14px 15px;font-size:14.5px;line-height:1.55;
+}
+#out:empty::before{content:'Output appears here.';color:var(--text-quiet);font-size:12.5px}
+
+button{
+  font-family:Inter,sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;
+  background:var(--bg-elev-2);border:1px solid var(--border-2);color:var(--text-secondary);
+  border-radius:8px;padding:7px 13px;transition:all 150ms ease;
+}
+button:hover{background:var(--bg-elev-3);color:var(--text-primary)}
+button.primary{
+  background:var(--accent);border-color:transparent;color:oklch(0.15 0.02 300);font-weight:600;
+  box-shadow:0 6px 20px var(--accent-glow);
+}
+button.primary:hover{background:oklch(0.75 0.18 300);color:oklch(0.15 0.02 300)}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+
+/* meter */
+.meter{height:3px;border-radius:2px;background:var(--bg-elev-3);overflow:hidden;margin-top:10px}
+.meter>i{display:block;height:100%;background:var(--accent);width:0;transition:width 200ms ease}
+.meter>i.warn{background:var(--amber)} .meter>i.bad{background:var(--red)}
+
+#console{
+  flex:0 0 172px;height:172px;overflow-y:auto;min-height:0;
+  border-top:1px solid var(--border-2);background:var(--bg-elev-1);backdrop-filter:blur(20px);
+  padding:10px 18px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.65;
+}
+#console .l{color:var(--text-tertiary)}
+#console .l .t{color:var(--text-quiet);margin-right:9px}
+#console .l.ok .m{color:var(--green)}
+#console .l.warn .m{color:var(--amber)}
+#console .l.err .m{color:var(--red)}
+#console .hdr{position:sticky;top:0;background:var(--bg-deep);padding:2px 0 6px;margin:-10px 0 4px}
+</style>
+</head>
+<body>
+
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="shell">
+
+  <div id="topbar">
+    <div class="brand">md<span>2</span>linkedin</div>
+    <div class="pill mono">v1.0.0</div>
+    <div class="pill mono">OFFLINE · NO API</div>
+    <div class="spacer"></div>
+    <div class="pill mono" id="pill-chars">0 CHARS</div>
+    <div class="pill mono" id="pill-unmapped">UNMAPPED 0</div>
+  </div>
+
+  <div id="body">
+    <div id="rail">
+
+      <div class="group">
+        <span class="nano">◈ Glyph style</span>
+        <div class="row"><label>Font family</label>
+          <select id="o-family"><option value="sans">sans</option><option value="serif">serif</option></select></div>
+        <div class="row"><label>Bold **x**</label><div class="tg on" data-opt="bold"></div></div>
+        <div class="row"><label>Italic *x*</label><div class="tg on" data-opt="italic"></div></div>
+        <div class="row"><label>Code `x`</label><div class="tg on" data-opt="code"></div></div>
+        <div class="row"><label>Strike ~~x~~</label><div class="tg on" data-opt="strike"></div></div>
+        <div class="row"><label>Underline __x__</label><div class="tg" data-opt="underline"></div></div>
+      </div>
+
+      <div class="group">
+        <span class="nano">◐ Umlaut guard</span>
+        <div class="row"><label>Skip unmappable words</label><div class="tg on" data-opt="umlautGuard"></div></div>
+        <p class="hint" style="margin:0">ä ö ü ß é have no bold/italic Unicode twin. Guard on = the whole word stays plain instead of rendering half-styled.</p>
+      </div>
+
+      <div class="group">
+        <span class="nano">▣ Blocks</span>
+        <div class="row"><label>Headings</label>
+          <select id="o-heading">
+            <option value="bold">bold</option>
+            <option value="boldcaps">bold + CAPS</option>
+            <option value="plain">plain text</option>
+            <option value="prefix">▸ prefix + bold</option>
+          </select></div>
+        <div class="row"><label>Bullet L1</label>
+          <select id="o-bullet"><option>•</option><option>▸</option><option>–</option><option>✔</option><option>→</option><option>◆</option></select></div>
+        <div class="row"><label>Quote mark</label>
+          <select id="o-quote"><option value="bar">▏</option><option value="quote">❝</option><option value="gt">&gt;</option><option value="none">none</option></select></div>
+        <div class="row"><label>Links → text (url)</label><div class="tg on" data-opt="links"></div></div>
+        <div class="row"><label>Tables → text</label><div class="tg on" data-opt="tables"></div></div>
+      </div>
+
+      <div class="group">
+        <span class="nano">⌕ Whitespace</span>
+        <div class="row"><label>Collapse blank runs</label><div class="tg on" data-opt="collapse"></div></div>
+        <div class="row"><label>Blank line after ¶</label><div class="tg on" data-opt="paraGap"></div></div>
+        <div class="row"><label>Trailing space strip</label><div class="tg on" data-opt="trim"></div></div>
+      </div>
+
+      <div class="group">
+        <span class="nano">◉ Target</span>
+        <div class="row"><label>Surface</label>
+          <select id="o-target">
+            <option value="3000">post (3000)</option>
+            <option value="1250">comment (1250)</option>
+            <option value="220">headline (220)</option>
+            <option value="2000">message (2000)</option>
+            <option value="0">article (∞)</option>
+          </select></div>
+        <div class="meter"><i id="meter"></i></div>
+        <p class="hint" id="budget" style="margin:8px 0 0">—</p>
+      </div>
+
+      <div class="group">
+        <button id="reset" style="width:100%">⟲ reset options</button>
+      </div>
+    </div>
+
+    <div id="splitter"></div>
+
+    <div id="main">
+
+      <div class="card">
+        <h2><span class="ico">✎</span> Markdown input</h2>
+        <p class="hint">Paste markdown. Conversion runs live on every keystroke.</p>
+        <textarea id="src" spellcheck="false" placeholder="# Heading&#10;&#10;Some **bold** and *italic* text.&#10;&#10;- first point&#10;- second point"></textarea>
+        <div class="bar">
+          <button id="demo">⋯ load sample</button>
+          <button id="clear">✕ clear</button>
+          <span class="nano" id="srcmeta">0 lines</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ico">◈</span> LinkedIn output</h2>
+        <p class="hint">Unicode glyphs — paste straight into the composer. LinkedIn has no rich-text field, so styling <em>is</em> the character set.</p>
+        <div id="out"></div>
+        <div class="bar">
+          <button class="primary" id="copy">⧉ copy to clipboard</button>
+          <button id="download">⤓ download .txt</button>
+          <button id="plain">⌫ strip all styling</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="ico">◬</span> Caveats worth knowing</h2>
+        <p class="hint" style="margin:0;line-height:1.7">
+          <b style="color:var(--amber)">Accessibility:</b> screen readers announce 𝗺𝗮𝘁𝗵𝗲𝗺𝗮𝘁𝗶𝗰𝗮𝗹 𝗯𝗼𝗹𝗱 letter-by-letter as "mathematical bold small a…" or skip them entirely. Never style a whole post — use it on 2–4 anchor phrases.<br>
+          <b style="color:var(--amber)">Search:</b> LinkedIn's index treats 𝗞𝘂𝗯𝗲𝗿𝗻𝗲𝘁𝗲𝘀 and Kubernetes as different strings. Keep keywords unstyled.<br>
+          <b style="color:var(--amber)">Coverage:</b> the Unicode math planes cover A–Z a–z 0–9 only. Everything else — umlauts, accents, ß, punctuation — passes through unchanged.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="console">
+    <div class="hdr nano">▣ console</div>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const VERSION = "1.0.0";
+const $ = id => document.getElementById(id);
+const LS = "md2li.v1";
+
+/* ---------- unicode maps ---------- */
+/* base code points for A, a, 0 in each mathematical alphanumeric block */
+const MAPS = {
+  boldSans:        {U:0x1D5D4, L:0x1D5EE, D:0x1D7EC},
+  italicSans:      {U:0x1D608, L:0x1D622, D:null},
+  boldItalicSans:  {U:0x1D63C, L:0x1D656, D:null},
+  boldSerif:       {U:0x1D400, L:0x1D41A, D:0x1D7CE},
+  italicSerif:     {U:0x1D434, L:0x1D44E, D:null, holes:{h:0x210E}},
+  boldItalicSerif: {U:0x1D468, L:0x1D482, D:null},
+  mono:            {U:0x1D670, L:0x1D68A, D:0x1D7F6}
+};
+const COMB = {strike:"\u0336", underline:"\u0332"};
+
+let unmappedHits = 0;          // letters that could not be styled this run
+const isLetter = ch => /\p{L}/u.test(ch);
+
+function mapChar(ch, m){
+  if(m.holes && m.holes[ch]) return String.fromCodePoint(m.holes[ch]);
+  const c = ch.codePointAt(0);
+  if(c>=65 && c<=90)  return String.fromCodePoint(m.U + (c-65));
+  if(c>=97 && c<=122) return String.fromCodePoint(m.L + (c-97));
+  if(c>=48 && c<=57)  return m.D ? String.fromCodePoint(m.D + (c-48)) : ch;
+  return null;                  // not representable in this block
+}
+
+/* returns true if every letter/digit in the token can be mapped */
+function fullyMappable(word, m){
+  for(const ch of word){
+    if(!isLetter(ch) && !/\d/.test(ch)) continue;
+    if(mapChar(ch, m) === null) return false;
+  }
+  return true;
+}
+
+function styleText(str, mapName, opts){
+  const m = MAPS[mapName];
+  if(!m) return str;
+  // umlaut guard operates per whitespace-delimited token
+  const tokens = str.split(/(\s+)/);
+  return tokens.map(tok => {
+    if(!tok || /^\s+$/.test(tok)) return tok;
+    if(opts.umlautGuard && !fullyMappable(tok, m)){
+      for(const ch of tok) if(isLetter(ch) && mapChar(ch,m)===null) unmappedHits++;
+      return tok;                                  // leave the whole word plain
+    }
+    let out = "";
+    for(const ch of tok){
+      const mapped = mapChar(ch, m);
+      if(mapped === null){ if(isLetter(ch)) unmappedHits++; out += ch; }
+      else out += mapped;
+    }
+    return out;
+  }).join("");
+}
+
+function combine(str, mark){
+  let out = "";
+  for(const ch of str){ out += ch; if(ch !== " ") out += mark; }
+  return out;
+}
+
+/* ---------- inline markdown ---------- */
+function pickMap(kind, family){
+  const s = family === "serif";
+  if(kind === "bold")       return s ? "boldSerif"       : "boldSans";
+  if(kind === "italic")     return s ? "italicSerif"     : "italicSans";
+  if(kind === "bolditalic") return s ? "boldItalicSerif" : "boldItalicSans";
+  return "mono";
+}
+
+function inline(text, o){
+  const stash = [];
+  const keep = s => { stash.push(s); return "\u0000" + (stash.length-1) + "\u0000"; };
+
+  // 0. escaped characters
+  text = text.replace(/\\([\\`*_~\[\]()#>-])/g, (_,c) => keep(c));
+
+  // 1. inline code — protected from all further parsing
+  text = text.replace(/`([^`\n]+)`/g, (_,c) =>
+    keep(o.code ? styleText(c, "mono", o) : c));
+
+  // 2. images -> alt text only
+  text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (_,alt) => keep(alt || ""));
+
+  // 3. links
+  text = text.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, (_,label,url) =>
+    keep(o.links ? (label.trim() === url.trim() ? url : label + " (" + url + ")") : label));
+
+  // 4. bold+italic / bold / italic  (longest delimiter first)
+  const B = o.bold, I = o.italic;
+  text = text.replace(/\*\*\*(?=\S)([\s\S]*?\S)\*\*\*/g, (_,c) =>
+    (B&&I) ? styleText(c, pickMap("bolditalic",o.family), o) : (B ? styleText(c,pickMap("bold",o.family),o) : (I ? styleText(c,pickMap("italic",o.family),o) : c)));
+  text = text.replace(/___(?=\S)([\s\S]*?\S)___/g, (_,c) =>
+    (B&&I) ? styleText(c, pickMap("bolditalic",o.family), o) : c);
+  text = text.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, (_,c) =>
+    B ? styleText(c, pickMap("bold",o.family), o) : c);
+  text = text.replace(/__(?=\S)([\s\S]*?\S)__/g, (_,c) =>
+    o.underline ? combine(c, COMB.underline) : (B ? styleText(c, pickMap("bold",o.family), o) : c));
+  text = text.replace(/(^|[^\w*])\*(?=\S)([^*\n]*?\S)\*(?!\*)/g, (_,pre,c) =>
+    pre + (I ? styleText(c, pickMap("italic",o.family), o) : c));
+  text = text.replace(/(^|[^\w_])_(?=\S)([^_\n]*?\S)_(?!_)/g, (_,pre,c) =>
+    pre + (I ? styleText(c, pickMap("italic",o.family), o) : c));
+
+  // 5. strikethrough
+  text = text.replace(/~~(?=\S)([\s\S]*?\S)~~/g, (_,c) =>
+    o.strike ? combine(c, COMB.strike) : c);
+
+  // 6. leftover html tags
+  text = text.replace(/<\/?[a-zA-Z][^>]*>/g, "");
+
+  // restore
+  text = text.replace(/\u0000(\d+)\u0000/g, (_,i) => stash[+i]);
+  return text;
+}
+
+/* ---------- block markdown ---------- */
+const BULLETS = ["", "◦", "▪", "·"];   // index 0 replaced by user choice
+
+function convert(md, o){
+  unmappedHits = 0;
+  const warn = [];
+  const src = md.replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  let inFence = false, fenceBuf = [], tableBuf = [];
+
+  const flushTable = () => {
+    if(!tableBuf.length) return;
+    if(o.tables){
+      const rows = tableBuf
+        .filter(r => !/^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(r))
+        .map(r => r.replace(/^\s*\|/,"").replace(/\|\s*$/,"")
+                   .split("|").map(c => inline(c.trim(), o)).filter(Boolean));
+      if(rows.length){
+        const head = rows.shift();
+        rows.forEach(r => {
+          out.push(r.map((c,i) => (head[i] ? head[i] + ": " : "") + c).join(" · "));
+        });
+      }
+    } else tableBuf.forEach(r => out.push(r));
+    tableBuf = [];
+  };
+
+  for(let raw of src){
+    const line = o.trim ? raw.replace(/\s+$/,"") : raw;
+
+    // fenced code
+    if(/^\s*(```|~~~)/.test(line)){
+      if(inFence){
+        inFence = false;
+        fenceBuf.forEach(l => out.push(o.code ? styleText(l, "mono", o) : l));
+        fenceBuf = [];
+      } else { flushTable(); inFence = true; }
+      continue;
+    }
+    if(inFence){ fenceBuf.push(line); continue; }
+
+    // tables
+    if(/^\s*\|.*\|\s*$/.test(line)){ tableBuf.push(line); continue; }
+    flushTable();
+
+    // blank
+    if(!line.trim()){ out.push(""); continue; }
+
+    // horizontal rule
+    if(/^\s*([-*_])\s*\1\s*\1[\s*_-]*$/.test(line)){ out.push("─────────────"); continue; }
+
+    // heading
+    let m = line.match(/^(#{1,6})\s+(.*)$/);
+    if(m){
+      let t = inline(m[2].replace(/\s+#+\s*$/,""), o);
+      if(o.heading === "boldcaps"){
+        t = inline(m[2].toUpperCase(), o);
+        if(!/\*\*/.test(m[2])) t = styleText(t, pickMap("bold",o.family), o);
+      } else if(o.heading === "bold"){
+        t = styleText(inline(m[2],{...o, bold:false, italic:false}), pickMap("bold",o.family), o);
+      } else if(o.heading === "prefix"){
+        t = "▸ " + styleText(inline(m[2],{...o, bold:false, italic:false}), pickMap("bold",o.family), o);
+      }
+      out.push(t);
+      if(o.paraGap) out.push("");
+      continue;
+    }
+
+    // blockquote
+    m = line.match(/^\s*>\s?(.*)$/);
+    if(m){
+      const t = inline(m[1], o);
+      const pre = o.quote === "bar" ? "▏ " : o.quote === "quote" ? "❝ " : o.quote === "gt" ? "> " : "";
+      out.push(pre + t);
+      continue;
+    }
+
+    // task list
+    m = line.match(/^(\s*)[-*+]\s+\[([ xX])\]\s+(.*)$/);
+    if(m){
+      const lvl = Math.floor(m[1].replace(/\t/g,"  ").length / 2);
+      out.push("  ".repeat(lvl) + (m[2].toLowerCase()==="x" ? "☑ " : "☐ ") + inline(m[3], o));
+      continue;
+    }
+
+    // unordered list
+    m = line.match(/^(\s*)[-*+]\s+(.*)$/);
+    if(m){
+      const lvl = Math.min(Math.floor(m[1].replace(/\t/g,"  ").length / 2), 3);
+      const marker = lvl === 0 ? o.bullet : BULLETS[lvl];
+      out.push("  ".repeat(lvl) + marker + " " + inline(m[2], o));
+      continue;
+    }
+
+    // ordered list
+    m = line.match(/^(\s*)(\d+)[.)]\s+(.*)$/);
+    if(m){
+      const lvl = Math.min(Math.floor(m[1].replace(/\t/g,"  ").length / 2), 3);
+      out.push("  ".repeat(lvl) + m[2] + ". " + inline(m[3], o));
+      continue;
+    }
+
+    out.push(inline(line, o));
+  }
+  flushTable();
+  if(inFence && fenceBuf.length) fenceBuf.forEach(l => out.push(l));
+
+  let text = out.join("\n");
+  if(o.collapse) text = text.replace(/\n{3,}/g, "\n\n");
+  text = text.replace(/^\n+/, "").replace(/\n+$/, "");
+  if(unmappedHits) warn.push(unmappedHits + " letter(s) outside the Unicode math range");
+  return {text, warn};
+}
+
+/* ---------- options state ---------- */
+const DEFAULTS = {
+  family:"sans", bold:true, italic:true, code:true, strike:true, underline:false,
+  umlautGuard:true, heading:"bold", bullet:"•", quote:"bar", links:true, tables:true,
+  collapse:true, paraGap:true, trim:true, target:"3000", railW:250
+};
+let o = {...DEFAULTS};
+
+function loadOpts(){
+  try{ const s = JSON.parse(localStorage.getItem(LS)); if(s) o = {...DEFAULTS, ...s}; }catch(e){}
+}
+function saveOpts(){ try{ localStorage.setItem(LS, JSON.stringify(o)); }catch(e){} }
+
+function paintOpts(){
+  document.querySelectorAll(".tg").forEach(t => t.classList.toggle("on", !!o[t.dataset.opt]));
+  $("o-family").value = o.family; $("o-heading").value = o.heading;
+  $("o-bullet").value = o.bullet; $("o-quote").value = o.quote;
+  $("o-target").value = o.target;
+  $("rail").style.flex = "0 0 " + o.railW + "px";
+  $("rail").style.width = o.railW + "px";
+}
+
+/* ---------- console ---------- */
+let lastLog = "";
+function log(msg, cls){
+  if(msg === lastLog) return; lastLog = msg;
+  const t = new Date().toTimeString().slice(0,8);
+  const d = document.createElement("div");
+  d.className = "l " + (cls||"");
+  d.innerHTML = '<span class="t">'+t+'</span><span class="m"></span>';
+  d.querySelector(".m").textContent = msg;
+  $("log").appendChild(d);
+  const c = $("console"); c.scrollTop = c.scrollHeight;
+  while($("log").children.length > 300) $("log").removeChild($("log").firstChild);
+}
+
+/* ---------- run ---------- */
+let plainMode = false;
+function run(){
+  const md = $("src").value;
+  const t0 = performance.now();
+  const res = plainMode
+    ? convert(md, {...o, bold:false, italic:false, code:false, strike:false, underline:false})
+    : convert(md, o);
+  $("out").textContent = res.text;
+
+  const chars = [...res.text].length;
+  const units = res.text.length;             // UTF-16 units — what LinkedIn counts
+  $("pill-chars").textContent = units + " CHARS";
+  $("srcmeta").textContent = md ? (md.split("\n").length + " lines · " + md.length + " chars in") : "0 lines";
+
+  const up = $("pill-unmapped");
+  up.textContent = "UNMAPPED " + unmappedHits;
+  up.className = "pill mono" + (unmappedHits ? " warn" : "");
+
+  const limit = +o.target;
+  const meter = $("meter");
+  if(limit){
+    const pct = Math.min(units / limit * 100, 100);
+    meter.style.width = pct + "%";
+    meter.className = pct >= 100 ? "bad" : pct > 85 ? "warn" : "";
+    $("budget").textContent = units <= limit
+      ? (limit - units) + " characters left of " + limit
+      : "OVER by " + (units - limit) + " — LinkedIn will reject it";
+    $("pill-chars").className = "pill mono" + (units > limit ? " bad" : units > limit*0.85 ? " warn" : "");
+  } else {
+    meter.style.width = "0"; meter.className = "";
+    $("budget").textContent = "no hard limit on this surface";
+    $("pill-chars").className = "pill mono";
+  }
+
+  if(md.trim()){
+    log("converted · " + units + " chars · " + (performance.now()-t0).toFixed(1) + " ms"
+        + (unmappedHits ? " · " + unmappedHits + " unmapped" : ""),
+        unmappedHits ? "warn" : "ok");
+    if(unmappedHits && o.umlautGuard) log("umlaut guard active — words with ä/ö/ü/ß/accents left unstyled", "warn");
+    if(unmappedHits && !o.umlautGuard) log("guard OFF — styled words will render half-plain", "warn");
+    if(limit && units > limit) log("over the " + limit + "-char limit by " + (units-limit), "err");
+  }
+}
+
+/* ---------- wiring ---------- */
+document.querySelectorAll(".tg").forEach(t => t.addEventListener("click", () => {
+  o[t.dataset.opt] = !o[t.dataset.opt];
+  t.classList.toggle("on", o[t.dataset.opt]);
+  log(t.dataset.opt + " → " + (o[t.dataset.opt] ? "on" : "off"));
+  saveOpts(); run();
+}));
+["o-family","o-heading","o-bullet","o-quote","o-target"].forEach(id => {
+  $(id).addEventListener("change", e => {
+    o[id.slice(2)] = e.target.value;
+    log(id.slice(2) + " → " + e.target.value);
+    saveOpts(); run();
+  });
+});
+$("src").addEventListener("input", () => { localStorage.setItem(LS+".src", $("src").value); run(); });
+
+$("copy").addEventListener("click", async () => {
+  try{
+    await navigator.clipboard.writeText($("out").textContent);
+    const b = $("copy"); b.textContent = "✔ copied"; setTimeout(()=>b.textContent="⧉ copy to clipboard",1400);
+    log("copied " + $("out").textContent.length + " chars to clipboard","ok");
+  }catch(e){
+    const r = document.createRange(); r.selectNodeContents($("out"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    log("clipboard API blocked — output selected, press Ctrl+C","warn");
+  }
+});
+$("download").addEventListener("click", () => {
+  const blob = new Blob([$("out").textContent], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "linkedin-post.txt"; a.click();
+  URL.revokeObjectURL(a.href);
+  log("downloaded linkedin-post.txt","ok");
+});
+$("plain").addEventListener("click", () => {
+  plainMode = !plainMode;
+  $("plain").textContent = plainMode ? "◈ styling on" : "⌫ strip all styling";
+  $("plain").classList.toggle("primary", plainMode);
+  log("plain mode → " + (plainMode ? "on (structure only)" : "off"));
+  run();
+});
+$("clear").addEventListener("click", () => { $("src").value=""; localStorage.removeItem(LS+".src"); run(); log("cleared"); });
+$("reset").addEventListener("click", () => { o = {...DEFAULTS}; saveOpts(); paintOpts(); run(); log("options reset to defaults","ok"); });
+
+const SAMPLE = `# Kubernetes-Härtung nach IT-Grundschutz
+
+**Kernaussage:** APP.4.4 verlangt mehr als *Pod Security Standards*.
+
+## Was viele übersehen
+
+- Admission Control ist **keine** Option, sondern Pflicht
+- \`kubelet\` read-only port gehört deaktiviert
+- Netzwerkrichtlinien: ~~default allow~~ → default deny
+
+> Compliance ist kein Zustand, sondern ein Regelkreis.
+
+1. Baseline messen
+2. Abweichungen als POA&M erfassen
+3. Nachweise automatisiert erzeugen
+
+Mehr dazu: [BSI-Kompendium](https://www.bsi.bund.de)
+
+---
+
+Was fehlt eurer Meinung nach in APP.4.4?`;
+
+$("demo").addEventListener("click", () => { $("src").value = SAMPLE; localStorage.setItem(LS+".src", SAMPLE); run(); log("sample loaded"); });
+
+/* splitter */
+(function(){
+  let drag = false;
+  $("splitter").addEventListener("mousedown", e => { drag = true; e.preventDefault(); document.body.style.cursor="col-resize"; });
+  window.addEventListener("mousemove", e => {
+    if(!drag) return;
+    const w = Math.max(200, Math.min(420, e.clientX));
+    o.railW = w; $("rail").style.flex = "0 0 "+w+"px"; $("rail").style.width = w+"px";
+  });
+  window.addEventListener("mouseup", () => { if(drag){ drag=false; document.body.style.cursor=""; saveOpts(); } });
+})();
+
+loadOpts(); paintOpts();
+$("src").value = localStorage.getItem(LS+".src") || "";
+log("md2linkedin v" + VERSION + " ready — pure client-side, nothing leaves the browser","ok");
+run();
+</script>
+</body>
+</html>
