@@ -1,0 +1,1571 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VSSX → draw.io Library Converter · v2.0.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-deep:oklch(0.13 0.02 280);
+  --bg-elev-1:oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:oklch(0.95 0.005 280 / 0.08);
+  --border-1:oklch(0.95 0.005 280 / 0.06);
+  --border-2:oklch(0.95 0.005 280 / 0.10);
+  --text-primary:oklch(0.95 0.005 280);
+  --text-secondary:oklch(0.75 0.02 280);
+  --text-tertiary:oklch(0.65 0.02 280);
+  --text-quiet:oklch(0.55 0.02 280);
+  --accent:oklch(0.7 0.18 300);
+  --accent-soft:oklch(0.7 0.18 300 / 0.15);
+  --accent-glow:oklch(0.7 0.18 300 / 0.4);
+  --red:oklch(0.65 0.2 25);
+  --amber:oklch(0.80 0.15 80);
+  --green:oklch(0.75 0.18 145);
+  --blue:oklch(0.70 0.15 240);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg-deep);color:var(--text-primary);
+  font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;
+  overflow:hidden;
+}
+::selection{background:oklch(0.7 0.18 300 / 0.35);color:oklch(0.95 0.005 280)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:oklch(0.95 0.005 280 / 0.12);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.mono{font-family:'JetBrains Mono',monospace}
+.glass{background:var(--bg-elev-1);border:1px solid var(--border-2);backdrop-filter:blur(20px);border-radius:12px}
+
+/* ---- shell ---- */
+#app{position:relative;z-index:1;display:grid;height:100vh;
+  grid-template-rows:62px 1fr 220px;
+  grid-template-columns:var(--rail-w,244px) 6px 1fr;
+  grid-template-areas:"top top top" "rail split main" "log log log";}
+#topbar{grid-area:top;display:flex;align-items:center;gap:14px;padding:0 20px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-1)}
+#rail{grid-area:rail;overflow-y:auto;min-height:0;padding:16px 14px;display:flex;flex-direction:column;gap:18px;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-right:1px solid var(--border-1)}
+#splitter{grid-area:split;cursor:col-resize;background:transparent}
+#splitter:hover{background:var(--accent-soft)}
+#main{grid-area:main;overflow-y:auto;min-height:0;padding:26px 30px;display:flex;flex-direction:column;gap:20px}
+#logwrap{grid-area:log;display:flex;flex-direction:column;min-height:0;
+  background:var(--bg-elev-1);backdrop-filter:blur(20px);border-top:1px solid var(--border-1)}
+
+/* ---- topbar ---- */
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-weight:700;font-size:15px;letter-spacing:.2px}
+.brand .ver{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-quiet)}
+.pill{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1px;color:var(--text-tertiary);
+  border:1px solid var(--border-2);border-radius:99px;padding:3px 10px;background:var(--bg-elev-1)}
+.pill.on{color:var(--accent);border-color:var(--accent-soft);background:var(--accent-soft)}
+#status-pill{margin-left:auto}
+
+/* ---- rail ---- */
+.rail-group{display:flex;flex-direction:column;gap:8px}
+.rail-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2px;color:var(--text-quiet);text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;color:var(--text-secondary);
+  cursor:pointer;font-size:13px;border:1px solid transparent;transition:background .15s ease}
+.nav-item:hover{background:var(--bg-elev-2)}
+.nav-item.active{background:var(--accent-soft);color:var(--text-primary)}
+.nav-item.active .glyph{color:var(--accent)}
+.glyph{font-size:13px;color:var(--text-quiet);width:16px;text-align:center}
+label.fld{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--text-tertiary)}
+input[type=text],input[type=password],input[type=number],select{
+  background:var(--bg-elev-2);border:1px solid var(--border-2);border-radius:8px;color:var(--text-primary);
+  padding:7px 9px;font-size:12.5px;font-family:'JetBrains Mono',monospace;outline:none;width:100%;
+  transition:border-color .15s ease}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:oklch(0.18 0.02 280);color:var(--text-primary)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;user-select:none}
+.toggle input{appearance:none;width:32px;height:18px;border-radius:99px;background:var(--bg-elev-3);
+  border:1px solid var(--border-2);position:relative;cursor:pointer;transition:background .15s ease;flex:none}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;
+  background:var(--text-tertiary);transition:transform .15s ease,background .15s ease}
+.toggle input:checked{background:var(--accent-soft);border-color:var(--accent)}
+.toggle input:checked::after{transform:translateX(14px);background:var(--accent)}
+
+/* ---- cards ---- */
+.card{background:var(--bg-elev-1);border:1px solid var(--border-2);backdrop-filter:blur(20px);
+  border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.card-head{display:flex;align-items:center;gap:10px}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:2px;color:var(--text-tertiary);text-transform:uppercase}
+.card-head .spacer{flex:1}
+.btn{background:var(--bg-elev-2);border:1px solid var(--border-2);border-radius:8px;color:var(--text-secondary);
+  padding:7px 14px;font-size:12.5px;font-family:Inter,sans-serif;font-weight:500;cursor:pointer;
+  transition:background .15s ease;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{background:var(--bg-elev-3);color:var(--text-primary)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:oklch(0.15 0.02 280);border-color:transparent;font-weight:600;
+  box-shadow:0 6px 20px var(--accent-glow)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--red);border-color:oklch(0.65 0.2 25 / 0.3)}
+.btn.small{padding:4px 10px;font-size:11.5px}
+.hint{font-size:11.5px;color:var(--text-quiet)}
+.warn-chip{display:none;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--amber);
+  border:1px solid oklch(0.8 0.15 80 / 0.3);background:oklch(0.8 0.15 80 / 0.08);border-radius:6px;padding:3px 8px;width:fit-content}
+.warn-chip.show{display:block}
+
+/* ---- dropzone ---- */
+#dropzone{border:1px dashed var(--border-2);border-radius:10px;padding:26px;text-align:center;color:var(--text-tertiary);
+  cursor:pointer;transition:border-color .15s ease,background .15s ease;font-size:13px}
+#dropzone.drag{border-color:var(--accent);background:var(--accent-soft)}
+#file-meta{display:none;gap:8px;flex-wrap:wrap}
+#file-meta.show{display:flex}
+.meta-pill{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);
+  background:var(--bg-elev-2);border:1px solid var(--border-2);border-radius:6px;padding:3px 9px}
+#master-list{max-height:220px;overflow-y:auto;min-height:0;display:none;flex-direction:column;gap:2px;
+  border:1px solid var(--border-1);border-radius:8px;padding:6px}
+#master-list.show{display:flex}
+.master-row{display:flex;align-items:center;gap:10px;padding:4px 8px;border-radius:6px;font-size:12.5px}
+.master-row:hover{background:var(--bg-elev-2)}
+.master-row .mono{color:var(--text-quiet);font-size:10.5px}
+.master-row input{width:14px;height:14px;accent-color:var(--accent)}
+
+/* ---- prompts ---- */
+textarea{background:var(--bg-elev-2);border:1px solid var(--border-2);border-radius:10px;color:var(--text-primary);
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.55;padding:12px;width:100%;
+  resize:vertical;min-height:200px;outline:none;transition:border-color .15s ease}
+textarea::-webkit-resizer{background:linear-gradient(135deg,transparent 50%,var(--border-2) 50%)}
+.prompt-block{display:flex;flex-direction:column;gap:8px}
+.prompt-head{display:flex;align-items:center;gap:10px}
+.prompt-head .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-tertiary)}
+.prompt-head .spacer{flex:1}
+.saved-ind{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);opacity:0;transition:opacity .3s ease}
+.saved-ind.flash{opacity:1}
+
+/* ---- progress ---- */
+.progress-wrap{display:none;flex-direction:column;gap:6px}
+.progress-wrap.show{display:flex}
+.progress-meta{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-tertiary)}
+.progress-track{height:1px;background:var(--border-2);overflow:hidden;border-radius:1px}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .2s ease}
+.progress-fill.done{background:var(--green)}
+
+/* ---- stats ---- */
+#stats-card{display:none}
+#stats-card.show{display:flex}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:900px){.stats-grid{grid-template-columns:1fr}}
+.stat-sub{background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.stat-sub h4{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:2px;color:var(--text-quiet);font-weight:500}
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.legend{display:flex;flex-direction:column;gap:5px}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary)}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex:none}
+.legend-row .mono{margin-left:auto;color:var(--text-tertiary);font-size:11px}
+.hbar-row{display:grid;grid-template-columns:130px 1fr 34px;align-items:center;gap:10px;font-size:12px}
+.hbar-label{color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar-track{height:8px;background:var(--bg-elev-2);border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px}
+.hbar-value{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);text-align:right}
+
+/* ---- results ---- */
+.results-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.results-toolbar select{width:auto}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.result-card{background:var(--bg-elev-1);border:1px solid var(--border-1);border-radius:12px;padding:14px;
+  display:flex;flex-direction:column;gap:10px}
+.rc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rc-title{font-weight:600;font-size:13px;flex:1;min-width:120px;word-break:break-word}
+.badge{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;border-radius:99px;padding:2px 8px;
+  border:1px solid var(--border-2);color:var(--text-tertiary);text-transform:uppercase;white-space:nowrap}
+.svg-preview{background:
+  repeating-conic-gradient(oklch(0.85 0 0) 0% 25%, oklch(0.95 0 0) 0% 50%) 0 0 / 16px 16px;
+  border-radius:8px;min-height:120px;max-height:200px;display:flex;align-items:center;justify-content:center;
+  padding:10px;overflow:hidden}
+.svg-preview svg{max-width:100%;max-height:180px;height:auto}
+.rc-meta{display:flex;gap:8px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-quiet)}
+.rc-notes{font-size:12px;color:var(--text-tertiary)}
+.rc-error{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--red);word-break:break-word}
+.validation-block{border-left:2px solid var(--text-quiet);padding:8px 10px;background:var(--bg-elev-1);
+  border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-secondary)}
+.validation-block .vb-head{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--text-quiet)}
+
+/* ---- log ---- */
+#log-head{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--border-1)}
+#log-head .card-title{flex:none}
+#log-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-quiet)}
+#log{flex:1;overflow-y:auto;min-height:0;padding:8px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.65}
+.log-line{display:flex;gap:10px;white-space:pre-wrap;word-break:break-word}
+.log-ts{color:var(--text-quiet);flex:none}
+.log-info{color:var(--blue)} .log-ok{color:var(--green)} .log-warn{color:var(--amber)}
+.log-err{color:var(--red)} .log-debug{color:var(--text-quiet)}
+</style>
+</head>
+<body>
+<!-- aurora + noise -->
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div id="app">
+  <div id="topbar">
+    <div class="brand"><b>VSSX → draw.io</b><span class="ver">library converter · v2.0.0</span></div>
+    <span class="pill">◇ VEKTOR-ERHALTEND</span>
+    <span class="pill on" id="mode-pill">DETERMINISTISCH</span>
+    <span class="pill" id="backend-pill">GEMINI</span>
+    <span class="pill" id="status-pill">BEREIT</span>
+  </div>
+
+  <div id="rail">
+    <div class="rail-group">
+      <div class="rail-label">Navigation</div>
+      <div class="nav-item active" data-goto="card-input"><span class="glyph">◐</span>Eingabe</div>
+      <div class="nav-item" data-goto="card-prompts"><span class="glyph">✎</span>Prompts</div>
+      <div class="nav-item" data-goto="card-run"><span class="glyph">▶</span>Konvertierung</div>
+      <div class="nav-item" data-goto="stats-card"><span class="glyph">◈</span>Statistik</div>
+      <div class="nav-item" data-goto="card-results"><span class="glyph">▣</span>Ergebnisse</div>
+    </div>
+
+    <div class="rail-group">
+      <div class="rail-label">Konvertierung</div>
+      <label class="fld">Modus
+        <select id="conv-mode">
+          <option value="det">Nur deterministisch (lokal)</option>
+          <option value="det+llm" selected>Deterministisch + LLM-Fallback</option>
+          <option value="llm">Nur LLM</option>
+        </select>
+      </label>
+      <div class="hint">Deterministisch: ShapeSheet-Geometrie wird lokal in JS nach SVG übersetzt — reproduzierbar, offline, kein API-Key nötig. LLM nur als Fallback für Master, die der lokale Parser nicht abdeckt.</div>
+    </div>
+
+    <div class="rail-group">
+      <div class="rail-label">LLM-Backend (Fallback / Checker)</div>
+      <label class="fld">Aktiver Anbieter
+        <select id="backend">
+          <option value="gemini">Gemini</option>
+          <option value="openrouter">OpenRouter</option>
+        </select>
+      </label>
+      <div id="cfg-gemini" style="margin-top:6px;padding-top:8px;border-top:1px solid var(--border-1)">
+        <label class="fld">API-Key (Gemini)
+          <input type="password" id="gemini-key" placeholder="AIza…" autocomplete="off">
+        </label>
+        <label class="fld" style="margin-top:8px">Modell
+          <select id="gemini-model">
+            <option value="gemini-3.6-flash">gemini-3.6-flash</option>
+            <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+            <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite</option>
+            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (paid)</option>
+          </select>
+        </label>
+        <label class="fld" style="margin-top:8px">Thinking-Level
+          <select id="thinking">
+            <option value="minimal">minimal</option>
+            <option value="low">low</option>
+            <option value="medium" selected>medium</option>
+            <option value="high">high</option>
+          </select>
+        </label>
+      </div>
+      <div id="cfg-openrouter" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-1)">
+        <label class="fld">API-Key (OpenRouter)
+          <input type="password" id="or-key" placeholder="sk-or-…" autocomplete="off">
+        </label>
+        <label class="fld" style="margin-top:8px">Modell (Katalog)
+          <select id="or-model-select"><option value="">– Katalog lädt bei Bedarf –</option></select>
+        </label>
+        <label class="fld" style="margin-top:8px">Modell-Slug (frei)
+          <input type="text" id="or-model-free" placeholder="vendor/slug">
+        </label>
+      </div>
+    </div>
+
+    <div class="rail-group">
+      <div class="rail-label">Lauf-Parameter</div>
+      <div class="row2">
+        <label class="fld">Parallel
+          <input type="number" id="concurrency" min="1" max="12" value="4">
+        </label>
+        <label class="fld">Retries
+          <input type="number" id="retries" min="0" max="5" value="2">
+        </label>
+      </div>
+      <label class="fld">Max. XML-Zeichen / Master
+        <input type="number" id="max-chars" min="5000" step="5000" value="60000">
+      </label>
+      <label class="toggle"><input type="checkbox" id="grounding"><span>Grounding (Google Search)</span></label>
+      <label class="toggle"><input type="checkbox" id="mc-toggle"><span>Maker-Checker-Validierung</span></label>
+      <div class="hint">Transformationsaufgabe — Grounding standardmäßig aus. Chunk-Größe ist fix 1 Master/Call.</div>
+    </div>
+
+    <div class="rail-group">
+      <div class="rail-label">Hinweis</div>
+      <div class="hint">Bei CORS-Fehlern unter <span class="mono">file://</span>: lokal servieren mit <span class="mono">python -m http.server</span> und via <span class="mono">http://localhost:8000/…</span> öffnen.</div>
+    </div>
+  </div>
+
+  <div id="splitter"></div>
+
+  <div id="main">
+    <!-- INPUT -->
+    <div class="card" id="card-input">
+      <div class="card-head"><span class="card-title">◐ Eingabe · Visio-Stencil (.vssx)</span><span class="spacer"></span>
+        <button class="btn small" id="btn-clear">Zurücksetzen</button>
+      </div>
+      <div id="dropzone">.vssx hierher ziehen oder klicken zum Auswählen<br><span class="hint">Auch .vsdx wird akzeptiert — dann werden die Master der Zeichnung extrahiert.</span></div>
+      <input type="file" id="file-input" accept=".vssx,.vsdx,.zip" style="display:none">
+      <div id="file-meta"></div>
+      <div id="master-list"></div>
+      <div class="hint" id="input-hint" style="display:none">Auswahl der zu konvertierenden Master per Checkbox. Eingebettete Rasterbilder in Shapes werden nicht übernommen — nur Vektorgeometrie.</div>
+    </div>
+
+    <!-- PROMPTS -->
+    <div class="card" id="card-prompts">
+      <div class="card-head"><span class="card-title">✎ Prompts</span></div>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="lbl">MAKER PROMPT — VISIO-XML → SVG</span><span class="spacer"></span>
+          <span class="saved-ind" id="maker-saved">gespeichert</span>
+          <button class="btn small" id="maker-reset">Reset auf Standard</button></div>
+        <textarea id="maker-template" spellcheck="false"></textarea>
+        <div class="warn-chip" id="maker-warn">⚠ Platzhalter {master_xml} fehlt — wird zur Laufzeit angehängt</div>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-head"><span class="lbl">CHECKER PROMPT — SVG-VALIDIERUNG</span><span class="spacer"></span>
+          <span class="saved-ind" id="checker-saved">gespeichert</span>
+          <button class="btn small" id="checker-reset">Reset auf Standard</button></div>
+        <textarea id="checker-template" spellcheck="false"></textarea>
+        <div class="warn-chip" id="checker-warn">⚠ Platzhalter {master_xml} und/oder {svg} fehlt — wird zur Laufzeit angehängt</div>
+      </div>
+    </div>
+
+    <!-- RUN -->
+    <div class="card" id="card-run">
+      <div class="card-head"><span class="card-title">▶ Konvertierung</span><span class="spacer"></span>
+        <button class="btn danger small" id="btn-cancel" style="display:none">■ Abbrechen</button>
+        <button class="btn" id="btn-validate" disabled title="Erst nach erfolgreicher Konvertierung verfügbar">◬ Validieren (Checker)</button>
+        <button class="btn primary" id="btn-run" disabled>▶ Konvertieren</button>
+      </div>
+      <div class="progress-wrap" id="progress">
+        <div class="progress-meta"><span id="progress-label">–</span><span id="progress-count">0 / 0</span></div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+      <div class="hint">Ein Call pro Master. Die SVGs bleiben Vektorgrafiken und werden base64-kodiert in die draw.io-Bibliothek eingebettet.</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card" id="stats-card">
+      <div class="card-head"><span class="card-title">◈ Statistik</span></div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card" id="card-results">
+      <div class="card-head"><span class="card-title">▣ Ergebnisse</span><span class="spacer"></span>
+        <div class="results-toolbar">
+          <select id="filter">
+            <option value="all">Alle</option>
+            <option value="ok">Konvertiert</option>
+            <option value="err">Fehler</option>
+            <option value="vissues">Validierungs-Findings</option>
+          </select>
+          <button class="btn small" id="btn-export-lib" disabled>⤓ draw.io-Library (.xml)</button>
+          <button class="btn small" id="btn-export-json" disabled>⤓ Lauf-JSON</button>
+        </div>
+      </div>
+      <div class="results-grid" id="results"></div>
+      <div class="hint" id="results-empty">Noch keine Ergebnisse. Stencil laden und Konvertierung starten.</div>
+    </div>
+  </div>
+
+  <div id="logwrap">
+    <div id="log-head">
+      <span class="card-title">⌕ Log-Konsole</span>
+      <span id="log-count">0 Zeilen</span>
+      <span class="spacer" style="flex:1"></span>
+      <label class="toggle" style="font-size:11px"><input type="checkbox" id="autoscroll" checked><span>Autoscroll</span></label>
+      <button class="btn small" id="btn-log-clear">Leeren</button>
+    </div>
+    <div id="log"></div>
+  </div>
+</div>
+<script>
+/* ============================================================
+   VSSX → draw.io Library Converter · v1.0.0
+   Single-file, no build, Gemini/OpenRouter backend.
+   ============================================================ */
+"use strict";
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const state = {
+  fileName: null,
+  masters: [],        // {id, name, xml, truncated, selected}
+  results: [],        // {master, analysis?, error?, validation?, validationError?}
+  running: false,
+  cancel: false,
+  backend: "gemini",
+};
+
+/* ---------------- Log console ---------------- */
+const l = (() => {
+  const el = $("log"); let count = 0;
+  function line(level, msg) {
+    const d = new Date();
+    const ts = d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0");
+    const div = document.createElement("div");
+    div.className = "log-line";
+    div.innerHTML = `<span class="log-ts">${ts}</span><span class="log-${level}">${escapeHtml(msg)}</span>`;
+    el.appendChild(div);
+    count++; $("log-count").textContent = count + " Zeilen";
+    if ($("autoscroll").checked) el.scrollTop = el.scrollHeight;
+  }
+  return {
+    info: m => line("info", m), ok: m => line("ok", m), warn: m => line("warn", m),
+    err: m => line("err", m), debug: m => line("debug", m),
+    clear: () => { el.innerHTML = ""; count = 0; $("log-count").textContent = "0 Zeilen"; }
+  };
+})();
+$("btn-log-clear").addEventListener("click", () => l.clear());
+
+/* ---------------- Default prompts ---------------- */
+const DEFAULT_MAKER_PROMPT = `Du bist ein Konverter für Microsoft-Visio-ShapeSheet-Geometrie nach SVG. Du erhältst das XML eines einzelnen Visio-Masters (Namespace visio/2012/main) und erzeugst daraus ein eigenständiges, sauberes SVG, das die Form visuell originalgetreu wiedergibt.
+
+## Visio-Geometrie-Regeln
+- Koordinaten sind in Zoll (inch), Ursprung UNTEN-links, Y wächst nach OBEN. SVG hat den Ursprung oben-links, Y wächst nach unten: Y-Achse spiegeln (svgY = height - visioY).
+- Umrechnung: 1 inch = 96 px. Breite/Höhe der Form stehen in den Cells "Width"/"Height" der Shape-Zeile (Fallback: PageWidth/PageHeight des PageSheet).
+- Geometrie-Sections enthalten Rows: MoveTo, LineTo, ArcTo, EllipticalArcTo, Ellipse, InfiniteLine, PolylineTo, NURBSTo, RelMoveTo, RelLineTo, RelCubBezTo, RelQuadBezTo. "Rel"-Varianten sind relativ zu Width/Height (Faktor 0..1), absolute Varianten in Zoll.
+- ArcTo(X,Y,A): Kreisbogen zum Punkt (X,Y); A ist der senkrechte Abstand der Bogenmitte von der Sehne. Berechne daraus Radius und Sweep und nutze den SVG-A-Befehl.
+- EllipticalArcTo(X,Y,A,B,C,D): elliptischer Bogen zu (X,Y), Kontrollpunkt (A,B), Achsenwinkel C (rad), Achsenverhältnis D. Approximiere sorgfältig mit SVG-A oder kubischen Béziers.
+- NURBSTo: approximiere mit kubischen Bézier-Segmenten; visuelle Treue vor mathematischer Exaktheit.
+- Cell-Werte können Formeln sein (z. B. "Width*0.5", "Height*1"). Werte das V-Attribut aus (das ist der berechnete Wert); nur wenn V fehlt, rechne die Formel selbst mit den bekannten Width/Height-Werten aus.
+- Mehrere Geometry-Sections = mehrere Pfade. NoFill=1 → fill="none". NoLine=1 → stroke="none". Geschlossene Konturen mit Z abschließen.
+- Füllung/Linie: FillForegnd, LineColor, LineWeight (Zoll → px ×96, typisch 0.01–0.03 in). Fehlen Farbangaben: fill="#ffffff", stroke="#000000", stroke-width="1". Verwende KEINE Visio-Theme-Indizes als Farben; löse sie nicht auflösbare Indizes zu Schwarz/Weiß auf.
+- Text-Elemente des Masters NICHT übernehmen (draw.io beschriftet selbst). Nur Geometrie.
+- Sub-Shapes (verschachtelte <Shape>-Elemente) haben eigene PinX/PinY/Width/Height und LocPinX/LocPinY: transformiere sie korrekt in das Koordinatensystem der Gesamtform (inkl. Angle, FlipX, FlipY, sofern vorhanden).
+
+## Output-Regeln
+- Ein einziges <svg>-Element mit xmlns="http://www.w3.org/2000/svg", viewBox="0 0 W H" (W/H = Pixelmaße, gerundet), width/height-Attribute in px.
+- Keine <script>-, <foreignObject>-, <image>- oder externen Referenzen. Keine CSS-Klassen, nur Attribute. Kompakt, aber lesbar.
+- title: der Anzeigename des Masters (Name/NameU aus dem XML).
+- width/height: die Pixelmaße des viewBox.
+- confidence: "high" wenn die Geometrie vollständig und eindeutig umsetzbar war; "medium" bei Approximationen (NURBS, komplexe Formeln, Theme-Farben); "low" wenn wesentliche Teile geraten werden mussten.
+- notes: 1–2 Sätze auf Deutsch zu Approximationen oder ausgelassenen Elementen. Leer lassen, wenn nichts anzumerken ist.
+- Bei kleiner/trivialer Geometrie (z. B. ein Rechteck) erzeuge auch nur ein minimales SVG — NICHT ausschmücken.
+
+## Visio-Master-XML
+{master_xml}`;
+
+const DEFAULT_CHECKER_PROMPT = `Du bist ein unabhängiger Prüfer. Du erhältst das Original-XML eines Visio-Masters und ein daraus erzeugtes SVG. Prüfe, ob das SVG die Visio-Geometrie korrekt wiedergibt.
+
+Prüfkriterien:
+1. Vollständigkeit: Sind alle Geometry-Sections/Sub-Shapes als Pfade vorhanden? Fehlt etwas Wesentliches?
+2. Koordinaten: Wurde die Y-Achse korrekt gespiegelt (Visio: Ursprung unten-links)? Stimmen Proportionen (Width/Height-Verhältnis) und viewBox?
+3. Kurven: Sind ArcTo/EllipticalArcTo/NURBSTo plausibel umgesetzt (keine geraden Linien, wo Bögen sein müssten)?
+4. Stil: NoFill/NoLine respektiert, Farben/Linienstärken plausibel, keine erfundenen Elemente (Text, Verzierungen)?
+5. Technik: Valides, eigenständiges SVG ohne Skripte/externe Referenzen, korrektes xmlns, konsistente viewBox?
+
+Verdicts:
+- confirmed: korrekt, keine nennenswerten Abweichungen
+- minor_corrections: kleinere Abweichungen (Farbnuancen, leichte Kurvenapproximation), Nutzung unbedenklich
+- major_issues: sichtbare Geometriefehler (fehlende Pfade, falsche Spiegelung, falsche Proportionen)
+- incorrect: SVG gibt die Form nicht wieder
+- uncertain: Original-XML zu komplex/unvollständig für ein sicheres Urteil
+
+Antworte mit verdict, issues (Liste konkreter Findings auf Deutsch, leer wenn keine) und reviewer_notes (1–2 Sätze).
+
+## Original Visio-Master-XML
+{master_xml}
+
+## Erzeugtes SVG
+{svg}`;
+
+/* ---------------- Editable prompts wiring ---------------- */
+function wirePrompt(taId, warnId, savedId, resetId, defTpl, placeholders, lsKey) {
+  const ta = $(taId);
+  ta.value = localStorage.getItem(lsKey) || defTpl;
+  const validate = () => {
+    const missing = placeholders.some(p => !ta.value.includes(p));
+    $(warnId).classList.toggle("show", missing);
+  };
+  ta.addEventListener("input", () => {
+    localStorage.setItem(lsKey, ta.value);
+    validate();
+    const s = $(savedId); s.classList.add("flash"); setTimeout(() => s.classList.remove("flash"), 900);
+  });
+  $(resetId).addEventListener("click", () => {
+    ta.value = defTpl; localStorage.setItem(lsKey, defTpl); validate();
+    l.info(taId + " auf Standard zurückgesetzt");
+  });
+  validate();
+}
+wirePrompt("maker-template","maker-warn","maker-saved","maker-reset",DEFAULT_MAKER_PROMPT,["{master_xml}"],"v2d.makerPrompt");
+wirePrompt("checker-template","checker-warn","checker-saved","checker-reset",DEFAULT_CHECKER_PROMPT,["{master_xml}","{svg}"],"v2d.checkerPrompt");
+
+function buildMakerPrompt(m) {
+  let tpl = $("maker-template").value; if (!tpl.trim()) tpl = DEFAULT_MAKER_PROMPT;
+  if (!tpl.includes("{master_xml}")) tpl += "\n\n## Visio-Master-XML\n{master_xml}";
+  return tpl.replace("{master_xml}", m.xml);
+}
+function buildCheckerPrompt(m, svg) {
+  let tpl = $("checker-template").value; if (!tpl.trim()) tpl = DEFAULT_CHECKER_PROMPT;
+  if (!tpl.includes("{master_xml}")) tpl += "\n\n## Original Visio-Master-XML\n{master_xml}";
+  if (!tpl.includes("{svg}")) tpl += "\n\n## Erzeugtes SVG\n{svg}";
+  return tpl.replace("{master_xml}", m.xml).replace("{svg}", svg);
+}
+
+/* ---------------- Schemas ---------------- */
+const MAKER_SCHEMA = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    svg: { type: "string" },
+    width: { type: "number" },
+    height: { type: "number" },
+    confidence: { type: "string", enum: ["high","medium","low"] },
+    notes: { type: "string" },
+  },
+  required: ["title","svg","width","height","confidence"],
+};
+const CHECKER_SCHEMA = {
+  type: "object",
+  properties: {
+    verdict: { type: "string", enum: ["confirmed","minor_corrections","major_issues","incorrect","uncertain"] },
+    issues: { type: "array", items: { type: "string" } },
+    reviewer_notes: { type: "string" },
+  },
+  required: ["verdict","issues"],
+};
+
+/* ---------------- JSON extraction ---------------- */
+const stripFences = s => s.replace(/^\s*```(?:json)?/i,"").replace(/```\s*$/i,"").trim();
+function extractJson(text) {
+  const trim = String(text || "").trim();
+  try { return JSON.parse(trim); } catch {}
+  const stripped = stripFences(trim);
+  try { return JSON.parse(stripped); } catch {}
+  const s = stripped.indexOf("{"), e = stripped.lastIndexOf("}");
+  if (s >= 0 && e > s) { try { return JSON.parse(stripped.slice(s, e + 1)); } catch {} }
+  throw new Error("konnte kein JSON aus der Antwort extrahieren");
+}
+
+/* ---------------- Backends ---------------- */
+async function geminiOnce(prompt, schema) {
+  const key = $("gemini-key").value.trim();
+  if (!key) throw new Error("Gemini-API-Key fehlt");
+  const model = $("gemini-model").value;
+  const body = {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseJsonSchema: schema,
+      thinkingConfig: { thinkingLevel: $("thinking").value },
+    },
+  };
+  if ($("grounding").checked) body.tools = [{ googleSearch: {} }];
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error((data.error?.message || `HTTP ${res.status}`).slice(0, 400));
+  return { text: (data.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("\n"), model };
+}
+
+async function openrouterOnce(prompt, schema) {
+  const key = $("or-key").value.trim();
+  if (!key) throw new Error("OpenRouter-API-Key fehlt");
+  const model = $("or-model-free").value.trim() || $("or-model-select").value;
+  if (!model) throw new Error("OpenRouter-Modell fehlt");
+  const body = {
+    model,
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_schema", json_schema: { name: "result", strict: true, schema } },
+    provider: { require_parameters: true },
+  };
+  if ($("grounding").checked) body.plugins = [{ id: "web" }];
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${key}`,
+      "HTTP-Referer": "https://localhost",
+      "X-Title": "vssx2drawio",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error((data.error.message || JSON.stringify(data.error)).slice(0, 400));
+  return { text: data.choices?.[0]?.message?.content ?? "", model };
+}
+
+async function llmOnce(prompt, schema) {
+  return state.backend === "openrouter" ? openrouterOnce(prompt, schema) : geminiOnce(prompt, schema);
+}
+
+async function llm(prompt, schema, label = "call") {
+  const retries = Math.max(0, parseInt($("retries").value) || 0);
+  let attempt = 0;
+  while (true) {
+    if (state.cancel) throw new Error("abgebrochen");
+    try {
+      const t0 = performance.now();
+      const out = await llmOnce(prompt, schema);
+      l.debug(`${label} ← ${(out.text.length/1024).toFixed(1)} kB in ${Math.round(performance.now()-t0)} ms [${state.backend}/${out.model}]`);
+      return out;
+    } catch (e) {
+      attempt++;
+      if (attempt > retries) throw e;
+      const wait = 500 * Math.pow(2, attempt - 1);
+      l.warn(`${label} fehlgeschlagen (${e.message}) — Retry ${attempt}/${retries} in ${wait} ms`);
+      await sleep(wait);
+    }
+  }
+}
+
+/* ---------------- Worker pool ---------------- */
+async function runPool(tasks, limit, onProgress) {
+  const results = new Array(tasks.length);
+  let done = 0, next = 0;
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    while (next < tasks.length) {
+      const i = next++;
+      if (state.cancel) { results[i] = { cancelled: true }; done++; onProgress?.(done, tasks.length); continue; }
+      try { results[i] = await tasks[i](); }
+      catch (e) { results[i] = { error: e }; }
+      done++;
+      onProgress?.(done, tasks.length);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+/* ============================================================
+   ZIP-Reader (OPC) — vanilla, DecompressionStream('deflate-raw')
+   ============================================================ */
+async function inflateRaw(bytes) {
+  const ds = new DecompressionStream("deflate-raw");
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function readZip(arrayBuffer) {
+  const dv = new DataView(arrayBuffer);
+  const u8 = new Uint8Array(arrayBuffer);
+  // End of Central Directory suchen (Signatur 0x06054b50), von hinten
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 22 - 65535); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("Kein ZIP/OPC-Container (EOCD nicht gefunden)");
+  const cdCount = dv.getUint16(eocd + 10, true);
+  const cdOffset = dv.getUint32(eocd + 16, true);
+  const entries = new Map();
+  let p = cdOffset;
+  const td = new TextDecoder("utf-8");
+  for (let n = 0; n < cdCount; n++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error("Central-Directory-Eintrag ungültig");
+    const method = dv.getUint16(p + 10, true);
+    const compSize = dv.getUint32(p + 20, true);
+    const nameLen = dv.getUint16(p + 28, true);
+    const extraLen = dv.getUint16(p + 30, true);
+    const commLen = dv.getUint16(p + 32, true);
+    const localOff = dv.getUint32(p + 42, true);
+    const name = td.decode(u8.subarray(p + 46, p + 46 + nameLen));
+    entries.set(name, { method, compSize, localOff });
+    p += 46 + nameLen + extraLen + commLen;
+  }
+  async function file(name) {
+    const e = entries.get(name);
+    if (!e) return null;
+    const lo = e.localOff;
+    if (dv.getUint32(lo, true) !== 0x04034b50) throw new Error("Local-Header ungültig: " + name);
+    const nameLen = dv.getUint16(lo + 26, true);
+    const extraLen = dv.getUint16(lo + 28, true);
+    const start = lo + 30 + nameLen + extraLen;
+    const raw = u8.subarray(start, start + e.compSize);
+    if (e.method === 0) return raw.slice();
+    if (e.method === 8) return inflateRaw(raw);
+    throw new Error(`Nicht unterstützte Kompressionsmethode ${e.method}: ${name}`);
+  }
+  async function text(name) {
+    const b = await file(name);
+    return b === null ? null : new TextDecoder("utf-8").decode(b);
+  }
+  return { names: [...entries.keys()], file, text };
+}
+
+/* ============================================================
+   VSSX-Parsing: masters.xml + rels → Master-XMLs
+   ============================================================ */
+const NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+function parseXml(str, what) {
+  const doc = new DOMParser().parseFromString(str, "application/xml");
+  if (doc.querySelector("parsererror")) throw new Error("XML-Parse-Fehler in " + what);
+  return doc;
+}
+async function extractMasters(zip) {
+  const mastersXml = await zip.text("visio/masters/masters.xml");
+  if (!mastersXml) {
+    const hint = zip.names.some(n => n.startsWith("visio/pages/"))
+      ? "Datei enthält Seiten, aber keine Master — vermutlich .vsdx ohne lokale Master."
+      : "visio/masters/masters.xml nicht gefunden — keine gültige .vssx/.vsdx?";
+    throw new Error(hint);
+  }
+  const relsXml = await zip.text("visio/masters/_rels/masters.xml.rels");
+  const relMap = new Map();
+  if (relsXml) {
+    const rdoc = parseXml(relsXml, "masters.xml.rels");
+    rdoc.querySelectorAll("Relationship").forEach(r =>
+      relMap.set(r.getAttribute("Id"), r.getAttribute("Target")));
+  }
+  const doc = parseXml(mastersXml, "masters.xml");
+  const maxChars = Math.max(5000, parseInt($("max-chars").value) || 60000);
+  const out = [];
+  const masterEls = [...doc.getElementsByTagName("Master")];
+  for (const mel of masterEls) {
+    const id = mel.getAttribute("ID");
+    const name = mel.getAttribute("Name") || mel.getAttribute("NameU") || ("Master " + id);
+    const relEl = mel.getElementsByTagName("Rel")[0];
+    let rid = relEl ? (relEl.getAttributeNS(NS_REL, "id") || relEl.getAttribute("r:id")) : null;
+    let target = rid ? relMap.get(rid) : null;
+    if (!target) target = `master${id}.xml`;                // Fallback: Konvention
+    const path = "visio/masters/" + target.replace(/^\.\//, "");
+    let xml = await zip.text(path);
+    if (xml === null) { l.warn(`Master "${name}": ${path} nicht im Container — übersprungen`); continue; }
+    let truncated = false;
+    if (xml.length > maxChars) { xml = xml.slice(0, maxChars) + "\n<!-- GEKÜRZT -->"; truncated = true; }
+    out.push({ id, name, xml, truncated, selected: true });
+  }
+  return out;
+}
+
+/* ---------------- File input wiring ---------------- */
+const dz = $("dropzone");
+dz.addEventListener("click", () => $("file-input").click());
+dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("drag"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
+dz.addEventListener("drop", e => {
+  e.preventDefault(); dz.classList.remove("drag");
+  if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+});
+$("file-input").addEventListener("change", e => { if (e.target.files.length) loadFile(e.target.files[0]); });
+$("btn-clear").addEventListener("click", () => resetAll());
+
+function resetAll() {
+  state.fileName = null; state.masters = []; state.results = [];
+  $("file-meta").classList.remove("show"); $("file-meta").innerHTML = "";
+  $("master-list").classList.remove("show"); $("master-list").innerHTML = "";
+  $("input-hint").style.display = "none";
+  $("btn-run").disabled = true; $("btn-validate").disabled = true;
+  $("btn-export-lib").disabled = true; $("btn-export-json").disabled = true;
+  renderResults(); renderStats();
+  setStatus("BEREIT");
+  l.info("Zurückgesetzt");
+}
+
+async function loadFile(file) {
+  try {
+    setStatus("PARSE…");
+    l.info(`Datei geladen: ${file.name} (${(file.size/1024).toFixed(1)} kB)`);
+    const buf = await file.arrayBuffer();
+    const zip = await readZip(buf);
+    l.debug(`ZIP: ${zip.names.length} Einträge im Container`);
+    state.fileName = file.name;
+    state.masters = await extractMasters(zip);
+    state.results = [];
+    if (!state.masters.length) throw new Error("Keine Master im Stencil gefunden");
+    const trunc = state.masters.filter(m => m.truncated).length;
+    l.ok(`${state.masters.length} Master extrahiert` + (trunc ? ` (${trunc} gekürzt auf Max-Zeichen)` : ""));
+    $("file-meta").innerHTML =
+      `<span class="meta-pill">${escapeHtml(file.name)}</span>` +
+      `<span class="meta-pill">${state.masters.length} Master</span>` +
+      (trunc ? `<span class="meta-pill" style="color:var(--amber)">${trunc} gekürzt</span>` : "");
+    $("file-meta").classList.add("show");
+    renderMasterList();
+    $("input-hint").style.display = "block";
+    $("btn-run").disabled = false;
+    renderResults(); renderStats();
+    setStatus(`${state.masters.length} MASTER`);
+  } catch (e) {
+    l.err("Parsing fehlgeschlagen: " + e.message);
+    setStatus("FEHLER");
+  }
+}
+
+function renderMasterList() {
+  const el = $("master-list");
+  el.innerHTML = state.masters.map((m, i) => `
+    <label class="master-row">
+      <input type="checkbox" data-idx="${i}" ${m.selected ? "checked" : ""}>
+      <span style="flex:1">${escapeHtml(m.name)}</span>
+      <span class="mono">ID ${escapeHtml(m.id)} · ${(m.xml.length/1024).toFixed(1)} kB${m.truncated ? " · gekürzt" : ""}</span>
+    </label>`).join("");
+  el.classList.add("show");
+  el.querySelectorAll("input[type=checkbox]").forEach(cb =>
+    cb.addEventListener("change", () => { state.masters[+cb.dataset.idx].selected = cb.checked; }));
+}
+
+/* ---------------- Status / Progress ---------------- */
+function setStatus(t) { $("status-pill").textContent = t; }
+function showProgress(label, done, total) {
+  const w = $("progress"); w.classList.add("show");
+  $("progress-label").textContent = label;
+  $("progress-count").textContent = `${done} / ${total}`;
+  const f = $("progress-fill");
+  f.style.width = total ? (done/total*100) + "%" : "0%";
+  f.classList.toggle("done", done === total && total > 0);
+  if (done === total && total > 0) setTimeout(() => w.classList.remove("show"), 800);
+}
+
+/* ============================================================
+   SVG-Sanitizing + draw.io-Library-Assembly (lokal)
+   ============================================================ */
+function sanitizeSvg(svg, width, height) {
+  let s = String(svg || "").trim();
+  const doc = new DOMParser().parseFromString(s, "image/svg+xml");
+  if (doc.querySelector("parsererror")) throw new Error("erzeugtes SVG ist nicht wohlgeformt");
+  const root = doc.documentElement;
+  if (root.nodeName.toLowerCase() !== "svg") throw new Error("Wurzelelement ist kein <svg>");
+  // Sicherheits-Strip: keine Skripte, keine Events, keine externen Referenzen
+  doc.querySelectorAll("script,foreignObject,image,use[href^='http'],use[*|href^='http']").forEach(n => n.remove());
+  [...doc.querySelectorAll("*")].forEach(n => {
+    [...n.attributes].forEach(a => {
+      if (/^on/i.test(a.name)) n.removeAttribute(a.name);
+      if ((a.name === "href" || a.name === "xlink:href") && /^(https?:|javascript:)/i.test(a.value)) n.removeAttribute(a.name);
+    });
+  });
+  if (!root.getAttribute("xmlns")) root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  let w = Math.round(width) || 0, h = Math.round(height) || 0;
+  if (!root.getAttribute("viewBox")) {
+    if (!(w > 0 && h > 0)) throw new Error("weder viewBox noch Maße vorhanden");
+    root.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  } else if (!(w > 0 && h > 0)) {
+    const vb = root.getAttribute("viewBox").trim().split(/[\s,]+/).map(Number);
+    if (vb.length === 4) { w = Math.round(vb[2]); h = Math.round(vb[3]); }
+  }
+  if (!(w > 0 && h > 0)) throw new Error("keine gültigen Maße ermittelbar");
+  root.setAttribute("width", w); root.setAttribute("height", h);
+  return { svg: new XMLSerializer().serializeToString(root), w, h };
+}
+function b64utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) bin += String.fromCharCode(...bytes.subarray(i, i + CH));
+  return btoa(bin);
+}
+function buildLibrary() {
+  const entries = [];
+  for (const r of state.results) {
+    if (!r.analysis) continue;
+    const a = r.analysis;
+    entries.push({
+      data: "data:image/svg+xml;base64," + b64utf8(a.svg),
+      w: a.width, h: a.height,
+      title: a.title || r.master.name,
+      aspect: "fixed",
+    });
+  }
+  return "<mxlibrary>" + JSON.stringify(entries) + "</mxlibrary>";
+}
+function download(name, content, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ============================================================
+   Deterministische Engine: Visio-ShapeSheet → SVG (lokal, in JS)
+   Zoll → 96 px, Y-Achse gespiegelt. Kein LLM, reproduzierbar.
+   ============================================================ */
+const PX = 96;
+function cellV(el, name) {
+  for (const c of el.children) {
+    if (c.tagName === "Cell" && c.getAttribute("N") === name) return c;
+  }
+  return null;
+}
+function evalFormula(f, W, H) {
+  // Nur einfache ShapeSheet-Formeln: Width*0.5, Height/2, Zahlen mit Einheit
+  if (f == null) return NaN;
+  let s = String(f).trim()
+    .replace(/Width/gi, `(${W})`).replace(/Height/gi, `(${H})`)
+    .replace(/\b(in|IN)\b/g, "").replace(/(\d)\s*mm\b/g, "$1*0.0393700787")
+    .replace(/(\d)\s*pt\b/g, "$1*0.0138888889").replace(/(\d)\s*cm\b/g, "$1*0.393700787");
+  if (!/^[\d.+\-*/()\s eE]+$/.test(s)) return NaN;
+  try { const v = Function(`"use strict";return(${s})`)(); return Number.isFinite(v) ? v : NaN; }
+  catch { return NaN; }
+}
+function num(el, name, W, H, dflt) {
+  const c = cellV(el, name);
+  if (!c) return dflt;
+  const v = parseFloat(c.getAttribute("V"));
+  if (Number.isFinite(v)) return v;
+  const f = evalFormula(c.getAttribute("F") ?? c.getAttribute("V"), W, H);
+  return Number.isFinite(f) ? f : dflt;
+}
+function colorOf(el, name, dflt) {
+  const c = cellV(el, name);
+  if (!c) return dflt;
+  const v = (c.getAttribute("V") || "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) return v;
+  return { value: dflt, themed: v !== "" };  // Theme-Index o. Ä. → Default, markiert
+}
+const fmt = n => {
+  const r = Math.round(n * 100) / 100;
+  return Object.is(r, -0) ? "0" : String(r);
+};
+
+/* Kreisbogen durch 3 Punkte (Bildschirmkoordinaten, y nach unten) → SVG-A-Parameter */
+function arcThrough3(p0, pm, p1) {
+  const ax = p0.x, ay = p0.y, bx = pm.x, by = pm.y, cx = p1.x, cy = p1.y;
+  const d = 2 * (ax*(by-cy) + bx*(cy-ay) + cx*(ay-by));
+  if (Math.abs(d) < 1e-9) return null;                      // kollinear → Linie
+  const ux = ((ax*ax+ay*ay)*(by-cy) + (bx*bx+by*by)*(cy-ay) + (cx*cx+cy*cy)*(ay-by)) / d;
+  const uy = ((ax*ax+ay*ay)*(cx-bx) + (bx*bx+by*by)*(ax-cx) + (cx*cx+cy*cy)*(bx-ax)) / d;
+  const r = Math.hypot(ax-ux, ay-uy);
+  const cross = (bx-ax)*(cy-ay) - (by-ay)*(cx-ax);
+  const sweep = cross > 0 ? 1 : 0;                          // y-down: cross>0 = im Uhrzeigersinn
+  const a0 = Math.atan2(ay-uy, ax-ux);
+  const a1 = Math.atan2(cy-uy, cx-ux);
+  let delta = sweep ? (a1 - a0) : (a0 - a1);
+  delta = ((delta % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  const large = delta > Math.PI ? 1 : 0;
+  return { r, large, sweep };
+}
+/* Elliptischer Bogen: Punkte in Bildschirm-px, Achsenwinkel phi (Bildschirm, rad), Achsenverhältnis D */
+function ellArc(p0, pc, p1, phi, D) {
+  if (!Number.isFinite(D) || D <= 0) D = 1;
+  const cos = Math.cos(-phi), sin = Math.sin(-phi);
+  const tf = p => ({ x: p.x*cos - p.y*sin, y: (p.x*sin + p.y*cos) * D });  // Ellipse → Kreis
+  const a = arcThrough3(tf(p0), tf(pc), tf(p1));
+  if (!a) return null;
+  return { rx: a.r, ry: a.r / D, rotDeg: phi * 180 / Math.PI, large: a.large, sweep: a.sweep };
+}
+/* Rationale B-Spline-Auswertung (de Boor) für NURBSTo — deterministisches Sampling */
+function nurbsSample(ctrl, weights, knots, degree, samples) {
+  const n = ctrl.length - 1;
+  function basis(i, k, t) {
+    if (k === 0) return (t >= knots[i] && t < knots[i+1]) || (t === knots[knots.length-1] && i === n) ? 1 : 0;
+    let a = 0, b = 0;
+    const d1 = knots[i+k] - knots[i], d2 = knots[i+k+1] - knots[i+1];
+    if (d1 > 1e-12) a = (t - knots[i]) / d1 * basis(i, k-1, t);
+    if (d2 > 1e-12) b = (knots[i+k+1] - t) / d2 * basis(i+1, k-1, t);
+    return a + b;
+  }
+  const t0 = knots[degree], t1 = knots[knots.length-1-degree];
+  const pts = [];
+  for (let s = 0; s <= samples; s++) {
+    const t = t0 + (t1 - t0) * s / samples;
+    let x = 0, y = 0, w = 0;
+    for (let i = 0; i <= n; i++) {
+      const b = basis(i, degree, t) * weights[i];
+      x += b * ctrl[i].x; y += b * ctrl[i].y; w += b;
+    }
+    if (w < 1e-12 || !Number.isFinite(x/w) || !Number.isFinite(y/w)) throw new Error("NURBS-Auswertung instabil");
+    pts.push({ x: x/w, y: y/w });
+  }
+  return pts;
+}
+
+/* Transformation Sub-Shape → Eltern-Koordinaten (Visio-Raum, Zoll) */
+function shapeXform(shapeEl, W, H) {
+  const pinX = num(shapeEl, "PinX", W, H, NaN), pinY = num(shapeEl, "PinY", W, H, NaN);
+  const w = num(shapeEl, "Width", W, H, NaN), h = num(shapeEl, "Height", W, H, NaN);
+  const locX = num(shapeEl, "LocPinX", w, h, Number.isFinite(w) ? w/2 : 0);
+  const locY = num(shapeEl, "LocPinY", w, h, Number.isFinite(h) ? h/2 : 0);
+  const angle = num(shapeEl, "Angle", W, H, 0);
+  const flipX = num(shapeEl, "FlipX", W, H, 0) === 1, flipY = num(shapeEl, "FlipY", W, H, 0) === 1;
+  if (!Number.isFinite(pinX) || !Number.isFinite(pinY)) return { w, h, fn: p => p }; // Top-Level ohne Pin: Identität
+  const ca = Math.cos(angle), sa = Math.sin(angle);
+  return { w, h, fn: p => {
+    let x = p.x - locX, y = p.y - locY;
+    if (flipX) x = -x; if (flipY) y = -y;
+    return { x: pinX + x*ca - y*sa, y: pinY + x*sa + y*ca };
+  }};
+}
+
+/* Eine Geometry-Section → SVG-Pfad-d (arbeitet in Bildschirm-px nach toPx) */
+function sectionToPath(sec, W, H, toPx, meta) {
+  const rows = [...sec.children].filter(c => c.tagName === "Row" && c.getAttribute("Del") !== "1")
+    .sort((a,b) => (+a.getAttribute("IX")||0) - (+b.getAttribute("IX")||0));
+  let d = "", cur = null, start = null;
+  const A = p => { meta.bbox(p); return `${fmt(p.x)} ${fmt(p.y)}`; };
+  for (const row of rows) {
+    const T = row.getAttribute("T");
+    const rx = n2 => num(row, n2, W, H, NaN);
+    const abs = (x, y) => toPx({ x, y });
+    const rel = (x, y) => toPx({ x: x*W, y: y*H });
+    let p;
+    switch (T) {
+      case "MoveTo":    p = abs(rx("X"), rx("Y")); d += `M ${A(p)} `; cur = start = p; break;
+      case "RelMoveTo": p = rel(rx("X"), rx("Y")); d += `M ${A(p)} `; cur = start = p; break;
+      case "LineTo":    p = abs(rx("X"), rx("Y")); d += `L ${A(p)} `; cur = p; break;
+      case "RelLineTo": p = rel(rx("X"), rx("Y")); d += `L ${A(p)} `; cur = p; break;
+      case "ArcTo": {
+        p = abs(rx("X"), rx("Y"));
+        const bow = rx("A");
+        if (!cur || !Number.isFinite(bow) || Math.abs(bow) < 1e-6) { d += `L ${A(p)} `; cur = p; break; }
+        // Bow-Punkt: Sehnenmitte + senkrecht · bow. Visio: positiv = links der Laufrichtung;
+        // nach Y-Spiegelung kehrt sich die Seite um → in px-Raum Vorzeichen invertieren.
+        const mx = (cur.x + p.x)/2, my = (cur.y + p.y)/2;
+        const dx = p.x - cur.x, dy = p.y - cur.y, len = Math.hypot(dx, dy) || 1;
+        const bpx = bow * PX;
+        const pm = { x: mx + (dy/len) * bpx, y: my - (dx/len) * bpx };
+        const arc = arcThrough3(cur, pm, p);
+        if (!arc) { d += `L ${A(p)} `; } else { meta.bbox(pm); d += `A ${fmt(arc.r)} ${fmt(arc.r)} 0 ${arc.large} ${arc.sweep} ${A(p)} `; }
+        cur = p; break;
+      }
+      case "EllipticalArcTo": {
+        p = abs(rx("X"), rx("Y"));
+        const pc = abs(rx("A"), rx("B"));
+        const phiV = rx("C"), D = rx("D");
+        if (!cur) { d += `M ${A(p)} `; cur = start = p; break; }
+        const e = ellArc(cur, pc, p, Number.isFinite(phiV) ? -phiV : 0, D);  // Y-Spiegel: Winkel negieren
+        if (!e) { d += `L ${A(p)} `; } else { meta.bbox(pc); d += `A ${fmt(e.rx)} ${fmt(e.ry)} ${fmt(e.rotDeg)} ${e.large} ${e.sweep} ${A(p)} `; }
+        cur = p; break;
+      }
+      case "Ellipse": {
+        const c = abs(rx("X"), rx("Y"));
+        const pa = abs(rx("A"), rx("B"));   // Punkt auf einer Achse
+        const pb = abs(rx("C"), rx("D"));   // Punkt auf der anderen
+        const rxl = Math.hypot(pa.x-c.x, pa.y-c.y), ryl = Math.hypot(pb.x-c.x, pb.y-c.y);
+        const rot = Math.atan2(pa.y-c.y, pa.x-c.x) * 180/Math.PI;
+        const s0 = { x: pa.x, y: pa.y }, s1 = { x: 2*c.x-pa.x, y: 2*c.y-pa.y };
+        meta.bbox({x:c.x-Math.max(rxl,ryl),y:c.y-Math.max(rxl,ryl)}); meta.bbox({x:c.x+Math.max(rxl,ryl),y:c.y+Math.max(rxl,ryl)});
+        d += `M ${A(s0)} A ${fmt(rxl)} ${fmt(ryl)} ${fmt(rot)} 1 1 ${A(s1)} A ${fmt(rxl)} ${fmt(ryl)} ${fmt(rot)} 1 1 ${A(s0)} Z `;
+        cur = start = s0; break;
+      }
+      case "PolylineTo": {
+        p = abs(rx("X"), rx("Y"));
+        const f = (cellV(row, "A")?.getAttribute("F")) || (cellV(row, "A")?.getAttribute("V")) || "";
+        const m = /POLYLINE\s*\(([^)]*)\)/i.exec(f);
+        if (m) {
+          const args = m[1].split(/[,;]/).map(s => parseFloat(s));
+          const xt = args[0], yt = args[1];
+          for (let i = 2; i + 1 < args.length; i += 2) {
+            const px2 = toPx({ x: xt === 0 ? args[i]*W : args[i], y: yt === 0 ? args[i+1]*H : args[i+1] });
+            d += `L ${A(px2)} `;
+          }
+          meta.approx("POLYLINE-Formel ausgewertet");
+        }
+        d += `L ${A(p)} `; cur = p; break;
+      }
+      case "RelCubBezTo": {
+        const c1 = rel(rx("A"), rx("B")), c2 = rel(rx("C"), rx("D")); p = rel(rx("X"), rx("Y"));
+        meta.bbox(c1); meta.bbox(c2);
+        d += `C ${A(c1)} ${A(c2)} ${A(p)} `; cur = p; break;
+      }
+      case "RelQuadBezTo": {
+        const c1 = rel(rx("A"), rx("B")); p = rel(rx("X"), rx("Y"));
+        meta.bbox(c1); d += `Q ${A(c1)} ${A(p)} `; cur = p; break;
+      }
+      case "NURBSTo": {
+        p = abs(rx("X"), rx("Y"));
+        try {
+          if (!cur) throw new Error("NURBS ohne Startpunkt");
+          const f = (cellV(row, "E")?.getAttribute("F")) || (cellV(row, "E")?.getAttribute("V")) || "";
+          const m = /NURBS\s*\(([^)]*)\)/i.exec(f);
+          if (!m) throw new Error("NURBS-Formel fehlt");
+          const a = m[1].split(/[,;]/).map(s => parseFloat(s));
+          const knotLast = a[0], degree = Math.max(1, Math.round(a[1])), xt = a[2], yt = a[3];
+          const ctrl = [cur], weights = [1], innerKnots = [];
+          for (let i = 4; i + 3 < a.length; i += 4) {
+            ctrl.push(toPx({ x: xt === 0 ? a[i]*W : a[i], y: yt === 0 ? a[i+1]*H : a[i+1] }));
+            innerKnots.push(a[i+2]); weights.push(a[i+3]);
+          }
+          ctrl.push(p); weights.push(1);
+          let kv = [...innerKnots, num(row, "A", W, H, knotLast), knotLast];
+          const need = ctrl.length + degree + 1;
+          while (kv.length < need) kv.unshift(kv[0] ?? 0);
+          kv = kv.slice(0, need).sort((x,y) => x-y);
+          const pts = nurbsSample(ctrl, weights, kv, degree, 48);
+          for (const q of pts.slice(1)) d += `L ${A(q)} `;
+          d += `L ${A(p)} `;
+          meta.approx("NURBS numerisch gesampelt (48 Segmente)");
+        } catch (e) {
+          d += `L ${A(p)} `;
+          meta.approx("NURBS nicht auswertbar — als Linie approximiert (" + e.message + ")");
+        }
+        cur = p; break;
+      }
+      case "InfiniteLine":
+        meta.approx("InfiniteLine übersprungen"); break;
+      case "SplineStart": case "SplineKnot":
+        meta.unsupported("Spline-Rows (SplineStart/SplineKnot)"); break;
+      default:
+        meta.unsupported("Row-Typ " + T);
+    }
+  }
+  // Geschlossen, wenn Ende ≈ Anfang
+  if (cur && start && Math.hypot(cur.x-start.x, cur.y-start.y) < 0.5 && !/Z\s*$/.test(d)) d += "Z";
+  return d.trim();
+}
+
+/* Shape (rekursiv) → Pfade sammeln. xform: Visio-Zoll → Visio-Zoll (Elternkette) */
+function walkShape(shapeEl, parentFn, pageH, meta, paths) {
+  const xf = shapeXform(shapeEl);
+  const W = Number.isFinite(xf.w) ? xf.w : 1, H = Number.isFinite(xf.h) ? xf.h : 1;
+  const chain = p => parentFn(xf.fn(p));
+  const toPx = p => { const q = chain(p); return { x: q.x * PX, y: (pageH - q.y) * PX }; };
+  const lw = num(shapeEl, "LineWeight", W, H, NaN);
+  const strokeW = Number.isFinite(lw) ? Math.max(0.5, lw * PX) : 1;
+  const fillC = colorOf(shapeEl, "FillForegnd", "#ffffff");
+  const lineC = colorOf(shapeEl, "LineColor", "#000000");
+  if (fillC.themed || lineC.themed) meta.approx("Theme-Farbindex → Standardfarbe");
+  const fillPat = num(shapeEl, "FillPattern", W, H, 1);
+  for (const sec of shapeEl.children) {
+    if (sec.tagName !== "Section" || sec.getAttribute("N") !== "Geometry") continue;
+    if (num(sec, "NoShow", W, H, 0) === 1) continue;
+    const noFill = num(sec, "NoFill", W, H, 0) === 1 || fillPat === 0;
+    const noLine = num(sec, "NoLine", W, H, 0) === 1;
+    const d = sectionToPath(sec, W, H, toPx, meta);
+    if (!d) continue;
+    paths.push(`<path d="${d}" fill="${noFill ? "none" : (fillC.value || fillC)}" stroke="${noLine ? "none" : (lineC.value || lineC)}" stroke-width="${fmt(strokeW)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+  }
+  const shapesEl = [...shapeEl.children].find(c => c.tagName === "Shapes");
+  if (shapesEl) for (const sub of shapesEl.children) {
+    if (sub.tagName === "Shape") walkShape(sub, chain, pageH, meta, paths);
+  }
+}
+
+function convertMasterLocal(master) {
+  const doc = parseXml(master.xml, master.name);
+  const meta = {
+    approxNotes: new Set(), unsupportedNotes: new Set(),
+    minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity,
+    bbox(p) { if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+      this.minX = Math.min(this.minX, p.x); this.minY = Math.min(this.minY, p.y);
+      this.maxX = Math.max(this.maxX, p.x); this.maxY = Math.max(this.maxY, p.y); },
+    approx(s) { this.approxNotes.add(s); },
+    unsupported(s) { this.unsupportedNotes.add(s); },
+  };
+  // Seitenhöhe für Y-Spiegelung: PageSheet oder Höhe der Top-Level-Shape
+  let pageH = NaN, pageW = NaN;
+  const ps = doc.getElementsByTagName("PageSheet")[0];
+  if (ps) { pageH = num(ps, "PageHeight", 1, 1, NaN); pageW = num(ps, "PageWidth", 1, 1, NaN); }
+  const topShapes = [];
+  const shapesRoot = doc.getElementsByTagName("Shapes")[0];
+  if (shapesRoot) for (const s of shapesRoot.children) if (s.tagName === "Shape") topShapes.push(s);
+  if (!topShapes.length) throw new Error("keine Shape-Elemente im Master");
+  if (!Number.isFinite(pageH)) {
+    pageH = Math.max(...topShapes.map(s => {
+      const xf = shapeXform(s);
+      const pin = num(s, "PinY", 1, 1, NaN), loc = num(s, "LocPinY", xf.w, xf.h, 0);
+      const h = Number.isFinite(xf.h) ? xf.h : 1;
+      return Number.isFinite(pin) ? pin - loc + h : h;
+    }));
+  }
+  const paths = [];
+  for (const s of topShapes) walkShape(s, p => p, pageH, meta, paths);
+  if (meta.unsupportedNotes.size) throw Object.assign(
+    new Error("nicht abgedeckt: " + [...meta.unsupportedNotes].join(", ")), { complex: true });
+  if (!paths.length) throw Object.assign(new Error("keine renderbare Geometrie gefunden"), { complex: true });
+  if (!Number.isFinite(meta.minX)) throw Object.assign(new Error("Geometrie ohne auswertbare Koordinaten"), { complex: true });
+  const pad = 2;
+  const vx = meta.minX - pad, vy = meta.minY - pad;
+  const vw = Math.max(1, meta.maxX - meta.minX + 2*pad), vh = Math.max(1, meta.maxY - meta.minY + 2*pad);
+  const w = Math.max(1, Math.round(vw)), h = Math.max(1, Math.round(vh));
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmt(vx)} ${fmt(vy)} ${fmt(vw)} ${fmt(vh)}" width="${w}" height="${h}">${paths.join("")}</svg>`;
+  return {
+    title: master.name, svg, width: w, height: h,
+    confidence: meta.approxNotes.size ? "medium" : "high",
+    notes: [...meta.approxNotes].join("; "),
+    source: "lokal",
+  };
+}
+
+/* ============================================================
+   Runs: Maker + Checker
+   ============================================================ */
+function beginRun(label) {
+  state.running = true; state.cancel = false;
+  $("btn-run").disabled = true; $("btn-validate").disabled = true;
+  $("btn-cancel").style.display = "inline-flex";
+  setStatus(label);
+}
+function endRun() {
+  state.running = false;
+  $("btn-cancel").style.display = "none";
+  $("btn-run").disabled = !state.masters.length;
+  const okCount = state.results.filter(r => r.analysis).length;
+  $("btn-validate").disabled = okCount === 0;
+  $("btn-export-lib").disabled = okCount === 0;
+  $("btn-export-json").disabled = state.results.length === 0;
+}
+
+async function llmConvert(r, idx, total) {
+  const label = `[LLM ${idx+1}/${total}] ${r.master.name}`;
+  l.info(label + " → Modell");
+  const out = await llm(buildMakerPrompt(r.master), MAKER_SCHEMA, label);
+  const parsed = extractJson(out.text);
+  const clean = sanitizeSvg(parsed.svg, parsed.width, parsed.height);
+  r.analysis = {
+    title: parsed.title || r.master.name,
+    svg: clean.svg, width: clean.w, height: clean.h,
+    confidence: ["high","medium","low"].includes(parsed.confidence) ? parsed.confidence : "low",
+    notes: parsed.notes || "",
+    source: "llm",
+    servedBy: `${state.backend}/${out.model}`,
+  };
+  l.ok(label + ` ✓ ${clean.w}×${clean.h} px, confidence ${r.analysis.confidence}`);
+}
+
+$("btn-run").addEventListener("click", async () => {
+  const selected = state.masters.filter(m => m.selected);
+  if (!selected.length) { l.warn("Keine Master ausgewählt"); return; }
+  const mode = $("conv-mode").value;
+  beginRun("KONVERTIERE…");
+  state.results = selected.map(m => ({ master: m }));
+  renderResults(); renderStats();
+
+  /* Phase 1: deterministisch, lokal — außer im Modus "nur LLM" */
+  if (mode !== "llm") {
+    l.info(`Deterministische Konvertierung: ${selected.length} Master (lokal, ohne API)`);
+    let d = 0;
+    for (const r of state.results) {
+      try {
+        const t0 = performance.now();
+        r.analysis = convertMasterLocal(r.master);
+        l.ok(`[lokal] ${r.master.name} ✓ ${r.analysis.width}×${r.analysis.height} px in ${Math.round(performance.now()-t0)} ms` +
+          (r.analysis.notes ? ` (${r.analysis.notes})` : ""));
+      } catch (e) {
+        r.localError = e.message;
+        r.needsLlm = true;
+        (e.complex ? l.warn : l.err)(`[lokal] ${r.master.name} ✗ ${e.message}` +
+          (mode === "det+llm" ? " → LLM-Fallback" : ""));
+      }
+      d++; showProgress("Deterministisch · lokal", d, state.results.length);
+      renderResults(); renderStats();
+      await sleep(0);  // UI atmen lassen
+    }
+  } else {
+    state.results.forEach(r => r.needsLlm = true);
+  }
+
+  /* Phase 2: LLM-Fallback für Reste */
+  const pending = state.results.filter(r => r.needsLlm && !r.analysis);
+  if (pending.length && mode !== "det") {
+    const conc = Math.max(1, parseInt($("concurrency").value) || 4);
+    l.info(`LLM-${mode === "llm" ? "Konvertierung" : "Fallback"}: ${pending.length} Master, Parallelität ${conc}, Backend ${state.backend}`);
+    const tasks = pending.map((r, idx) => async () => {
+      try { await llmConvert(r, idx, pending.length); }
+      catch (e) {
+        r.error = (r.localError ? `lokal: ${r.localError} · ` : "") + "LLM: " + e.message;
+        l.err(`[LLM] ${r.master.name} ✗ ` + e.message);
+      }
+    });
+    await runPool(tasks, conc, (d, t) => { showProgress("LLM · Fallback", d, t); renderResults(); renderStats(); });
+  } else if (pending.length && mode === "det") {
+    pending.forEach(r => { r.error = "deterministisch nicht abgedeckt: " + r.localError; });
+    l.warn(`${pending.length} Master deterministisch nicht abgedeckt — Modus "Deterministisch + LLM-Fallback" wählen oder Master prüfen`);
+  }
+  state.results.forEach(r => { if (!r.analysis && !r.error) r.error = r.localError || "abgebrochen"; });
+  const ok = state.results.filter(r => r.analysis).length;
+  const nLocal = state.results.filter(r => r.analysis?.source === "lokal").length;
+  const nLlm = ok - nLocal;
+  l.ok(`Konvertierung abgeschlossen: ${ok}/${state.results.length} ok (${nLocal} lokal, ${nLlm} LLM), ${state.results.length-ok} Fehler`);
+  endRun();
+  renderResults(); renderStats();
+  setStatus(`${ok}/${state.results.length} · ${nLocal} LOKAL`);
+});
+
+$("btn-validate").addEventListener("click", async () => {
+  if (!$("mc-toggle").checked) {
+    l.warn("Maker-Checker ist deaktiviert — Toggle in der Seitenleiste aktivieren");
+    return;
+  }
+  const targets = state.results.filter(r => r.analysis);
+  if (!targets.length) { l.warn("Keine erfolgreichen Konvertierungen zum Validieren"); return; }
+  targets.forEach(r => { delete r.validation; delete r.validationError; });
+  beginRun("VALIDIERE…");
+  const conc = Math.max(1, parseInt($("concurrency").value) || 4);
+  l.info(`Checker: ${targets.length} SVGs, Parallelität ${conc}`);
+  const tasks = targets.map((r, idx) => async () => {
+    const label = `[Checker ${idx+1}/${targets.length}] ${r.master.name}`;
+    try {
+      const out = await llm(buildCheckerPrompt(r.master, r.analysis.svg), CHECKER_SCHEMA, label);
+      const v = extractJson(out.text);
+      r.validation = {
+        verdict: ["confirmed","minor_corrections","major_issues","incorrect","uncertain"].includes(v.verdict) ? v.verdict : "uncertain",
+        issues: Array.isArray(v.issues) ? v.issues : [],
+        reviewer_notes: v.reviewer_notes || "",
+        servedBy: `${state.backend}/${out.model}`,
+      };
+      l.ok(label + " ✓ " + r.validation.verdict);
+    } catch (e) {
+      r.validationError = e.message;
+      l.err(label + " ✗ " + e.message);
+    }
+  });
+  await runPool(tasks, conc, (d, t) => { showProgress("Checker · Validierung", d, t); renderResults(); renderStats(); });
+  const counts = {};
+  targets.forEach(r => { const k = r.validation?.verdict || "error"; counts[k] = (counts[k]||0)+1; });
+  l.ok("Validierung abgeschlossen: " + Object.entries(counts).map(([k,v]) => `${k}=${v}`).join(", "));
+  endRun();
+  renderResults(); renderStats();
+});
+
+$("btn-cancel").addEventListener("click", () => {
+  state.cancel = true;
+  l.warn("Abbruch angefordert — laufende Calls werden noch beendet");
+});
+
+/* ---------------- Exports ---------------- */
+$("btn-export-lib").addEventListener("click", () => {
+  const lib = buildLibrary();
+  const base = (state.fileName || "stencil").replace(/\.(vssx|vsdx|zip)$/i, "");
+  download(base + "_drawio_library.xml", lib, "application/xml");
+  l.ok(`draw.io-Library exportiert (${state.results.filter(r=>r.analysis).length} Shapes). In draw.io: Datei → Bibliothek öffnen…`);
+});
+$("btn-export-json").addEventListener("click", () => {
+  const payload = {
+    tool: "vssx2drawio", version: "2.0.0", exported: new Date().toISOString(),
+    mode: $("conv-mode").value,
+    source: state.fileName, validated: state.results.some(r => r.validation),
+    results: state.results.map(r => ({
+      master: { id: r.master.id, name: r.master.name, truncated: r.master.truncated },
+      analysis: r.analysis || null, error: r.error || null,
+      validation: r.validation || null, validationError: r.validationError || null,
+    })),
+  };
+  download("vssx2drawio_run.json", JSON.stringify(payload, null, 2), "application/json");
+  l.ok("Lauf-JSON exportiert");
+});
+
+/* ============================================================
+   Rendering: Ergebnisse + Statistik
+   ============================================================ */
+const CONF_COLORS = {
+  high: "oklch(0.75 0.18 145)", medium: "oklch(0.80 0.15 80)", low: "oklch(0.65 0.2 25)",
+};
+const VERDICT_COLORS = {
+  confirmed: "oklch(0.75 0.18 145)", minor_corrections: "oklch(0.70 0.15 240)",
+  major_issues: "oklch(0.80 0.15 80)", incorrect: "oklch(0.65 0.2 25)",
+  uncertain: "oklch(0.55 0.02 280)", error: "oklch(0.65 0.2 25)",
+};
+const VERDICT_DE = {
+  confirmed: "bestätigt", minor_corrections: "kl. Abweichungen", major_issues: "größere Mängel",
+  incorrect: "inkorrekt", uncertain: "unsicher",
+};
+$("filter").addEventListener("change", renderResults);
+
+function renderResults() {
+  const el = $("results");
+  const filter = $("filter").value;
+  const rows = state.results.filter(r => {
+    if (filter === "ok") return !!r.analysis;
+    if (filter === "err") return !!r.error;
+    if (filter === "vissues") return r.validation && r.validation.verdict !== "confirmed";
+    return true;
+  });
+  $("results-empty").style.display = state.results.length ? "none" : "block";
+  el.innerHTML = rows.map(r => {
+    const badges = [];
+    if (r.analysis) badges.push(`<span class="badge" style="color:${r.analysis.source === "lokal" ? "var(--accent)" : "var(--blue)"}">${r.analysis.source}</span>`);
+    if (r.analysis) badges.push(`<span class="badge" style="color:${CONF_COLORS[r.analysis.confidence]};border-color:${CONF_COLORS[r.analysis.confidence]}40">${r.analysis.confidence}</span>`);
+    if (r.validation) badges.push(`<span class="badge" style="color:${VERDICT_COLORS[r.validation.verdict]};border-color:${VERDICT_COLORS[r.validation.verdict]}40">${VERDICT_DE[r.validation.verdict]}</span>`);
+    if (r.error) badges.push(`<span class="badge" style="color:var(--red);border-color:oklch(0.65 0.2 25 / .3)">Fehler</span>`);
+    if (!r.analysis && !r.error) badges.push(`<span class="badge">wartet</span>`);
+    let body = "";
+    if (r.analysis) {
+      body += `<div class="svg-preview">${r.analysis.svg}</div>
+        <div class="rc-meta"><span>${r.analysis.width}×${r.analysis.height} px</span><span>${escapeHtml(r.analysis.servedBy || "")}</span>${r.master.truncated ? "<span style='color:var(--amber)'>XML gekürzt</span>" : ""}</div>`;
+      if (r.analysis.notes) body += `<div class="rc-notes">${escapeHtml(r.analysis.notes)}</div>`;
+    } else if (r.error) {
+      body += `<div class="rc-error">${escapeHtml(r.error)}</div>`;
+    } else {
+      body += `<div class="rc-notes">Konvertierung ausstehend…</div>`;
+    }
+    if (r.validation) {
+      const c = VERDICT_COLORS[r.validation.verdict];
+      body += `<div class="validation-block" style="border-left-color:${c}">
+        <span class="vb-head">VALIDIERUNG · ${escapeHtml(VERDICT_DE[r.validation.verdict]).toUpperCase()}</span>
+        ${r.validation.issues.map(i => `<span>• ${escapeHtml(i)}</span>`).join("")}
+        ${r.validation.reviewer_notes ? `<span style="color:var(--text-tertiary)">${escapeHtml(r.validation.reviewer_notes)}</span>` : ""}
+      </div>`;
+    } else if (r.validationError) {
+      body += `<div class="validation-block" style="border-left-color:var(--red)"><span class="vb-head">VALIDIERUNG FEHLGESCHLAGEN</span><span class="rc-error">${escapeHtml(r.validationError)}</span></div>`;
+    }
+    return `<div class="result-card">
+      <div class="rc-head"><span class="rc-title">${escapeHtml(r.analysis?.title || r.master.name)}</span>${badges.join("")}</div>
+      ${body}
+    </div>`;
+  }).join("");
+}
+
+/* ---------------- Stats (SVG only) ---------------- */
+function donutChart(slices, size = 150, innerRatio = 0.62) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (total === 0) return "";
+  const cx = size/2, cy = size/2, r = size/2 - 8, ri = r * innerRatio;
+  let a = -Math.PI/2;
+  const live = slices.filter(s => s.value > 0);
+  const paths = live.map(s => {
+    let sweep = (s.value / total) * Math.PI * 2;
+    if (live.length === 1) sweep = Math.PI * 2 - 0.0001;
+    const a1 = a, a2 = a + sweep; a = a2;
+    const x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
+    const x2 = cx + r*Math.cos(a2), y2 = cy + r*Math.sin(a2);
+    const xi1 = cx + ri*Math.cos(a1), yi1 = cy + ri*Math.sin(a1);
+    const xi2 = cx + ri*Math.cos(a2), yi2 = cy + ri*Math.sin(a2);
+    const large = sweep > Math.PI ? 1 : 0;
+    return `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${ri} ${ri} 0 ${large} 0 ${xi1} ${yi1} Z" fill="${s.color}"/>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${paths}
+    <text x="${cx}" y="${cy-2}" text-anchor="middle" dominant-baseline="central" fill="currentColor" font-family="JetBrains Mono" font-size="21" font-weight="600">${total}</text>
+    <text x="${cx}" y="${cy+17}" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="JetBrains Mono" font-size="8.5" letter-spacing="1.5">SHAPES</text></svg>`;
+}
+function hBarRows(items) {
+  const max = Math.max(1, ...items.map(i => i.value));
+  return items.map(i => `
+    <div class="hbar-row">
+      <div class="hbar-label">${escapeHtml(i.label)}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${(i.value/max)*100}%;background:${i.color}"></div></div>
+      <div class="hbar-value">${i.value}</div>
+    </div>`).join("");
+}
+function renderStats() {
+  const done = state.results.filter(r => r.analysis);
+  const card = $("stats-card");
+  if (done.length < 3) { card.classList.remove("show"); return; }
+  card.classList.add("show");
+  const grid = $("stats-grid");
+  const confCounts = { high: 0, medium: 0, low: 0 };
+  done.forEach(r => confCounts[r.analysis.confidence]++);
+  const errCount = state.results.filter(r => r.error).length;
+  const slices = [
+    { label: "high", value: confCounts.high, color: CONF_COLORS.high },
+    { label: "medium", value: confCounts.medium, color: CONF_COLORS.medium },
+    { label: "low", value: confCounts.low, color: CONF_COLORS.low },
+    { label: "Fehler", value: errCount, color: VERDICT_COLORS.error },
+  ];
+  let html = `<div class="stat-sub"><h4>KONFIDENZ-VERTEILUNG</h4>
+    <div class="donut-wrap">${donutChart(slices)}
+      <div class="legend">${slices.filter(s=>s.value>0).map(s =>
+        `<div class="legend-row"><span class="legend-dot" style="background:${s.color}"></span>${s.label}<span class="mono">${s.value}</span></div>`).join("")}
+      </div></div></div>`;
+  // Größenverteilung
+  const buckets = [["≤ 48 px",0],["49–128 px",0],["129–256 px",0],["> 256 px",0]];
+  done.forEach(r => {
+    const m = Math.max(r.analysis.width, r.analysis.height);
+    if (m <= 48) buckets[0][1]++; else if (m <= 128) buckets[1][1]++;
+    else if (m <= 256) buckets[2][1]++; else buckets[3][1]++;
+  });
+  html += `<div class="stat-sub"><h4>SHAPE-GRÖSSE (MAX-KANTE)</h4>${hBarRows(
+    buckets.map(([label,value]) => ({ label, value, color: "var(--blue)" })))}</div>`;
+  const nLocal = done.filter(r => r.analysis.source === "lokal").length;
+  const nLlm = done.length - nLocal;
+  html += `<div class="stat-sub"><h4>KONVERTIERUNGSQUELLE</h4>${hBarRows([
+    { label: "deterministisch (lokal)", value: nLocal, color: "var(--accent)" },
+    { label: "LLM-Fallback", value: nLlm, color: "var(--blue)" },
+  ])}</div>`;
+  // Verdikt-Verteilung, wenn Checker lief
+  const validated = state.results.filter(r => r.validation);
+  if (validated.length) {
+    const vc = {};
+    validated.forEach(r => vc[r.validation.verdict] = (vc[r.validation.verdict]||0)+1);
+    const rows = Object.entries(vc).sort((a,b)=>b[1]-a[1])
+      .map(([k,v]) => ({ label: VERDICT_DE[k], value: v, color: VERDICT_COLORS[k] }));
+    html += `<div class="stat-sub"><h4>VALIDIERUNGS-VERDIKTE</h4>${hBarRows(rows)}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+/* ============================================================
+   Backend-Umschaltung, OpenRouter-Katalog, Persistenz, Splitter
+   ============================================================ */
+function persistInput(id, lsKey, isCheckbox) {
+  const el = $(id);
+  const saved = localStorage.getItem(lsKey);
+  if (saved !== null) { if (isCheckbox) el.checked = saved === "1"; else el.value = saved; }
+  el.addEventListener(isCheckbox ? "change" : "input", () =>
+    localStorage.setItem(lsKey, isCheckbox ? (el.checked ? "1" : "0") : el.value));
+}
+persistInput("gemini-key","v2d.geminiKey"); persistInput("gemini-model","v2d.geminiModel");
+persistInput("or-key","v2d.orKey"); persistInput("or-model-free","v2d.orModelFree");
+persistInput("concurrency","v2d.conc"); persistInput("retries","v2d.retries");
+persistInput("max-chars","v2d.maxChars"); persistInput("thinking","v2d.thinking");
+persistInput("grounding","v2d.grounding",true); persistInput("mc-toggle","v2d.mc",true);
+
+async function loadOrCatalog() {
+  const sel = $("or-model-select");
+  try {
+    const cached = JSON.parse(localStorage.getItem("v2d.orCatalog") || "null");
+    let list;
+    if (cached && Date.now() - cached.ts < 24*3600*1000) {
+      list = cached.list;
+      l.debug(`OpenRouter-Katalog aus Cache (${list.length} Modelle)`);
+    } else {
+      const cat = await (await fetch("https://openrouter.ai/api/v1/models")).json();
+      list = (cat.data || [])
+        .filter(m => (m.supported_parameters || []).includes("structured_outputs"))
+        .map(m => m.id).sort();
+      localStorage.setItem("v2d.orCatalog", JSON.stringify({ ts: Date.now(), list }));
+      l.ok(`OpenRouter-Katalog geladen: ${list.length} Modelle mit structured_outputs`);
+    }
+    sel.innerHTML = `<option value="">– Modell wählen –</option>` +
+      list.map(id => `<option value="${escapeHtml(id)}">${escapeHtml(id)}</option>`).join("");
+    const savedSel = localStorage.getItem("v2d.orModelSel");
+    if (savedSel) sel.value = savedSel;
+    sel.addEventListener("change", () => localStorage.setItem("v2d.orModelSel", sel.value));
+  } catch (e) {
+    l.warn("OpenRouter-Katalog nicht ladbar: " + e.message + " — freien Slug verwenden");
+  }
+}
+$("backend").addEventListener("change", () => {
+  state.backend = $("backend").value;
+  localStorage.setItem("v2d.backend", state.backend);
+  $("cfg-gemini").style.opacity = state.backend === "gemini" ? "1" : "0.55";
+  $("cfg-openrouter").style.opacity = state.backend === "openrouter" ? "1" : "0.55";
+  $("backend-pill").textContent = state.backend.toUpperCase();
+  if (state.backend === "openrouter" && $("or-model-select").options.length <= 1) loadOrCatalog();
+  l.info("Aktives LLM-Backend: " + state.backend);
+});
+$("or-model-select").addEventListener("focus", () => {
+  if ($("or-model-select").options.length <= 1) loadOrCatalog();
+});
+(() => {
+  const saved = localStorage.getItem("v2d.backend");
+  if (saved) $("backend").value = saved;
+  $("backend").dispatchEvent(new Event("change"));
+})();
+persistInput("conv-mode","v2d.mode");
+const MODE_PILL = { det: "DETERMINISTISCH", "det+llm": "DET + LLM-FALLBACK", llm: "NUR LLM" };
+$("conv-mode").addEventListener("change", () => { $("mode-pill").textContent = MODE_PILL[$("conv-mode").value]; });
+$("mode-pill").textContent = MODE_PILL[$("conv-mode").value];
+
+/* Nav scroll */
+document.querySelectorAll(".nav-item").forEach(n => n.addEventListener("click", () => {
+  document.querySelectorAll(".nav-item").forEach(x => x.classList.remove("active"));
+  n.classList.add("active");
+  $(n.dataset.goto)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}));
+
+/* Splitter */
+(() => {
+  const saved = localStorage.getItem("v2d.railW");
+  if (saved) document.documentElement.style.setProperty("--rail-w", saved + "px");
+  let dragging = false;
+  $("splitter").addEventListener("mousedown", () => { dragging = true; document.body.style.userSelect = "none"; });
+  window.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    const w = Math.min(420, Math.max(200, e.clientX));
+    document.documentElement.style.setProperty("--rail-w", w + "px");
+  });
+  window.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false; document.body.style.userSelect = "";
+    const cur = getComputedStyle(document.documentElement).getPropertyValue("--rail-w").trim();
+    localStorage.setItem("v2d.railW", parseInt(cur) || 244);
+  });
+})();
+
+l.info("VSSX → draw.io Library Converter v2.0.0 bereit");
+l.debug("ZIP-Parsing + ShapeSheet→SVG deterministisch in JS · LLM nur als Fallback/Checker · Assembly lokal");
+l.debug("Modus \"Nur deterministisch\" läuft komplett offline ohne API-Key");
+if (!("DecompressionStream" in window)) l.err("DecompressionStream nicht verfügbar — Browser zu alt für lokales ZIP-Parsing");
+</script>
+</body>
+</html>
