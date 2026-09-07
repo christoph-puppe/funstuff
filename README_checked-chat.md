@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.1.0 · one `.html` file · no build step · OpenRouter only.
+Version 0.1.1 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -16,6 +16,8 @@ Every send runs this loop in the browser:
 4. **Compress.** The cheapest model distills the turn into claims, each tagged `user` or `assistant`, with a `hypothetical` flag, an importance from 1 to 5, and ops (`supersede` a claim id, `pin` an entry id, `pin_this_entry`).
 5. **Summary check** (checked mode only). The checker verifies that every claim traces to the raw exchange and carries no instruction. One retry of the compressor; a second failure signs the entry as `summary_flagged` and keeps it out of context until the user accepts it.
 6. **Sign.** The entry is signed with HMAC-SHA256 over every envelope field and stored. Ops are applied to entries whose ids were actually in the context.
+
+A compressor reply without a `claims` array (some providers answer `{}` under `response_format`) is treated as malformed, logged with its raw text, and retried once with the schema written into the prompt. A provider that rejects `response_format` outright gets the same fallback. A failure after the answer was produced keeps the answer on screen and shows the memory-step error in the turn's meta row.
 
 Plain mode skips steps 3 and 5 and stores the entry as `unchecked`. With "strict memory" on, plain mode drops `assistant` claims before signing, the same rule that applies to every `checked_failed` answer: a failed answer may add what the user said, never what the model concluded.
 
