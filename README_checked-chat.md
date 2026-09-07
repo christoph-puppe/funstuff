@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.2.1 · one `.html` file · no build step · OpenRouter only.
+Version 0.2.2 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -23,7 +23,7 @@ Plain mode skips steps 3 and 5 and stores the entry as `unchecked`. With "strict
 
 ### Web search
 
-The rail has a **web search** toggle for the maker. It adds OpenRouter's web plugin (`plugins: [{ id: "web", max_results: N }]`) to the maker call; OpenRouter runs the search, feeds the results to the model and returns the sources as `url_citation` annotations. OpenRouter bills per result, a few cents per call at the default of five. The checker never searches: its job is to compare the answer with the inputs, and a searching checker would start grading truth, which the plan rules out.
+The rail has a **web search** toggle for the maker. It adds OpenRouter's web plugin (`plugins: [{ id: "web", engine: "exa", max_results: N }]`) to the maker call; OpenRouter runs the search, feeds the results to the model and returns the sources as `url_citation` annotations. The engine defaults to Exa because Exa returns a text snippet per source. The vendor's native grounding (Google, OpenAI), selectable in the rail, returns redirect URLs and titles without text: cheaper, but the checker then cannot confirm any figure taken from those pages and no observation can be validated. The checker treats a figure attributed to a listed source without text as unverifiable, not fabricated; a finding needs a source absent from the inputs or a source text that says something else. OpenRouter bills per result, a few cents per call at the default of five. The checker never searches: its job is to compare the answer with the inputs, and a searching checker would start grading truth, which the plan rules out.
 
 The app reads the annotations and passes them on as a WEB-DATA block to the checker, the compressor and the summary check, so a figure or URL that comes from a returned source is a supported attribution, not a fabricated one, and an instruction hidden in a web page is caught by check (c). The compressor may return observations, each pointing at a source number with text copied verbatim; the app keeps an observation only if the text is an exact span of that source's snippet or title, otherwise it is dropped and logged. Kept observations land in the entry as `{obs_id, text, tool: "web", call_id, args_hash, url, observed_at, fresh_until}`, inside the MAC, and appear in the memory block with their date. `fresh_until` stays null, because the plugin carries no freshness annotation.
 
