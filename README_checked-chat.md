@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.1.2 · one `.html` file · no build step · OpenRouter only.
+Version 0.2.0 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -21,9 +21,17 @@ Every structured call (checker, summary check, compressor) validates the shape o
 
 Plain mode skips steps 3 and 5 and stores the entry as `unchecked`. With "strict memory" on, plain mode drops `assistant` claims before signing, the same rule that applies to every `checked_failed` answer: a failed answer may add what the user said, never what the model concluded.
 
+### Web search
+
+The rail has a **web search** toggle for the maker. It adds OpenRouter's web plugin (`plugins: [{ id: "web", max_results: N }]`) to the maker call; OpenRouter runs the search, feeds the results to the model and returns the sources as `url_citation` annotations. OpenRouter bills per result, a few cents per call at the default of five. The checker never searches: its job is to compare the answer with the inputs, and a searching checker would start grading truth, which the plan rules out.
+
+The app reads the annotations and passes them on as a WEB-DATA block to the checker, the compressor and the summary check, so a figure or URL that comes from a returned source is a supported attribution, not a fabricated one, and an instruction hidden in a web page is caught by check (c). The compressor may return observations, each pointing at a source number with text copied verbatim; the app keeps an observation only if the text is an exact span of that source's snippet or title, otherwise it is dropped and logged. Kept observations land in the entry as `{obs_id, text, tool: "web", call_id, args_hash, url, observed_at, fresh_until}`, inside the MAC, and appear in the memory block with their date. `fresh_until` stays null, because the plugin carries no freshness annotation.
+
+One limit: the results reach the maker inside OpenRouter's own prompt, not inside the app's data-block framing. Injected instructions in a page are therefore caught at the checker, not at the maker; in plain mode nothing catches them.
+
 ### Deterministic parts
 
-Everything that has an exact expected output runs in plain JavaScript and never touches a model: MAC signing and verification, the decay formula (`importance × 0.85^(current_turn − turn) ≥ 0.5`, pinned entries exempt), entry ordering and caps, the token budget, claim caps and truncation, span clamping, op validation against visible ids, the import rules, the stats. The rail has a **self-test** button that checks the decay lifetimes from the phase-1 test (an importance-3 entry is gone by turn 12, importance-5 by 15), the cap (500 synthetic entries, cap 100), MAC tamper detection for status, pin, claim text and cross-chat binding, and the claim caps. It logs 15 checks and needs no key.
+Everything that has an exact expected output runs in plain JavaScript and never touches a model: MAC signing and verification, the decay formula (`importance × 0.85^(current_turn − turn) ≥ 0.5`, pinned entries exempt), entry ordering and caps, the token budget, claim caps and truncation, span clamping, op validation against visible ids, the import rules, the stats. The rail has a **self-test** button that checks the decay lifetimes from the phase-1 test (an importance-3 entry is gone by turn 12, importance-5 by 15), the cap (500 synthetic entries, cap 100), MAC tamper detection for status, pin, claim text and cross-chat binding, and the claim caps. It logs 16 checks and needs no key.
 
 ### What the MAC means here
 
@@ -76,7 +84,7 @@ Export writes the chat (turns, entries, key id) as JSON. That file is also the s
 
 ## Prompts
 
-Five prompts, all editable in the Prompts card, persisted per browser, each with a reset button and a placeholder check: maker system prompt (`{memory}`), checker (`{prompt}`, `{memory}`, `{answer}`), patch (`{issues}`), compressor (`{prompt}`, `{answer}`, `{memory}`), summary check (`{prompt}`, `{answer}`, `{claims}`). A removed placeholder is appended at runtime so a prompt never silently loses its data.
+Five prompts, all editable in the Prompts card, persisted per browser, each with a reset button and a placeholder check: maker system prompt (`{memory}`), checker (`{prompt}`, `{memory}`, `{answer}`, `{web}`), patch (`{issues}`), compressor (`{prompt}`, `{answer}`, `{memory}`, `{web}`), summary check (`{prompt}`, `{answer}`, `{claims}`, `{web}`). Version 0.2.0 changed the defaults and the storage key; an edit made under 0.1.x is kept in `localStorage` but not loaded, the console says so. A removed placeholder is appended at runtime so a prompt never silently loses its data.
 
 The checker returns codes, character offsets and a reason through a strict JSON schema. The patch prompt hands the maker the codes, offsets and the flagged text of its own answer, never the text of a memory entry, which keeps to the plan's rule that the maker sees no quoted untrusted input in the patch step.
 
@@ -90,7 +98,7 @@ The checker returns codes, character offsets and a reason through a strict JSON 
 
 ## Not in this cut
 
-- **Tools and MCP (phase 3).** A browser page has no MCP transport, so tool loops, observations, continuation tokens and the side-effect protocol are absent. The `observations` field exists in the envelope and is always empty.
+- **Tools and MCP (phase 3).** A browser page has no MCP transport, so tool loops, continuation tokens and the side-effect protocol are absent. The one tool that exists is OpenRouter's web search for the maker, with its results validated into observations as described above.
 - **Streaming.** Plain mode returns the answer in one piece too. The frames show progress; content does not stream.
 - **Retrieval (phase 4).** Every live entry is sent in full, exactly as the plan wants until a measurement proves otherwise.
 - **IAP, server-side keys, audit log, EU-residency posture.** No server. The console is the audit line: request id, turn, status, applied ops, dropped entries.
