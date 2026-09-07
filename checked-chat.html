@@ -1356,7 +1356,7 @@ function setMode(m) { localStorage.setItem(LS("mode"), m); document.querySelecto
 
 async function init() {
   $("pill-version").textContent = "v" + VERSION;
-  l.info(`Checked Chat v${VERSION} · memory lives in this browser (localStorage) · OpenRouter backend for maker, checker and compressor`);
+  l.info(`Checked Chat v${VERSION} · memory lives in this browser (IndexedDB) · OpenRouter backend for maker, checker and compressor`);
   persist("or-key", "or_key");
   for (const r of ["maker", "checker", "compressor"]) { persist(r + "-model", r + "_model"); persist(r + "-effort", r + "_effort", "change"); $(r + "-select").addEventListener("change", () => { if ($(r + "-select").value) { $(r + "-model").value = $(r + "-select").value; localStorage.setItem(LS(r + "_model"), $(r + "-model").value); } familyCheck(); }); $(r + "-model").addEventListener("input", () => { $(r + "-select").value = $(r + "-model").value; familyCheck(); }); }
   for (const id of ["cap-entries", "cap-claims", "cap-words", "cap-turns", "cap-rounds", "decay-factor", "decay-threshold", "token-budget", "retries"]) { persist(id, id); $(id).addEventListener("input", () => renderMemory().then(renderStats)); }
