@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.2.2 · one `.html` file · no build step · OpenRouter only.
+Version 0.2.3 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -12,7 +12,7 @@ Every send runs this loop in the browser:
 
 1. **Assemble.** Verify the HMAC on every stored entry, drop and log failures, compute decay, apply the caps, build the memory block and the last raw turns.
 2. **Maker.** The maker model answers with the memory block framed as data in its system prompt.
-3. **Check** (checked mode only). A model from another vendor audits the answer for three things and nothing else: contradiction with a pinned or importance-5 claim, fabricated attribution, instruction steering from memory. On a finding the maker patches the flagged spans and the checker looks again, at most two rounds by default. A second failure ships the answer as `checked_failed` with the findings visible and the flagged spans highlighted.
+3. **Check** (checked mode only). A model from another vendor receives the same inputs the maker had (prompt, the recent raw turns, memory, web sources) and audits the answer for three things and nothing else: contradiction with a pinned or importance-5 claim, fabricated attribution, instruction steering from memory. On a finding the maker patches the flagged spans and the checker looks again, at most two rounds by default. A second failure ships the answer as `checked_failed` with the findings visible and the flagged spans highlighted.
 4. **Compress.** The cheapest model distills the turn into claims, each tagged `user` or `assistant`, with a `hypothetical` flag, an importance from 1 to 5, and ops (`supersede` a claim id, `pin` an entry id, `pin_this_entry`).
 5. **Summary check** (checked mode only). The checker verifies that every claim traces to the raw exchange and carries no instruction. One retry of the compressor; a second failure signs the entry as `summary_flagged` and keeps it out of context until the user accepts it.
 6. **Sign.** The entry is signed with HMAC-SHA256 over every envelope field and stored. Ops are applied to entries whose ids were actually in the context.
@@ -93,7 +93,7 @@ Export writes the current chat (turns, entries, key id) as JSON.
 
 ## Prompts
 
-Five prompts, all editable in the Prompts card, persisted per browser, each with a reset button and a placeholder check: maker system prompt (`{memory}`), checker (`{prompt}`, `{memory}`, `{answer}`, `{web}`), patch (`{issues}`), compressor (`{prompt}`, `{answer}`, `{memory}`, `{web}`), summary check (`{prompt}`, `{answer}`, `{claims}`, `{web}`). Version 0.2.0 changed the defaults and the storage key; an edit made under 0.1.x is kept in `localStorage` but not loaded, the console says so. A removed placeholder is appended at runtime so a prompt never silently loses its data.
+Five prompts, all editable in the Prompts card, persisted per browser, each with a reset button and a placeholder check: maker system prompt (`{memory}`), checker (`{prompt}`, `{recent}`, `{memory}`, `{answer}`, `{web}`), patch (`{issues}`), compressor (`{prompt}`, `{answer}`, `{memory}`, `{web}`), summary check (`{prompt}`, `{answer}`, `{claims}`, `{web}`). When a release changes a default prompt, an unedited stored copy is replaced silently and the console says so; an edited copy is kept, with a console warning that the default moved, and the reset button takes the new one. A removed placeholder is appended at runtime so a prompt never silently loses its data.
 
 The checker returns codes, character offsets and a reason through a strict JSON schema. The patch prompt hands the maker the codes, offsets and the flagged text of its own answer, never the text of a memory entry, which keeps to the plan's rule that the maker sees no quoted untrusted input in the patch step.
 
