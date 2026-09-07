@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Countdown · 15.12.2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg-deep:        oklch(0.13 0.02 280);
+  --bg-elev-1:      oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2:      oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3:      oklch(0.95 0.005 280 / 0.08);
+  --border-1:       oklch(0.95 0.005 280 / 0.06);
+  --border-2:       oklch(0.95 0.005 280 / 0.10);
+  --text-primary:   oklch(0.95 0.005 280);
+  --text-secondary: oklch(0.75 0.02 280);
+  --text-tertiary:  oklch(0.65 0.02 280);
+  --text-quiet:     oklch(0.55 0.02 280);
+  --accent:         oklch(0.7  0.18 300);
+  --accent-soft:    oklch(0.7  0.18 300 / 0.15);
+  --accent-glow:    oklch(0.7  0.18 300 / 0.4);
+  --red:   oklch(0.65 0.2 25);
+  --amber: oklch(0.80 0.15 80);
+  --green: oklch(0.75 0.18 145);
+  --blue:  oklch(0.70 0.15 240);
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --rail-w: 240px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: oklch(0.7 0.18 300 / 0.35); color: oklch(0.95 0.005 280); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(0.95 0.005 280 / 0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+* { scrollbar-width: thin; scrollbar-color: oklch(0.95 0.005 280 / 0.12) transparent; }
+
+.glass, .card, .topbar, .rail {
+  background: var(--bg-elev-1);
+  border: 1px solid oklch(0.95 0.005 280 / 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+}
+.app {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: var(--rail-w) 6px 1fr;
+  grid-template-rows: 62px 1fr;
+  height: 100vh;
+}
+.nano {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--text-tertiary);
+}
+
+/* top bar */
+.topbar {
+  grid-column: 1 / -1; border-radius: 0; border-left: 0; border-right: 0; border-top: 0;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand-ico { color: var(--accent); font-size: 16px; }
+.brand-name { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
+.brand-sub { font-size: 12px; color: var(--text-tertiary); }
+.pills { display: flex; gap: 8px; }
+.pill {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--text-secondary);
+  padding: 5px 10px; border-radius: 999px; background: var(--bg-elev-2); border: 1px solid var(--border-1);
+}
+.pill.accent { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.pill.green { color: var(--green); }
+
+/* rail */
+.rail {
+  border-radius: 0; border-top: 0; border-bottom: 0; border-left: 0;
+  overflow-y: auto; min-height: 0; padding: 18px 14px; display: flex; flex-direction: column; gap: 22px;
+}
+.nav-group { display: flex; flex-direction: column; gap: 4px; }
+.nav-group > .nano { padding: 0 8px 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 8px 10px; border-radius: 8px; border: 0; background: transparent; color: var(--text-secondary);
+  font: 500 13px var(--sans); cursor: pointer; transition: background 150ms ease, color 150ms ease;
+}
+.nav-item .ico { width: 16px; color: var(--text-quiet); font-size: 13px; transition: color 150ms ease; }
+.nav-item:hover { background: var(--bg-elev-2); color: var(--text-primary); }
+.nav-item.active { background: var(--accent-soft); color: var(--text-primary); }
+.nav-item.active .ico { color: var(--accent); }
+.field { display: flex; flex-direction: column; gap: 5px; padding: 0 4px; margin-bottom: 8px; }
+.field > span { font-size: 11.5px; color: var(--text-tertiary); }
+input[type=date], input[type=time], input[type=text], textarea {
+  width: 100%; color: var(--text-primary); background: var(--bg-elev-2);
+  border: 1px solid var(--border-2); border-radius: 8px; padding: 7px 9px;
+  font: 500 12.5px var(--mono); color-scheme: dark; outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+input[type=text] { font-family: var(--sans); }
+input:hover, textarea:hover { background: var(--bg-elev-3); }
+input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea { resize: vertical; min-height: 140px; line-height: 1.55; font-weight: 400; }
+textarea::-webkit-resizer {
+  background: linear-gradient(135deg, transparent 0 50%, var(--text-quiet) 50% 60%, transparent 60% 70%, var(--text-quiet) 70% 80%, transparent 80%);
+  border-radius: 0 0 8px 0;
+}
+.check { flex-direction: row; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+.check input { accent-color: var(--accent); width: 14px; height: 14px; }
+.rail-foot { margin-top: auto; padding: 12px 8px 0; line-height: 1.8; letter-spacing: .08em; border-top: 1px solid var(--border-1); }
+
+.splitter { cursor: col-resize; background: transparent; transition: background 150ms ease; }
+.splitter:hover, .splitter.drag { background: var(--accent-soft); }
+
+/* main */
+.main { overflow-y: auto; min-height: 0; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.card { padding: 22px 24px; }
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.headline { font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.headline.done { color: var(--green); }
+.subline { margin-top: 6px; font-size: 14px; color: var(--text-secondary); }
+.subline .mono { font-family: var(--mono); font-size: 13px; color: var(--text-primary); }
+.progress-wrap { margin: 18px 0 20px; }
+.progress-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.progress-track { height: 1px; background: var(--border-2); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .2s ease; }
+.progress-fill.done { background: var(--green); }
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.tile {
+  background: var(--bg-elev-2); border: 1px solid var(--border-1); border-radius: 10px;
+  padding: 14px 12px 12px; text-align: center; transition: background 150ms ease;
+}
+.tile:hover { background: var(--bg-elev-3); }
+.tile .num { font: 600 40px var(--mono); letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile .num.sec { color: var(--accent); }
+.tile .nano { margin-top: 8px; display: block; }
+.facts { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+.fact { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-1); font-size: 13px; }
+.fact span:first-child { color: var(--text-secondary); }
+.fact span:last-child { font-family: var(--mono); font-size: 12.5px; font-weight: 500; text-align: right; white-space: nowrap; }
+.hint { font-size: 12.5px; color: var(--text-tertiary); line-height: 1.6; margin-bottom: 12px; }
+.hint code { font-family: var(--mono); color: var(--text-secondary); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.row .nano { margin-left: auto; }
+.btn {
+  font: 500 12.5px var(--sans); color: var(--text-primary); background: var(--bg-elev-2);
+  border: 1px solid var(--border-2); border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.btn:hover { background: var(--bg-elev-3); }
+.btn.primary { background: var(--accent); border-color: transparent; color: oklch(0.13 0.02 280); font-weight: 600; box-shadow: 0 6px 20px var(--accent-glow); }
+.btn.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px var(--accent-glow); }
+.btn.ghost { background: transparent; color: var(--text-secondary); }
+.btn.ghost:hover { background: var(--bg-elev-2); color: var(--text-primary); }
+.btn.small { padding: 5px 10px; font-size: 11.5px; }
+.status { font-family: var(--mono); font-size: 11.5px; color: var(--text-tertiary); }
+.status.warn { color: var(--amber); }
+.summary {
+  margin-top: 14px; padding: 14px 16px; background: var(--bg-elev-2); border: 1px solid var(--border-1);
+  border-radius: 10px; font: 400 12.5px/1.6 var(--mono); color: var(--text-secondary); white-space: pre-wrap;
+  overflow-y: auto; min-height: 0; max-height: 240px;
+}
+
+/* stats */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.chart { background: var(--bg-elev-2); border: 1px solid var(--border-1); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.chart .nano { display: block; margin-bottom: 12px; }
+.chart-body { display: flex; align-items: center; gap: 16px; }
+.legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; vertical-align: 1px; }
+.legend b { font-family: var(--mono); font-weight: 500; color: var(--text-primary); margin-left: 6px; }
+.donut-num { font: 600 22px var(--mono); fill: var(--text-primary); }
+.donut-sub { font: 500 9px var(--mono); fill: var(--text-tertiary); letter-spacing: .12em; }
+.bar-label { font: 500 11px var(--sans); fill: var(--text-secondary); }
+.bar-val { font: 500 11px var(--mono); fill: var(--text-primary); }
+
+
+@media (max-width: 760px) {
+  .tiles { grid-template-columns: repeat(3, 1fr); }
+  .facts { grid-template-columns: 1fr; }
+  .headline { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+<!-- aurora blob 1: top-left violet -->
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<!-- aurora blob 2: bottom-right blue -->
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<!-- noise -->
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-ico">◉</span>
+      <span class="brand-name">Countdown</span>
+      <span class="brand-sub" id="brand-sub">bis zum Zieltermin</span>
+    </div>
+    <div class="pills">
+      <span class="pill" id="pill-clock">--:--:--</span>
+      <span class="pill green">OFFLINE · DETERMINISTISCH</span>
+      <span class="pill accent" id="pill-build">BUILD</span>
+    </div>
+  </header>
+
+  <aside class="rail" id="rail">
+    <div class="nav-group">
+      <div class="nano">Navigation</div>
+      <button class="nav-item active" data-target="card-countdown"><span class="ico">◉</span>Countdown</button>
+      <button class="nav-item" data-target="card-input"><span class="ico">◇</span>Freie Tage</button>
+      <button class="nav-item" data-target="card-stats"><span class="ico">◈</span>Statistik</button>
+      <button class="nav-item" data-target="card-export"><span class="ico">⤓</span>Export</button>
+    </div>
+    <div class="nav-group">
+      <div class="nano">Konfiguration</div>
+      <label class="field"><span>Zieldatum</span><input type="date" id="cfg-date"></label>
+      <label class="field"><span>Uhrzeit</span><input type="time" id="cfg-time"></label>
+      <label class="field"><span>Bezeichnung</span><input type="text" id="cfg-label" maxlength="60"></label>
+      <label class="field"><span>Startdatum (für Fortschritt)</span><input type="date" id="cfg-start"></label>
+      <label class="field check"><input type="checkbox" id="cfg-incl"><span>Zieltag als Resttag zählen</span></label>
+      <button class="btn ghost small" id="btn-reset" style="align-self:flex-start;margin-left:4px">↺ Konfiguration zurücksetzen</button>
+    </div>
+    <div class="rail-foot nano">Kein API-Key · kein Modell<br>keine Prompts · alles lokal</div>
+  </aside>
+  <div class="splitter" id="splitter" title="Breite anpassen"></div>
+
+  <main class="main" id="main">
+    <section class="card" id="card-countdown">
+      <div class="card-head"><span class="nano">◉ Countdown</span><span class="nano" id="cd-kw">—</span></div>
+      <div class="headline" id="cd-headline">—</div>
+      <div class="subline" id="cd-subline">—</div>
+      <div class="progress-wrap">
+        <div class="progress-meta"><span class="nano" id="pg-left">Fortschritt</span><span class="nano" id="pg-right">—</span></div>
+        <div class="progress-track"><div class="progress-fill" id="cd-progress"></div></div>
+      </div>
+      <div class="nano" id="tiles-title" style="margin-bottom:10px">Exakte Restzeit</div>
+      <div class="tiles">
+        <div class="tile"><div class="num" id="t-w">0</div><span class="nano">Wochen</span></div>
+        <div class="tile"><div class="num" id="t-d">0</div><span class="nano">Tage</span></div>
+        <div class="tile"><div class="num" id="t-h">0</div><span class="nano">Stunden</span></div>
+        <div class="tile"><div class="num" id="t-m">0</div><span class="nano">Minuten</span></div>
+        <div class="tile"><div class="num sec" id="t-s">0</div><span class="nano">Sekunden</span></div>
+      </div>
+      <div class="facts" id="cd-facts"></div>
+    </section>
+
+    <section class="card" id="card-input">
+      <div class="card-head"><span class="nano">◇ Freie Tage / Feiertage</span><span class="status" id="in-status">—</span></div>
+      <p class="hint">Ein Datum pro Zeile, Format <code>TT.MM.JJJJ</code> oder <code>JJJJ-MM-TT</code>, Kommentare mit <code>#</code>. Werktage in dieser Liste werden von den Werktagen abgezogen; Wochenendtage und Daten außerhalb des Zeitraums werden ignoriert (Zähler oben rechts).</p>
+      <textarea id="in-holidays" spellcheck="false"></textarea>
+      <div class="row"><button class="btn ghost small" id="btn-reset-holidays">↺ Standardliste</button></div>
+    </section>
+
+    <section class="card" id="card-stats">
+      <div class="card-head"><span class="nano">◈ Statistik</span><span class="nano" id="st-range">—</span></div>
+      <div class="charts">
+        <div class="chart"><span class="nano">Fortschritt seit Startdatum</span><div class="chart-body" id="chart-donut"></div></div>
+        <div class="chart"><span class="nano">Resttage nach Art</span><div id="chart-breakdown"></div></div>
+        <div class="chart"><span class="nano">Werktage pro Monat</span><div id="chart-months"></div></div>
+      </div>
+    </section>
+
+    <section class="card" id="card-export">
+      <div class="card-head"><span class="nano">⤓ Export</span></div>
+      <div class="row" style="margin-top:0">
+        <button class="btn primary" id="btn-ics">⤓ Kalender (.ics)</button>
+        <button class="btn" id="btn-json">⤓ JSON</button>
+        <button class="btn" id="btn-copy">⎘ Zusammenfassung kopieren</button>
+      </div>
+      <pre class="summary" id="ex-summary"></pre>
+    </section>
+  </main>
+
+</div>
+
+<script>
+// ============================================================ ENGINE (pure, no DOM)
+const BUILD = "2026.09.07.2";
+const DAY = 86400000;
+
+const DEFAULTS = {
+  date: "2026-12-15",
+  time: "00:00",
+  label: "Zieltermin",
+  start: "2026-09-07",
+  incl: true,
+  holidays: "# Ein Datum pro Zeile · Kommentar mit #\n03.10.2026  # Tag der Deutschen Einheit (2026 ein Samstag – wird ignoriert)\n# 18.11.2026  # Buß- und Bettag (nur Sachsen)\n",
+};
+
+function pad(n) { return String(n).padStart(2, "0"); }
+function mkDate(y, mo, d) {
+  const dt = new Date(y, mo - 1, d);
+  return (dt.getFullYear() === y && dt.getMonth() === mo - 1 && dt.getDate() === d) ? dt : null;
+}
+function parseISODate(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ""));
+  return m ? mkDate(+m[1], +m[2], +m[3]) : null;
+}
+function midnight(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function dayKey(d) { return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
+function diffDays(a, b) {            // calendar days between local midnights, DST-safe
+  return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / DAY);
+}
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const wd = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - wd);
+  const y0 = Date.UTC(t.getUTCFullYear(), 0, 1);
+  return { week: Math.ceil(((t - y0) / DAY + 1) / 7), year: t.getUTCFullYear() };
+}
+function isWeekend(d) { const wd = d.getDay(); return wd === 0 || wd === 6; }
+
+function parseHolidays(text, rangeStart, rangeEnd) {
+  const res = { excluded: [], weekend: [], outOfRange: [], invalid: [], parsed: 0 };
+  const seen = new Set();
+  String(text || "").split(/\r?\n/).forEach((raw, i) => {
+    const line = raw.replace(/#.*$/, "").trim();
+    if (!line) return;
+    let d = null, m;
+    if ((m = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/.exec(line))) { let y = +m[3]; if (y < 100) y += 2000; d = mkDate(y, +m[2], +m[1]); }
+    else if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(line))) d = mkDate(+m[1], +m[2], +m[3]);
+    if (!d) { res.invalid.push({ line: i + 1, text: raw.trim() }); return; }
+    res.parsed++;
+    const k = dayKey(d); if (seen.has(k)) return; seen.add(k);
+    if (d < rangeStart || d > rangeEnd) { res.outOfRange.push(d); return; }
+    if (isWeekend(d)) { res.weekend.push(d); return; }
+    res.excluded.push(d);
+  });
+  return res;
+}
+
+// Day-level result: everything derived from calendar dates, independent of the clock.
+function computeDay(cfg, now) {
+  const target = parseISODate(cfg.date);
+  const start = parseISODate(cfg.start);
+  const today = midnight(now);
+  const calendarDays = diffDays(today, target);
+  const first = addDays(today, 1);
+  const last = cfg.incl ? target : addDays(target, -1);
+  const hol = parseHolidays(cfg.holidays, first, last);
+  const exclKeys = new Set(hol.excluded.map(dayKey));
+  let work = 0, weekend = 0, excluded = 0;
+  const months = new Map();
+  for (let d = first; d <= last; d = addDays(d, 1)) {
+    const mk = d.getFullYear() * 100 + d.getMonth();
+    let m = months.get(mk);
+    if (!m) { m = { key: mk, label: d.toLocaleDateString("de-DE", { month: "long", year: "numeric" }), days: 0, work: 0 }; months.set(mk, m); }
+    m.days++;
+    if (isWeekend(d)) weekend++;
+    else if (exclKeys.has(dayKey(d))) excluded++;
+    else { work++; m.work++; }
+  }
+  const pos = Math.max(calendarDays, 0);
+  const elapsedDays = diffDays(start, today);
+  const spanDays = diffDays(start, target);
+  return {
+    target, start, today, first, last, calendarDays,
+    weeks: Math.floor(pos / 7), restDays: pos % 7,
+    hol, work, weekend, excluded, counted: work + weekend + excluded,
+    months: [...months.values()],
+    kwToday: isoWeek(today), kwTarget: isoWeek(target),
+    elapsedDays, spanDays,
+    progress: spanDays > 0 ? Math.min(1, Math.max(0, elapsedDays / spanDays)) : 1,
+  };
+}
+
+function targetAt(cfg) {
+  const d = parseISODate(cfg.date);
+  const m = /^(\d{2}):(\d{2})$/.exec(cfg.time || "00:00");
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), m ? +m[1] : 0, m ? +m[2] : 0, 0, 0);
+}
+
+function splitDuration(ms) {
+  const s = Math.floor(Math.abs(ms) / 1000);
+  return { w: Math.floor(s / 604800), d: Math.floor(s / 86400) % 7, h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60 };
+}
+
+const nf = n => n.toLocaleString("de-DE");
+const fmtLong = d => d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+const fmtShort = d => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+const plural = (n, one, many) => `${nf(n)} ${n === 1 ? one : many}`;
+
+function headlineText(day) {
+  if (day.calendarDays > 0) {
+    const w = day.weeks, r = day.restDays;
+    if (w === 0) return `Noch ${plural(r, "Tag", "Tage")}`;
+    if (r === 0) return `Noch ${plural(w, "Woche", "Wochen")}`;
+    return `Noch ${plural(w, "Woche", "Wochen")} und ${plural(r, "Tag", "Tage")}`;
+  }
+  if (day.calendarDays === 0) return "Heute ist der Zieltag";
+  return `Zieltag liegt ${plural(-day.calendarDays, "Tag", "Tage")} zurück`;
+}
+
+function kwText(day) {
+  const a = day.kwToday, b = day.kwTarget;
+  const f = k => `KW ${k.week}${a.year !== b.year ? "/" + k.year : ""}`;
+  return `${f(a)} → ${f(b)}`;
+}
+
+function summaryText(cfg, day, now) {
+  const timed = cfg.time && cfg.time !== "00:00";
+  return [
+    `${cfg.label}: ${fmtLong(day.target)}${timed ? ", " + cfg.time + " Uhr" : ""}`,
+    `Stand: ${fmtShort(now)} ${now.toLocaleTimeString("de-DE", { hour12: false })}`,
+    `${headlineText(day)} (${nf(day.calendarDays)} Kalendertage)`,
+    `Gezählter Zeitraum: ${day.counted > 0 ? fmtShort(day.first) + " – " + fmtShort(day.last) : "—"} (${nf(day.counted)} Tage${cfg.incl ? ", Zieltag mitgezählt" : ", ohne Zieltag"})`,
+    `Werktage Mo–Fr: ${nf(day.work)} · Wochenendtage: ${nf(day.weekend)} · freie Tage: ${nf(day.excluded)}`,
+    kwText(day),
+    `— berechnet lokal, ohne KI · Build ${BUILD}`,
+  ].join("\n");
+}
+
+function escICS(s) { return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+function foldICS(line) {           // RFC 5545: 75-octet lines, continuation with leading space
+  const out = []; let s = line;
+  while (s.length > 74) { out.push(s.slice(0, 74)); s = " " + s.slice(74); }
+  out.push(s); return out.join("\r\n");
+}
+function buildICS(cfg, day, now) {
+  const t = day.target;
+  const ymd = d => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  const m = /^(\d{2}):(\d{2})$/.exec(cfg.time || "00:00");
+  const hh = m ? +m[1] : 0, mm = m ? +m[2] : 0;
+  const timed = hh !== 0 || mm !== 0;
+  const stamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const lines = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", `PRODID:-//countdown one-page//BUILD ${BUILD}//DE`, "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:countdown-${ymd(t)}${timed ? "T" + pad(hh) + pad(mm) : ""}@one-page`,
+    `DTSTAMP:${stamp}`,
+    ...(timed ? [`DTSTART:${ymd(t)}T${pad(hh)}${pad(mm)}00`, "DURATION:PT1H"]
+              : [`DTSTART;VALUE=DATE:${ymd(t)}`, `DTEND;VALUE=DATE:${ymd(addDays(t, 1))}`]),
+    `SUMMARY:${escICS(cfg.label)}`,
+    `DESCRIPTION:${escICS(summaryText(cfg, day, now))}`,
+    "END:VEVENT", "END:VCALENDAR",
+  ];
+  return lines.map(foldICS).join("\r\n") + "\r\n";
+}
+
+function buildJSON(cfg, day, now) {
+  const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return JSON.stringify({
+    build: BUILD, generatedAt: now.toISOString(),
+    target: { date: iso(day.target), time: cfg.time, label: cfg.label, weekday: day.target.toLocaleDateString("de-DE", { weekday: "long" }) },
+    today: iso(day.today), start: iso(day.start), includeTargetDay: cfg.incl,
+    calendarDays: day.calendarDays, weeks: day.weeks, restDays: day.restDays,
+    countedRange: day.counted > 0 ? { from: iso(day.first), to: iso(day.last) } : null,
+    workingDays: day.work, weekendDays: day.weekend, excludedDays: day.excluded, countedDays: day.counted,
+    perMonth: day.months.map(m => ({ month: m.label, days: m.days, workingDays: m.work })),
+    isoWeek: { today: day.kwToday, target: day.kwTarget },
+    progress: { elapsedDays: day.elapsedDays, spanDays: day.spanDays, fraction: +day.progress.toFixed(4) },
+    holidays: {
+      excluded: day.hol.excluded.map(iso), ignoredWeekend: day.hol.weekend.map(iso),
+      ignoredOutOfRange: day.hol.outOfRange.map(iso), invalidLines: day.hol.invalid,
+    },
+  }, null, 2);
+}
+
+// ============================================================ UI
+const $ = id => document.getElementById(id);
+const LS = k => "cd26." + k;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const log = { info(){}, ok(){}, warn(){}, err(){}, debug(){} };
+
+const state = { cfg: null, day: null, lastDayKey: null, reached: null };
+
+function loadCfg() {
+  const c = {};
+  for (const k of Object.keys(DEFAULTS)) {
+    const v = localStorage.getItem(LS(k));
+    c[k] = v === null ? DEFAULTS[k] : (k === "incl" ? v === "1" : v);
+  }
+  if (!parseISODate(c.date)) { log.err(`Gespeichertes Zieldatum "${c.date}" ungültig – Standard ${DEFAULTS.date} verwendet`); c.date = DEFAULTS.date; }
+  if (!parseISODate(c.start)) { log.err(`Gespeichertes Startdatum "${c.start}" ungültig – Standard ${DEFAULTS.start} verwendet`); c.start = DEFAULTS.start; }
+  if (!/^\d{2}:\d{2}$/.test(c.time)) c.time = DEFAULTS.time;
+  if (!c.label.trim()) c.label = DEFAULTS.label;
+  return c;
+}
+function saveCfg() {
+  for (const k of Object.keys(state.cfg)) localStorage.setItem(LS(k), k === "incl" ? (state.cfg.incl ? "1" : "0") : state.cfg[k]);
+}
+function fillInputs() {
+  $("cfg-date").value = state.cfg.date; $("cfg-time").value = state.cfg.time;
+  $("cfg-label").value = state.cfg.label; $("cfg-start").value = state.cfg.start;
+  $("cfg-incl").checked = state.cfg.incl; $("in-holidays").value = state.cfg.holidays;
+}
+
+// ---- charts (SVG only)
+function svgDonut(frac, center, sub) {
+  const r = 54, c = 2 * Math.PI * r, dash = c * frac;
+  const arc = dash > 0.5
+    ? `<circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${dash.toFixed(2)} ${(c - dash).toFixed(2)}" transform="rotate(-90 70 70)"/>` : "";
+  return `<svg viewBox="0 0 140 140" width="140" height="140"><circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--border-2)" stroke-width="12"/>${arc}<text x="70" y="67" text-anchor="middle" class="donut-num">${esc(center)}</text><text x="70" y="86" text-anchor="middle" class="donut-sub">${esc(sub)}</text></svg>`;
+}
+function svgBars(rows) {
+  const max = Math.max(1, ...rows.map(r => r.value));
+  const rowH = 26, labelW = 118, valW = 54, W = 360, barW = W - labelW - valW - 10, H = rows.length * rowH + 4;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMinYMin meet" style="max-width:${W}px;display:block">`;
+  rows.forEach((r, i) => {
+    const y = i * rowH + 4, w = barW * r.value / max;
+    s += `<text x="0" y="${y + 13}" class="bar-label">${esc(r.label)}</text>`
+       + `<rect x="${labelW}" y="${y + 3}" width="${barW}" height="12" rx="6" fill="var(--border-1)"/>`
+       + (r.value > 0 ? `<rect x="${labelW}" y="${y + 3}" width="${Math.max(w, 6).toFixed(1)}" height="12" rx="6" fill="${r.color}"/>` : "")
+       + `<text x="${W}" y="${y + 13}" text-anchor="end" class="bar-val">${nf(r.value)}</text>`;
+  });
+  return s + "</svg>";
+}
+
+// ---- rendering of day-level results
+function renderDay(now) {
+  const cfg = state.cfg, day = state.day;
+  const timed = cfg.time !== "00:00";
+  $("brand-sub").textContent = `bis ${cfg.label}`;
+  document.title = `Countdown · ${fmtShort(day.target)}`;
+  $("cd-kw").textContent = kwText(day);
+  const hl = $("cd-headline"); hl.textContent = headlineText(day); hl.classList.toggle("done", day.calendarDays <= 0);
+  $("cd-subline").innerHTML = `<span class="mono">${nf(day.calendarDays)} Kalendertage</span> · ${esc(cfg.label)} am ${esc(fmtLong(day.target))}${timed ? `, <span class="mono">${esc(cfg.time)}</span> Uhr` : ""}`;
+  $("pg-left").textContent = `Fortschritt seit ${fmtShort(day.start)}`;
+  $("pg-right").textContent = day.spanDays > 0 ? `${nf(day.elapsedDays)} / ${nf(day.spanDays)} Tage · ${Math.round(day.progress * 100)} %` : "Startdatum liegt nicht vor dem Zieldatum";
+  $("tiles-title").textContent = `Exakte Restzeit bis ${fmtShort(day.target)} ${cfg.time} Uhr`;
+
+  const facts = [
+    ["Kalendertage ab heute", nf(day.calendarDays)],
+    ["Gezählter Zeitraum", day.counted > 0 ? `${fmtShort(day.first)} – ${fmtShort(day.last)}` : "—"],
+    ["Werktage (Mo–Fr)", nf(day.work)],
+    ["Wochenendtage", nf(day.weekend)],
+    ["Ausgeschlossene freie Tage", nf(day.excluded)],
+    ["Wochentag Zieltag", day.target.toLocaleDateString("de-DE", { weekday: "long" })],
+  ];
+  $("cd-facts").innerHTML = facts.map(([k, v]) => `<div class="fact"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("");
+
+  // holidays status
+  const h = day.hol;
+  const st = $("in-status");
+  st.textContent = `${h.parsed} gültig · ${h.excluded.length} abgezogen · ${h.weekend.length} Wochenende · ${h.outOfRange.length} außerhalb · ${h.invalid.length} ungültig`;
+  st.classList.toggle("warn", h.invalid.length > 0);
+
+  // stats
+  $("st-range").textContent = day.counted > 0 ? `${fmtShort(day.first)} – ${fmtShort(day.last)} · ${nf(day.counted)} Tage` : "kein Zeitraum";
+  $("chart-donut").innerHTML = svgDonut(day.progress, `${Math.round(day.progress * 100)} %`, "VERGANGEN")
+    + `<div class="legend"><div><i style="background:var(--accent)"></i>vergangen<b>${nf(Math.max(0, day.elapsedDays))} T</b></div><div><i style="background:var(--border-2)"></i>verbleibend<b>${nf(Math.max(0, day.spanDays - day.elapsedDays))} T</b></div><div><i style="background:transparent"></i>Start<b>${esc(fmtShort(day.start))}</b></div></div>`;
+  $("chart-breakdown").innerHTML = svgBars([
+    { label: "Werktage", value: day.work, color: "var(--green)" },
+    { label: "Wochenende", value: day.weekend, color: "var(--blue)" },
+    { label: "Freie Tage", value: day.excluded, color: "var(--amber)" },
+  ]);
+  $("chart-months").innerHTML = day.months.length
+    ? svgBars(day.months.map(m => ({ label: m.label, value: m.work, color: "var(--accent)" })))
+    : `<span class="status">keine Resttage</span>`;
+
+  $("ex-summary").textContent = summaryText(cfg, day, now);
+}
+
+function recompute(reason) {
+  const now = new Date();
+  state.day = computeDay(state.cfg, now);
+  const d = state.day, h = d.hol;
+  log.info(`[${reason}] Ziel ${fmtShort(d.target)} · ${nf(d.calendarDays)} Kalendertage = ${d.weeks} W + ${d.restDays} T · Werktage ${d.work} · Wochenende ${d.weekend} · frei ${d.excluded} · ${kwText(d)}`);
+  if (d.spanDays <= 0) log.warn(`Startdatum ${fmtShort(d.start)} liegt nicht vor dem Zieldatum – Fortschritt auf 100 % gesetzt`);
+  if (h.parsed || h.invalid.length) log.debug(`Freie Tage: ${h.parsed} Datumszeilen gültig · ${h.excluded.length} abgezogen · ${h.weekend.length} am Wochenende ignoriert · ${h.outOfRange.length} außerhalb ${d.counted > 0 ? fmtShort(d.first) + "–" + fmtShort(d.last) : "des Zeitraums"} ignoriert`);
+  h.weekend.forEach(x => log.debug(`ignoriert (Wochenende): ${fmtShort(x)}`));
+  h.outOfRange.forEach(x => log.debug(`ignoriert (außerhalb): ${fmtShort(x)}`));
+  h.invalid.forEach(x => log.warn(`Zeile ${x.line} nicht lesbar: "${x.text}"`));
+  renderDay(now);
+}
+
+// ---- live tick (clock-level only; no logging per tick)
+let lastSec = null;
+function tick() {
+  const now = new Date();
+  const dk = dayKey(now);
+  if (dk !== state.lastDayKey) { state.lastDayKey = dk; recompute(state.day ? "Tageswechsel" : "Start"); }
+  const sec = Math.floor(now / 1000);
+  if (sec === lastSec) return; lastSec = sec;
+  $("pill-clock").textContent = now.toLocaleTimeString("de-DE", { hour12: false });
+
+  const target = targetAt(state.cfg), diff = target - now, reached = diff <= 0;
+  const p = splitDuration(diff);
+  $("t-w").textContent = nf(p.w); $("t-d").textContent = p.d; $("t-h").textContent = pad(p.h); $("t-m").textContent = pad(p.m); $("t-s").textContent = pad(p.s);
+
+  const startAt = state.day.start, span = target - startAt;
+  const frac = span > 0 ? Math.min(1, Math.max(0, (now - startAt) / span)) : 1;
+  const fill = $("cd-progress"); fill.style.width = (frac * 100).toFixed(3) + "%"; fill.classList.toggle("done", reached);
+
+  if (reached !== state.reached) {
+    state.reached = reached;
+    $("tiles-title").textContent = reached ? `Zeit seit ${fmtShort(target)} ${state.cfg.time} Uhr` : `Exakte Restzeit bis ${fmtShort(target)} ${state.cfg.time} Uhr`;
+    if (reached) log.ok(`${state.cfg.label} erreicht: ${fmtLong(target)} ${state.cfg.time} Uhr`);
+  }
+}
+
+// ---- downloads
+function download(name, content, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  log.ok(`Download: ${name} (${nf(content.length)} Zeichen)`);
+}
+const slug = s => s.toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "countdown";
+
+// ---- wiring
+function init() {
+  $("pill-build").textContent = "BUILD " + BUILD;
+  log.info(`Countdown one-page · Build ${BUILD} · deterministisch, offline, ohne KI`);
+  state.cfg = loadCfg();
+  fillInputs();
+  log.debug(`Konfiguration geladen: Ziel ${state.cfg.date} ${state.cfg.time} · Start ${state.cfg.start} · Zieltag ${state.cfg.incl ? "mitgezählt" : "nicht mitgezählt"} · Zeitzone ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
+
+  const onCfg = (key, read, reason) => e => {
+    const v = read(e.target);
+    if (v === null) { log.err(`Ungültige Eingabe für ${key} – Wert nicht übernommen`); e.target.value = state.cfg[key]; return; }
+    if (v === state.cfg[key]) return;
+    state.cfg[key] = v; saveCfg(); recompute(reason);
+  };
+  $("cfg-date").addEventListener("change", onCfg("date", t => parseISODate(t.value) ? t.value : null, "Zieldatum geändert"));
+  $("cfg-start").addEventListener("change", onCfg("start", t => parseISODate(t.value) ? t.value : null, "Startdatum geändert"));
+  $("cfg-time").addEventListener("change", onCfg("time", t => /^\d{2}:\d{2}$/.test(t.value) ? t.value : (t.value === "" ? "00:00" : null), "Uhrzeit geändert"));
+  $("cfg-label").addEventListener("change", onCfg("label", t => t.value.trim() || DEFAULTS.label, "Bezeichnung geändert"));
+  $("cfg-incl").addEventListener("change", e => { state.cfg.incl = e.target.checked; saveCfg(); recompute(e.target.checked ? "Zieltag wird mitgezählt" : "Zieltag wird nicht mitgezählt"); });
+
+  let hTimer = null;
+  $("in-holidays").addEventListener("input", e => {
+    clearTimeout(hTimer);
+    hTimer = setTimeout(() => { state.cfg.holidays = e.target.value; saveCfg(); recompute("Freie Tage geändert"); }, 350);
+  });
+  $("btn-reset-holidays").addEventListener("click", () => { state.cfg.holidays = DEFAULTS.holidays; $("in-holidays").value = DEFAULTS.holidays; saveCfg(); recompute("Standardliste freie Tage"); });
+  $("btn-reset").addEventListener("click", () => {
+    const keep = state.cfg.holidays;
+    state.cfg = { ...DEFAULTS, holidays: keep }; saveCfg(); fillInputs();
+    state.reached = null; recompute("Konfiguration zurückgesetzt");
+  });
+
+  $("btn-ics").addEventListener("click", () => download(`${slug(state.cfg.label)}-${state.cfg.date}.ics`, buildICS(state.cfg, state.day, new Date()), "text/calendar;charset=utf-8"));
+  $("btn-json").addEventListener("click", () => download(`countdown-${state.cfg.date}.json`, buildJSON(state.cfg, state.day, new Date()), "application/json;charset=utf-8"));
+  $("btn-copy").addEventListener("click", async () => {
+    const text = summaryText(state.cfg, state.day, new Date());
+    $("ex-summary").textContent = text;
+    try { await navigator.clipboard.writeText(text); log.ok("Zusammenfassung in die Zwischenablage kopiert"); }
+    catch (err) { log.err("Zwischenablage nicht verfügbar (" + String(err.message || err).slice(0, 120) + ") – Text steht unten zum manuellen Kopieren"); }
+  });
+
+
+  // nav: click scrolls, scroll position drives the active item
+  const main = $("main"), items = [...document.querySelectorAll(".nav-item")];
+  items.forEach(b => b.addEventListener("click", () => $(b.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" })));
+  main.addEventListener("scroll", () => {
+    const top = main.getBoundingClientRect().top + 60;
+    let active = items[0];
+    for (const b of items) { if ($(b.dataset.target).getBoundingClientRect().top <= top) active = b; }
+    if (main.scrollTop + main.clientHeight >= main.scrollHeight - 2) active = items[items.length - 1];
+    items.forEach(b => b.classList.toggle("active", b === active));
+  }, { passive: true });
+
+  // splitter
+  const app = $("app"), sp = $("splitter");
+  const savedW = parseInt(localStorage.getItem(LS("railw")), 10);
+  if (savedW >= 200 && savedW <= 360) app.style.setProperty("--rail-w", savedW + "px");
+  let drag = false;
+  sp.addEventListener("mousedown", e => { drag = true; sp.classList.add("drag"); e.preventDefault(); });
+  window.addEventListener("mousemove", e => { if (!drag) return; app.style.setProperty("--rail-w", Math.min(360, Math.max(200, e.clientX)) + "px"); });
+  window.addEventListener("mouseup", () => {
+    if (!drag) return; drag = false; sp.classList.remove("drag");
+    const w = parseInt(getComputedStyle(app).getPropertyValue("--rail-w"), 10);
+    localStorage.setItem(LS("railw"), w); log.debug(`Seitenleiste: ${w}px gespeichert`);
+  });
+
+  tick();
+  setInterval(tick, 200);
+}
+init();
+</script>
+</body>
+</html>
