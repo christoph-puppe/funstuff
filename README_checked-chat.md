@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.2.0 · one `.html` file · no build step · OpenRouter only.
+Version 0.2.1 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -72,13 +72,22 @@ All values persist in the browser. The plan calls them starting values chosen wi
 
 ---
 
+## Chats and storage
+
+Chats live in IndexedDB (database `checkedchat`, store `chats`, one record per chat with its transcript and signed entries). Settings, prompts, the schema modes and the MAC key stay in `localStorage`. The rail lists every chat with its turn and entry counts and last activity, newest first; click to switch, `+ new chat` in the rail or in the Chat card header, rename and delete for the active chat. Chats from 0.1 and 0.2 that sit under the old `localStorage` key are not loaded; the console names the key so you can delete it.
+
+Two export paths with different purposes:
+
+- **backup all** (rail) writes every chat as one JSON file. It asks whether to include the MAC keys. **restore** reads such a file, adds the chats whose id is not present, and, if the file carries a different key, offers to install it as the current key with the present key kept as previous. Without the keys, restored entries from another browser do not verify and are dropped from context; that is the intended failure. A single-chat export from the Memory card restores the same way.
+- **import entries** (Memory card) is the trust ceremony from the plan: entries from anywhere, pins stripped, assistant claims dropped, re-signed as `imported`.
+
 ## Memory card
 
 Each entry shows status, live state (`live`, `decayed`, `over cap`, `flagged`, `mac failed`), turn, importance, current score, turns left before decay, source, key id, and its claims with source tag, hypothetical marker and claim id. Per entry: pin, unpin, accept (for `summary_flagged`), delete. Per claim: supersede and restore. Supersession is a local overlay outside the MAC, as the plan's data model says; pin, unpin and accept change signed fields and re-sign the entry. Deleting is a local action; the client owns the store.
 
 Filters: LIVE shows what the next send will contain, ALL shows everything, FLAGGED shows summary-flagged and MAC-failed entries.
 
-Export writes the chat (turns, entries, key id) as JSON. That file is also the save file.
+Export writes the current chat (turns, entries, key id) as JSON.
 
 ---
 

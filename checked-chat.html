@@ -70,6 +70,12 @@ body {
 .nav a.active { background: var(--accent-soft); color: var(--text-primary); }
 .nav a .g { color: var(--text-quiet); width: 14px; text-align: center; }
 .nav a.active .g { color: var(--accent); }
+.chat-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; min-height: 0; }
+.chat-item { display: flex; flex-direction: column; gap: 1px; padding: 6px 9px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: background .15s ease; }
+.chat-item:hover { background: var(--bg-elev-2); }
+.chat-item.active { background: var(--accent-soft); border-color: oklch(0.7 0.18 300 / 0.25); }
+.chat-item .name { font-size: 12.5px; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-item .meta { font-family: var(--mono); font-size: 10px; color: var(--text-quiet); }
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
 .field label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-quiet); }
 .field .row { display: flex; gap: 6px; align-items: center; }
@@ -231,6 +237,16 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
     </div>
 
     <div class="rail-sec">
+      <div class="rail-lbl">CHATS</div>
+      <button class="btn sm block primary" id="btn-chat-new" style="margin-bottom:8px">+ new chat</button>
+      <div class="chat-list" id="chat-list"></div>
+      <div class="row" style="display:flex;gap:6px;margin-top:8px"><button class="btn sm grow" id="btn-chat-rename">✎ rename</button><button class="btn sm danger" id="btn-chat-delete">delete</button></div>
+      <div class="hint" id="store-info" style="margin-top:6px">—</div>
+      <div class="row" style="display:flex;gap:6px;margin-top:8px"><button class="btn sm grow" id="btn-backup">⤓ backup all</button><label class="btn sm grow" for="restore-file" style="justify-content:center">↗ restore</label><input type="file" id="restore-file" accept=".json,application/json" style="display:none"></div>
+      <div class="hint" style="margin-top:4px">Backup writes every chat with its signed entries as one JSON file. Restore adds chats whose id is not present. Entries verify only under this browser's MAC key; the backup can carry the keys if you say so.</div>
+    </div>
+
+    <div class="rail-sec">
       <div class="rail-lbl">OPENROUTER</div>
       <div class="field"><label>API key</label><input type="password" id="or-key" placeholder="sk-or-…" autocomplete="off"></div>
       <div class="field"><label>Catalog</label>
@@ -285,12 +301,6 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
     </div>
 
     <div class="rail-sec">
-      <div class="rail-lbl">CHATS</div>
-      <div class="field"><select id="chat-select"></select></div>
-      <div class="row" style="display:flex;gap:6px"><button class="btn sm grow" id="btn-chat-new">+ new</button><button class="btn sm" id="btn-chat-rename">✎</button><button class="btn sm danger" id="btn-chat-delete">delete</button></div>
-    </div>
-
-    <div class="rail-sec">
       <div class="rail-lbl">MAC KEYS</div>
       <div class="hint" id="key-info">—</div>
       <div style="display:flex;gap:6px;margin-top:6px"><button class="btn sm grow" id="btn-rotate">rotate key</button><button class="btn sm grow" id="btn-resign">re-sign old</button></div>
@@ -306,7 +316,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
 
   <main class="main" id="main">
     <section class="glass card" id="card-chat">
-      <div class="card-head"><h2><span class="g">◐</span> Chat</h2><span class="sub" id="chat-sub">plain mode streams nothing here; checked mode shows the loop as frames</span></div>
+      <div class="card-head"><h2><span class="g">◐</span> Chat <span class="nano" id="chat-title" style="margin-left:6px;text-transform:none;letter-spacing:.4px"></span></h2><span class="sub" id="chat-sub">plain mode streams nothing here; checked mode shows the loop as frames</span><div class="spacer"></div><button class="btn sm" id="btn-chat-new-2">+ new chat</button></div>
       <div class="transcript" id="transcript"><div class="empty">No turns yet. The memory the model sees is assembled from signed entries in this browser on every send.</div></div>
       <div class="compose">
         <textarea id="prompt" placeholder="Write a message… (Ctrl/Cmd+Enter sends)"></textarea>
@@ -387,7 +397,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
 /* ================================================================
    constants
    ================================================================ */
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 const SCHEMA_VERSION = 1;
 const USER_ID = "local";
 const LS = k => "checkedchat_" + k;
@@ -598,17 +608,43 @@ const l = (() => {
 /* ================================================================
    storage: chats, entries, keys
    ================================================================ */
-function loadChats() {
-  try { state.chats = JSON.parse(localStorage.getItem(LS("chats")) || "[]"); } catch { state.chats = []; }
-  if (!state.chats.length) state.chats.push(newChat("chat 1"));
+/* ---- IndexedDB: one object store "chats", one record per chat. Config, prompts and the MAC key stay in localStorage. ---- */
+const DB_NAME = "checkedchat", DB_STORE = "chats";
+let dbPromise = null;
+function db() {
+  if (!dbPromise) dbPromise = new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { const d = req.result; if (!d.objectStoreNames.contains(DB_STORE)) d.createObjectStore(DB_STORE, { keyPath: "id" }); };
+    req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error || new Error("indexedDB open failed")); req.onblocked = () => rej(new Error("indexedDB blocked"));
+  });
+  return dbPromise;
+}
+const idbReq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function dbGetAll() { const d = await db(); return idbReq(d.transaction(DB_STORE, "readonly").objectStore(DB_STORE).getAll()); }
+async function dbPut(chats) { const d = await db(); const tx = d.transaction(DB_STORE, "readwrite"); const st = tx.objectStore(DB_STORE); for (const c of chats) st.put(c); return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }); }
+async function dbDelete(id) { const d = await db(); return idbReq(d.transaction(DB_STORE, "readwrite").objectStore(DB_STORE).delete(id)); }
+
+async function loadChats() {
+  let chats = [];
+  try { chats = await dbGetAll(); } catch (e) { l.err("IndexedDB unavailable: " + e.message + " — chats will not persist in this browser context"); state.dbBroken = true; }
+  if (localStorage.getItem(LS("chats"))) l.debug(`0.1/0.2 chats found under localStorage key ${LS("chats")} — not loaded, not migrated; delete the key when you no longer need them`);
+  chats.sort((a, b) => String(b.updated || b.created).localeCompare(String(a.updated || a.created)));
+  state.chats = chats;
+  if (!state.chats.length) { state.chats.push(newChat("chat 1")); await saveChats(); }
   state.chatId = localStorage.getItem(LS("chat_id"));
   if (!state.chats.find(c => c.id === state.chatId)) state.chatId = state.chats[0].id;
-}
-function saveChats() {
-  localStorage.setItem(LS("chats"), JSON.stringify(state.chats));
   localStorage.setItem(LS("chat_id"), state.chatId);
 }
-function newChat(name) { return { id: crypto.randomUUID(), name, created: new Date().toISOString(), turns: [], entries: [] }; }
+let saveChain = Promise.resolve();
+function saveChats(ids) {
+  const c = chat(); if (c) c.updated = new Date().toISOString();
+  localStorage.setItem(LS("chat_id"), state.chatId);
+  const batch = ids ? state.chats.filter(x => ids.includes(x.id)) : (c ? [c] : []);
+  if (state.dbBroken) return Promise.resolve();
+  saveChain = saveChain.then(() => dbPut(batch)).catch(e => l.err("save failed: " + e.message));
+  return saveChain;
+}
+function newChat(name) { const now = new Date().toISOString(); return { id: crypto.randomUUID(), name, created: now, updated: now, turns: [], entries: [] }; }
 const chat = () => state.chats.find(c => c.id === state.chatId);
 const nextTurn = c => Math.max(0, ...c.turns.map(t => t.turn), ...c.entries.map(e => e.turn)) + 1;
 
@@ -1073,13 +1109,45 @@ async function resignOld() {
 }
 
 /* ================================================================
-   export / import
+   export / import / backup
    ================================================================ */
+function download(name, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+async function backupAll() {
+  let chats = state.chats;
+  try { chats = await dbGetAll(); } catch (e) { l.warn("reading IndexedDB failed, exporting the in-memory chats: " + e.message); }
+  const withKeys = confirm("Include the MAC keys in the backup?\n\nNeeded to restore into another browser with the entries still verifying. Anyone holding the file can then sign entries as this browser. Cancel = keys left out.");
+  const out = { tool: "checked-chat", version: VERSION, kind: "backup", exported_at: new Date().toISOString(), key_id: state.keys.current.key_id, chats };
+  if (withKeys) out.keys = state.keys;
+  download(`checked-chat_backup_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`, out);
+  l.ok(`backup: ${chats.length} chat(s), ${chats.reduce((n, c) => n + c.entries.length, 0)} entries, ${chats.reduce((n, c) => n + c.turns.length, 0)} turns${withKeys ? ", MAC keys included" : ""}`);
+}
+async function restoreBackup(file) {
+  let j; try { j = JSON.parse(await file.text()); } catch (e) { l.err("restore: not JSON — " + e.message); return; }
+  const chats = Array.isArray(j.chats) ? j.chats.filter(c => c && c.id && Array.isArray(c.entries) && Array.isArray(c.turns)) : (j.entries && j.chat ? [{ ...j.chat, turns: j.turns || [], entries: j.entries }] : []);
+  if (!chats.length) { l.err("restore: no chats in file (expected a backup or a single-chat export)"); return; }
+  if (j.keys?.current?.jwk && j.keys.current.key_id !== state.keys.current.key_id) {
+    if (confirm(`The backup carries MAC key ${j.keys.current.key_id}. Install it as the current key?\n\nThe present key ${state.keys.current.key_id} becomes the previous key, so existing entries keep verifying until the next rotation.`)) {
+      state.keys = { current: j.keys.current, previous: state.keys.current }; localStorage.setItem(LS("keys"), JSON.stringify(state.keys)); cryptoKeyCache.clear(); await loadKeys();
+      l.ok(`installed MAC key ${j.keys.current.key_id} from the backup; previous is ${state.keys.previous.key_id}`);
+    }
+  }
+  const have = new Set(state.chats.map(c => c.id)); const add = chats.filter(c => !have.has(c.id)); const skipped = chats.length - add.length;
+  if (!confirm(`Restore ${add.length} chat(s)${skipped ? `, skip ${skipped} already present` : ""}?`)) return;
+  try { await dbPut(add); } catch (e) { l.err("restore: write failed — " + e.message); return; }
+  state.chats.push(...add);
+  let bad = 0; for (const c of add) for (const e of c.entries) { const keep = state.chatId; state.chatId = c.id; if (!(await verifyEntry(e)).ok) bad++; state.chatId = keep; }
+  l.ok(`restored ${add.length} chat(s)${skipped ? `, ${skipped} skipped` : ""}${bad ? ` · ${bad} entries do not verify under the current keys and will be dropped from context (use "import entries" for a trust-ceremony import instead)` : ""}`);
+  if (add.length) state.chatId = add[0].id;
+  localStorage.setItem(LS("chat_id"), state.chatId); $("restore-file").value = ""; renderAll();
+}
 function exportChat() {
   const c = chat();
-  const blob = new Blob([JSON.stringify({ tool: "checked-chat", version: VERSION, exported_at: new Date().toISOString(), key_id: state.keys.current.key_id, chat: { id: c.id, name: c.name, created: c.created }, turns: c.turns, entries: c.entries }, null, 2)], { type: "application/json" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `checked-chat_${c.name.replace(/\W+/g, "-")}_${new Date().toISOString().slice(0, 10)}.json`; a.click();
-  l.ok(`exported ${c.entries.length} entries and ${c.turns.length} turns`);
+  download(`checked-chat_${c.name.replace(/\W+/g, "-")}_${new Date().toISOString().slice(0, 10)}.json`, { tool: "checked-chat", version: VERSION, kind: "chat", exported_at: new Date().toISOString(), key_id: state.keys.current.key_id, chat: { id: c.id, name: c.name, created: c.created, updated: c.updated }, turns: c.turns, entries: c.entries });
+  l.ok(`exported chat "${c.name}": ${c.entries.length} entries and ${c.turns.length} turns`);
 }
 async function stageImport(file) {
   let j; try { j = JSON.parse(await file.text()); } catch (e) { l.err("import: not JSON — " + e.message); return; }
@@ -1223,7 +1291,12 @@ async function renderStats() {
     <div class="stat"><span class="nano">ENTRY STATE AT NEXT SEND</span>${hBarRows(Object.entries(es).map(([k, v]) => ({ label: k.replace("_", " "), value: v, color: ENTRY_STATE_COLORS[k] })))}</div>`;
 }
 function renderChats() {
-  $("chat-select").innerHTML = state.chats.map(c => `<option value="${c.id}"${c.id === state.chatId ? " selected" : ""}>${esc(c.name)} · ${c.entries.length} entries</option>`).join("");
+  const list = [...state.chats].sort((a, b) => String(b.updated || b.created).localeCompare(String(a.updated || a.created)));
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toISOString().slice(0, 10) + " " + d.toTimeString().slice(0, 5); };
+  $("chat-list").innerHTML = list.map(c => `<div class="chat-item${c.id === state.chatId ? " active" : ""}" data-id="${c.id}"><span class="name">${esc(c.name)}</span><span class="meta">${c.turns.length} turn${c.turns.length === 1 ? "" : "s"} · ${c.entries.length} entr${c.entries.length === 1 ? "y" : "ies"} · ${when(c.updated || c.created)}</span></div>`).join("");
+  $("chat-title").textContent = chat()?.name || "";
+  const bytes = state.chats.reduce((n, c) => n + JSON.stringify(c).length, 0);
+  $("store-info").textContent = `${state.chats.length} chat${state.chats.length === 1 ? "" : "s"} · ${(bytes / 1024).toFixed(0)} kB in IndexedDB${state.dbBroken ? " (unavailable!)" : ""}`;
 }
 async function renderAll() { renderChats(); renderTranscript(); await renderMemory(); await renderStats(); }
 
@@ -1283,7 +1356,7 @@ function setMode(m) { localStorage.setItem(LS("mode"), m); document.querySelecto
 
 async function init() {
   $("pill-version").textContent = "v" + VERSION;
-  l.info(`Checked Chat v${VERSION} · memory lives in this browser (localStorage) · OpenRouter backend for maker, checker and compressor`);
+  l.info(`Checked Chat v${VERSION} · memory lives in this browser (IndexedDB) · OpenRouter backend for maker, checker and compressor`);
   persist("or-key", "or_key");
   for (const r of ["maker", "checker", "compressor"]) { persist(r + "-model", r + "_model"); persist(r + "-effort", r + "_effort", "change"); $(r + "-select").addEventListener("change", () => { if ($(r + "-select").value) { $(r + "-model").value = $(r + "-select").value; localStorage.setItem(LS(r + "_model"), $(r + "-model").value); } familyCheck(); }); $(r + "-model").addEventListener("input", () => { $(r + "-select").value = $(r + "-model").value; familyCheck(); }); }
   for (const id of ["cap-entries", "cap-claims", "cap-words", "cap-turns", "cap-rounds", "decay-factor", "decay-threshold", "token-budget", "retries"]) { persist(id, id); $(id).addEventListener("input", () => renderMemory().then(renderStats)); }
@@ -1298,14 +1371,17 @@ async function init() {
   $("btn-cancel").addEventListener("click", () => { state.cancel = true; l.warn("cancel requested — finishing the in-flight call"); });
   $("btn-catalog").addEventListener("click", () => loadCatalog(true));
   $("btn-export").addEventListener("click", exportChat);
+  $("btn-backup").addEventListener("click", backupAll);
+  $("restore-file").addEventListener("change", ev => { if (ev.target.files[0]) restoreBackup(ev.target.files[0]); });
   $("import-file").addEventListener("change", ev => { if (ev.target.files[0]) stageImport(ev.target.files[0]); });
   $("btn-import-confirm").addEventListener("click", confirmImport);
   $("btn-import-cancel").addEventListener("click", () => { state.pendingImport = null; $("import-box").classList.remove("show"); $("import-file").value = ""; });
   $("btn-mem-clear").addEventListener("click", () => { if (!confirm("Delete every memory entry of this chat? The transcript stays.")) return; chat().entries = []; saveChats(); l.warn("memory cleared"); renderAll(); });
-  $("btn-chat-new").addEventListener("click", () => { const c = newChat("chat " + (state.chats.length + 1)); state.chats.push(c); state.chatId = c.id; saveChats(); l.info(`new chat ${c.name} (${short(c.id)})`); renderAll(); });
+  const newChatAction = () => { if (state.running) { l.warn("a turn is running — wait for it before switching chats"); return; } const c = newChat("chat " + (state.chats.length + 1)); state.chats.push(c); state.chatId = c.id; saveChats(); l.info(`new chat ${c.name} (${short(c.id)})`); renderAll(); $("prompt").focus(); };
+  $("btn-chat-new").addEventListener("click", newChatAction); $("btn-chat-new-2").addEventListener("click", newChatAction);
   $("btn-chat-rename").addEventListener("click", () => { const n = prompt("Chat name", chat().name); if (n && n.trim()) { chat().name = n.trim(); saveChats(); renderAll(); } });
-  $("btn-chat-delete").addEventListener("click", () => { if (state.chats.length < 2) { l.warn("keep at least one chat"); return; } if (!confirm(`Delete chat "${chat().name}" with its memory and transcript?`)) return; state.chats = state.chats.filter(c => c.id !== state.chatId); state.chatId = state.chats[0].id; saveChats(); renderAll(); });
-  $("chat-select").addEventListener("change", () => { state.chatId = $("chat-select").value; saveChats(); renderAll(); });
+  $("btn-chat-delete").addEventListener("click", async () => { if (state.running) { l.warn("a turn is running — wait for it"); return; } if (!confirm(`Delete chat "${chat().name}" with its memory and transcript?`)) return; const id = state.chatId; state.chats = state.chats.filter(c => c.id !== id); if (!state.chats.length) state.chats.push(newChat("chat 1")); state.chatId = state.chats[0].id; try { await dbDelete(id); } catch (e) { l.err("delete failed: " + e.message); } await saveChats(); l.info(`deleted chat ${short(id)}`); renderAll(); });
+  $("chat-list").addEventListener("click", ev => { const it = ev.target.closest(".chat-item"); if (!it || it.dataset.id === state.chatId) return; if (state.running) { l.warn("a turn is running — wait for it before switching chats"); return; } state.chatId = it.dataset.id; localStorage.setItem(LS("chat_id"), state.chatId); renderAll(); });
   $("btn-rotate").addEventListener("click", () => { if (confirm("Rotate the MAC key? Entries under the previous key keep verifying until the next rotation; use 're-sign old' to move them.")) rotateKey(); });
   $("btn-resign").addEventListener("click", resignOld);
   $("btn-selftest").addEventListener("click", selfTest);
@@ -1318,7 +1394,7 @@ async function init() {
   const railW = localStorage.getItem(LS("rail_w")); if (railW) document.documentElement.style.setProperty("--rail-w", railW + "px");
   $("splitter").addEventListener("mousedown", ev => { ev.preventDefault(); const move = e => { const w = Math.max(200, Math.min(480, e.clientX)); document.documentElement.style.setProperty("--rail-w", w + "px"); localStorage.setItem(LS("rail_w"), w); }; const up = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); }; window.addEventListener("mousemove", move); window.addEventListener("mouseup", up); });
 
-  await loadKeys(); loadChats(); await renderAll();
+  await loadKeys(); await loadChats(); await renderAll();
   familyCheck();
   loadCatalog(false);
   if (location.protocol === "file:") l.debug("running from file:// — if OpenRouter calls fail with a CORS error, serve the file with `python -m http.server` and open it via http://localhost:8000/");
