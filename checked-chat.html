@@ -70,6 +70,10 @@ body {
 .nav a.active { background: var(--accent-soft); color: var(--text-primary); }
 .nav a .g { color: var(--text-quiet); width: 14px; text-align: center; }
 .nav a.active .g { color: var(--accent); }
+.cfg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; }
+@media (max-width: 1000px) { .cfg-grid { grid-template-columns: 1fr; } }
+.cfg-sec { margin-bottom: 18px; }
+.cfg-sec .field input[type=number] { width: 90px; }
 .chat-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; min-height: 0; }
 .chat-item { display: flex; flex-direction: column; gap: 1px; padding: 6px 9px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: background .15s ease; }
 .chat-item:hover { background: var(--bg-elev-2); }
@@ -220,6 +224,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
   <span class="pill" id="pill-chat">chat —</span>
   <span class="pill" id="pill-turn">turn 0</span>
   <span class="pill" id="pill-live">0 live · 0 total</span>
+  <span class="pill" id="pill-tokens" title="tokens in→out and cost for this chat">0→0 · $0</span>
   <span class="pill acc" id="pill-key">key —</span>
   <span class="pill warn" id="pill-run" style="display:none">running</span>
 </header>
@@ -233,6 +238,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
         <a href="#card-memory"><span class="g">▣</span> Memory</a>
         <a href="#card-prompts"><span class="g">◇</span> Prompts</a>
         <a href="#card-stats"><span class="g">◬</span> Stats</a>
+        <a href="#card-config"><span class="g">⚙</span> Config</a>
       </nav>
     </div>
 
@@ -247,70 +253,11 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
     </div>
 
     <div class="rail-sec">
-      <div class="rail-lbl">OPENROUTER</div>
-      <div class="field"><label>API key</label><input type="password" id="or-key" placeholder="sk-or-…" autocomplete="off"></div>
-      <div class="field"><label>Catalog</label>
-        <div class="row"><span class="hint grow" id="cat-info">not loaded</span><button class="btn sm ghost" id="btn-catalog">↻ refresh</button></div>
-      </div>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">MODELS</div>
-      <div class="field"><label>Maker</label>
-        <select id="maker-select"></select>
-        <div class="row"><input type="text" id="maker-model" class="grow" placeholder="vendor/slug"><select id="maker-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
-      </div>
-      <div class="field"><label>Checker · other family</label>
-        <select id="checker-select"></select>
-        <div class="row"><input type="text" id="checker-model" class="grow" placeholder="vendor/slug"><select id="checker-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
-        <div class="chip warn" id="chip-family">checker shares the maker's vendor · D2 says pick another family</div>
-      </div>
-      <div class="field"><label>Compressor · cheapest</label>
-        <select id="compressor-select"></select>
-        <div class="row"><input type="text" id="compressor-model" class="grow" placeholder="vendor/slug"><select id="compressor-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
-      </div>
-      <div class="hint">Dropdowns list models whose catalog entry supports <span class="mono">structured_outputs</span> (checker, compressor need it). The text field accepts any slug.</div>
-      <div class="hint" id="schema-modes" style="margin-top:6px"></div>
-      <button class="btn sm ghost" id="btn-schema-reset" style="margin-top:4px">reset schema modes</button>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">WEB SEARCH · MAKER ONLY</div>
-      <label class="check"><input type="checkbox" id="web-search"> search the web (OpenRouter web plugin)</label>
-      <div class="field"><div class="row"><label class="grow">results / call</label><input type="number" id="web-results" value="5" min="1" max="10" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">engine</label><select id="web-engine" style="width:120px"><option value="exa">exa · snippets</option><option value="native">native · vendor</option></select></div></div>
-      <div class="hint">Exa returns a text snippet per source, which checker and compressor need. The vendor's native grounding (Google, OpenAI) returns redirect URLs without text: cheaper, but every figure from it is unverifiable for the checker and no observation can be validated. The app passes them to checker and compressor as WEB-DATA and stores validated snippets as observations. Billed per result by OpenRouter, roughly a few cents per call.</div>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">MODE</div>
+      <div class="rail-lbl">SEND OPTIONS</div>
       <div class="seg" id="mode-seg"><button data-mode="plain">PLAIN</button><button data-mode="checked" class="on">CHECKED</button></div>
-      <label class="check"><input type="checkbox" id="strict-memory"> strict memory in plain mode <span class="hint">(drop assistant claims)</span></label>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">CAPS · D3 STARTING VALUES</div>
-      <div class="field"><div class="row"><label class="grow">live entries</label><input type="number" id="cap-entries" value="300" min="1" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">claims / entry</label><input type="number" id="cap-claims" value="8" min="1" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">words / claim</label><input type="number" id="cap-words" value="30" min="3" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">raw turns</label><input type="number" id="cap-turns" value="3" min="0" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">checker rounds</label><input type="number" id="cap-rounds" value="2" min="1" max="5" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">decay factor</label><input type="number" id="decay-factor" value="0.85" min="0.5" max="0.99" step="0.01" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">live threshold</label><input type="number" id="decay-threshold" value="0.5" min="0.05" max="5" step="0.05" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">token budget</label><input type="number" id="token-budget" value="30000" min="500" step="500" style="width:74px"></div></div>
-      <div class="field"><div class="row"><label class="grow">retries</label><input type="number" id="retries" value="2" min="0" max="6" style="width:74px"></div></div>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">MAC KEYS</div>
-      <div class="hint" id="key-info">—</div>
-      <div style="display:flex;gap:6px;margin-top:6px"><button class="btn sm grow" id="btn-rotate">rotate key</button><button class="btn sm grow" id="btn-resign">re-sign old</button></div>
-    </div>
-
-    <div class="rail-sec">
-      <div class="rail-lbl">SELF-TEST</div>
-      <button class="btn sm block" id="btn-selftest">run deterministic self-test</button>
-      <div class="hint" style="margin-top:6px">Decay lifetimes, cap, MAC tamper detection, claim caps. No model call.</div>
+      <label class="check"><input type="checkbox" id="web-search"> web search for the maker</label>
+      <label class="check"><input type="checkbox" id="strict-memory"> strict memory in plain mode</label>
+      <div class="hint">Models, caps, keys: <a href="#card-config" style="color:var(--accent);text-decoration:none">Config</a></div>
     </div>
   </aside>
   <div class="splitter" id="splitter"></div>
@@ -377,6 +324,71 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
       </div>
     </section>
 
+    <section class="glass card" id="card-config">
+      <div class="card-head"><h2><span class="g">⚙</span> Config</h2><span class="sub">everything that is not a per-send switch; all values persist in this browser</span></div>
+      <div class="cfg-grid">
+        <div class="cfg-col">
+        <div class="cfg-sec">
+      <div class="rail-lbl">OPENROUTER</div>
+      <div class="field"><label>API key</label><input type="password" id="or-key" placeholder="sk-or-…" autocomplete="off"></div>
+      <div class="field"><label>Catalog</label>
+        <div class="row"><span class="hint grow" id="cat-info">not loaded</span><button class="btn sm ghost" id="btn-catalog">↻ refresh</button></div>
+      </div>
+        </div>
+        <div class="cfg-sec">
+      <div class="rail-lbl">MODELS</div>
+      <div class="field"><label>Maker</label>
+        <select id="maker-select"></select>
+        <div class="row"><input type="text" id="maker-model" class="grow" placeholder="vendor/slug"><select id="maker-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
+      </div>
+      <div class="field"><label>Checker · other family</label>
+        <select id="checker-select"></select>
+        <div class="row"><input type="text" id="checker-model" class="grow" placeholder="vendor/slug"><select id="checker-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
+        <div class="chip warn" id="chip-family">checker shares the maker's vendor · D2 says pick another family</div>
+      </div>
+      <div class="field"><label>Compressor · cheapest</label>
+        <select id="compressor-select"></select>
+        <div class="row"><input type="text" id="compressor-model" class="grow" placeholder="vendor/slug"><select id="compressor-effort" style="width:86px"><option value="">effort</option><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></select></div>
+      </div>
+      <div class="hint">Dropdowns list models whose catalog entry supports <span class="mono">structured_outputs</span> (checker, compressor need it). The text field accepts any slug.</div>
+      <div class="hint" id="schema-modes" style="margin-top:6px"></div>
+      <button class="btn sm ghost" id="btn-schema-reset" style="margin-top:4px">reset schema modes</button>
+        </div>
+        </div>
+        <div class="cfg-col">
+        <div class="cfg-sec">
+      <div class="rail-lbl">WEB SEARCH · MAKER ONLY</div>
+      <div class="hint" style="margin-bottom:6px">Switch it on per send in the rail. These settings shape the call.</div>
+      <div class="field"><div class="row"><label class="grow">results / call</label><input type="number" id="web-results" value="5" min="1" max="10" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">engine</label><select id="web-engine" style="width:120px"><option value="exa">exa · snippets</option><option value="native">native · vendor</option></select></div></div>
+      <div class="hint">Exa returns a text snippet per source, which checker and compressor need. The vendor's native grounding (Google, OpenAI) returns redirect URLs without text: cheaper, but every figure from it is unverifiable for the checker and no observation can be validated. The app passes them to checker and compressor as WEB-DATA and stores validated snippets as observations. Billed per result by OpenRouter, roughly a few cents per call.</div>
+        </div>
+        <div class="cfg-sec">
+      <div class="rail-lbl">CAPS · D3 STARTING VALUES</div>
+      <div class="field"><div class="row"><label class="grow">live entries</label><input type="number" id="cap-entries" value="300" min="1" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">claims / entry</label><input type="number" id="cap-claims" value="8" min="1" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">words / claim</label><input type="number" id="cap-words" value="30" min="3" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">raw turns</label><input type="number" id="cap-turns" value="3" min="0" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">checker rounds</label><input type="number" id="cap-rounds" value="2" min="1" max="5" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">decay factor</label><input type="number" id="decay-factor" value="0.85" min="0.5" max="0.99" step="0.01" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">live threshold</label><input type="number" id="decay-threshold" value="0.5" min="0.05" max="5" step="0.05" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">token budget</label><input type="number" id="token-budget" value="30000" min="500" step="500" style="width:74px"></div></div>
+      <div class="field"><div class="row"><label class="grow">retries</label><input type="number" id="retries" value="2" min="0" max="6" style="width:74px"></div></div>
+        </div>
+        <div class="cfg-sec">
+      <div class="rail-lbl">MAC KEYS</div>
+      <div class="hint" id="key-info">—</div>
+      <div style="display:flex;gap:6px;margin-top:6px"><button class="btn sm grow" id="btn-rotate">rotate key</button><button class="btn sm grow" id="btn-resign">re-sign old</button></div>
+        </div>
+        <div class="cfg-sec">
+      <div class="rail-lbl">SELF-TEST</div>
+      <button class="btn sm block" id="btn-selftest">run deterministic self-test</button>
+      <div class="hint" style="margin-top:6px">Decay lifetimes, cap, MAC tamper detection, claim caps. No model call.</div>
+        </div>
+        </div>
+      </div>
+    </section>
+
     <section class="glass card" id="card-stats" style="display:none">
       <div class="card-head"><h2><span class="g">◬</span> Stats</h2><span class="sub">computed in the client from the stored turns and entries</span></div>
       <div class="stats-grid" id="stats-grid"></div>
@@ -398,7 +410,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
 /* ================================================================
    constants
    ================================================================ */
-const VERSION = "0.2.3";
+const VERSION = "0.3.0";
 const SCHEMA_VERSION = 1;
 const USER_ID = "local";
 const LS = k => "checkedchat_" + k;
@@ -597,8 +609,18 @@ const SUMMARY_SCHEMA = {
 const state = {
   chats: [], chatId: null, running: false, cancel: false,
   catalog: [], memFilter: "live", pendingImport: null, keys: null,
-  lastAssembly: null, logLines: 0,
+  lastAssembly: null, logLines: 0, turnUsage: null,
 };
+const ROLES = ["maker", "checker", "compressor"];
+const emptyUsage = () => Object.fromEntries(ROLES.map(r => [r, { calls: 0, prompt: 0, completion: 0, reasoning: 0, cost: 0, ms: 0 }]));
+function account(role, usage, ms) {
+  if (!state.turnUsage || !ROLES.includes(role)) return;
+  const u = state.turnUsage[role]; u.calls++; u.ms += ms;
+  if (usage) { u.prompt += usage.prompt_tokens || 0; u.completion += usage.completion_tokens || 0; u.reasoning += usage.completion_tokens_details?.reasoning_tokens || 0; u.cost += Number(usage.cost) || 0; }
+}
+const fmtTok = n => n >= 10000 ? (n / 1000).toFixed(1) + "k" : String(n);
+const fmtCost = c => c ? "$" + (c < 0.01 ? c.toFixed(4) : c.toFixed(3)) : "$0";
+const usageTotals = u => ROLES.reduce((t, r) => { const x = u?.[r]; if (!x) return t; t.prompt += x.prompt; t.completion += x.completion; t.reasoning += x.reasoning; t.cost += x.cost; t.ms += x.ms; t.calls += x.calls; return t; }, { prompt: 0, completion: 0, reasoning: 0, cost: 0, ms: 0, calls: 0 });
 const l = (() => {
   const body = $("log");
   const push = (lvl, msg) => {
@@ -760,7 +782,7 @@ const schemaModes = (() => { try { return JSON.parse(localStorage.getItem(LS("sc
 function rememberPromptSchema(model, why) { if (schemaModes[model] === "prompt") return; schemaModes[model] = "prompt"; localStorage.setItem(LS("schema_modes"), JSON.stringify(schemaModes)); l.warn(`${model}: structured outputs unusable (${why}) — from now on the JSON schema goes into the prompt for this model; clear via "reset schema modes" in the rail`); }
 async function orOnce({ model, messages, schema, effort, label, noSchema, plugins }) {
   noSchema = noSchema || (schema && schemaModes[model] === "prompt");
-  const body = { model, messages: schema && noSchema ? schemaInPrompt(messages, schema) : messages };
+  const body = { model, messages: schema && noSchema ? schemaInPrompt(messages, schema) : messages, usage: { include: true } };
   if (plugins && plugins.length) body.plugins = plugins;
   if (schema && !noSchema) { body.response_format = { type: "json_schema", json_schema: { name: label.replace(/\W+/g, "_"), strict: true, schema } }; body.provider = { require_parameters: true }; }
   if (effort) body.reasoning = { effort };
@@ -813,6 +835,7 @@ async function llm(opts) {
       const out = await orOnce(opts);
       state.lastUsage = out.usage; state.lastAnnotations = out.annotations;
       const ms = Math.round(performance.now() - t0);
+      account(opts.role, out.usage, ms);
       l.debug(`${opts.label} ← ${opts.served || out.served}${out.provider ? " @" + out.provider : ""} · ${(out.text.length / 1024).toFixed(1)} kB · ${ms} ms${out.usage ? ` · ${out.usage.prompt_tokens ?? "?"}/${out.usage.completion_tokens ?? "?"} tok` : ""}`);
       if (!out.text.trim()) throw new Error("empty completion");
       return out.text;
@@ -901,7 +924,8 @@ async function runTurn(promptText) {
 
   state.running = true; state.cancel = false; $("btn-send").disabled = true; $("btn-cancel").style.display = ""; $("pill-run").style.display = "";
   const turnNo = nextTurn(c); const requestId = crypto.randomUUID();
-  const rec = { request_id: requestId, turn: turnNo, prompt: promptText, answer: null, status: null, issues: [], rounds: 0, entry_id: null, mode: conf.mode, ts: new Date().toISOString(), error: null, ops: [], dropped_assistant_claims: 0, sources: [] };
+  const rec = { request_id: requestId, turn: turnNo, prompt: promptText, answer: null, status: null, issues: [], rounds: 0, entry_id: null, mode: conf.mode, ts: new Date().toISOString(), error: null, ops: [], dropped_assistant_claims: 0, sources: [], usage: null };
+  state.turnUsage = emptyUsage();
   c.turns.push(rec); saveChats(); renderTranscript();
   const done = [];
   try {
@@ -919,7 +943,7 @@ async function runTurn(promptText) {
     const sysMsg = { role: "system", content: fillTemplate("maker", { memory: memBlock }) };
     const makerMsgs = [sysMsg, ...history, { role: "user", content: promptText }];
     const plugins = webPlugins();
-    let answer = (await llm({ model: modelFor("maker"), messages: makerMsgs, effort: $("maker-effort").value, label: `maker t${turnNo}${plugins ? " +web" : ""}`, plugins })).trim();
+    let answer = (await llm({ model: modelFor("maker"), messages: makerMsgs, effort: $("maker-effort").value, label: `maker t${turnNo}${plugins ? " +web" : ""}`, plugins, role: "maker" })).trim();
     let sources = normalizeAnnotations(state.lastAnnotations);
     if (plugins) {
       const withText = sources.filter(x => x.content).length;
@@ -943,7 +967,7 @@ async function runTurn(promptText) {
         if (round === conf.rounds) break;
         showFrames("patch", done, 15 + round * 20 + 10);
         const issueText = issues.map((i, k) => `${k + 1}. ${i.code} [${i.start}-${i.end}] "${answer.slice(i.start, i.end)}" — ${i.reason}`).join("\n");
-        const patched = (await llm({ model: modelFor("maker"), messages: [...makerMsgs, { role: "assistant", content: answer }, { role: "user", content: fillTemplate("patch", { issues: issueText }) }], effort: $("maker-effort").value, label: `maker patch t${turnNo} r${round}${plugins ? " +web" : ""}`, plugins })).trim();
+        const patched = (await llm({ model: modelFor("maker"), messages: [...makerMsgs, { role: "assistant", content: answer }, { role: "user", content: fillTemplate("patch", { issues: issueText }) }], effort: $("maker-effort").value, label: `maker patch t${turnNo} r${round}${plugins ? " +web" : ""}`, plugins, role: "maker" })).trim();
         if (patched) answer = patched;
         sources = normalizeAnnotations(state.lastAnnotations, sources); rec.sources = sources;
       }
@@ -994,9 +1018,12 @@ async function runTurn(promptText) {
     }
     /* ops from the compressor: validated against ids that exist in this chat */
     rec.ops = await applyOps(c, comp.ops || [], sel.sent);
+    rec.usage = state.turnUsage; const tot = usageTotals(rec.usage);
+    l.info(`tokens t${turnNo}: ` + ROLES.map(r => { const u = rec.usage[r]; return u.calls ? `${r} ${fmtTok(u.prompt)}→${fmtTok(u.completion)}${u.reasoning ? ` (${fmtTok(u.reasoning)} reasoning)` : ""} ${(u.ms / 1000).toFixed(1)}s` : null; }).filter(Boolean).join(" · ") + ` · total ${fmtTok(tot.prompt)}→${fmtTok(tot.completion)} · ${fmtCost(tot.cost)}`);
     done.push("sign"); showFrames(null, done, 100);
     l.ok(`turn ${turnNo} done · status ${status}${entry ? "" : " · no entry"} · ${rec.ops.length} op(s) applied`);
   } catch (e) {
+    rec.usage = state.turnUsage;
     if (rec.answer) { rec.memory_error = e.message; l.err(`turn ${turnNo}: answer delivered, memory step failed: ${e.message}`); }
     else { rec.error = e.message; rec.status = rec.status || "error"; l.err(`turn ${turnNo} failed: ${e.message}`); }
     showFrames(null, done, 100);
@@ -1011,7 +1038,7 @@ async function runTurn(promptText) {
 async function llmJson({ role, prompt, schema, validate, label }) {
   const model = modelFor(role); const effort = $(role + "-effort").value;
   const parse = text => { let o; try { o = extractJson(text); } catch { return null; } return o && typeof o === "object" && validate(o) ? o : null; };
-  const raw = await llm({ model, messages: [{ role: "user", content: prompt }], schema, effort, label });
+  const raw = await llm({ model, messages: [{ role: "user", content: prompt }], schema, effort, label, role });
   let obj = parse(raw);
   if (obj) return obj;
   const u = state.lastUsage || {}; const rt = u.completion_tokens_details?.reasoning_tokens;
@@ -1019,7 +1046,7 @@ async function llmJson({ role, prompt, schema, validate, label }) {
   l.warn(`${label}: ${why}`);
   if (schemaModes[model] === "prompt") throw new Error(`${label}: no usable object even with the schema in the prompt`);
   rememberPromptSchema(model, "empty or malformed object under response_format");
-  const raw2 = await llm({ model, messages: [{ role: "user", content: prompt }], schema, effort, label: label + " (prompt-schema)", noSchema: true });
+  const raw2 = await llm({ model, messages: [{ role: "user", content: prompt }], schema, effort, label: label + " (prompt-schema)", noSchema: true, role });
   obj = parse(raw2);
   if (!obj) throw new Error(`${label}: no usable object twice — raw: ${JSON.stringify(raw2).slice(0, 200)}`);
   return obj;
@@ -1226,6 +1253,7 @@ function renderTranscript() {
       const rendered = md(markSpans(t.answer, t.status === "checked_failed" ? t.issues : [])).replace(/\u0001/g, "<mark>").replace(/\u0002/g, "</mark>");
       body = `<div class="bubble assistant ${cls}"><div class="md">${rendered}</div>
         <div class="meta-row" style="margin-top:8px">${statusPill(t.status)}${t.mode === "checked" ? `<span>${t.rounds} round${t.rounds === 1 ? "" : "s"}</span>` : ""}${t.entry_id ? `<span>entry ${short(t.entry_id)}</span>` : `<span>no entry</span>`}${t.ops?.length ? `<span>${t.ops.length} op(s)</span>` : ""}${t.dropped_assistant_claims ? `<span style="color:var(--amber)">${t.dropped_assistant_claims} assistant claim(s) dropped</span>` : ""}${t.no_entry_reason ? `<span style="color:var(--text-tertiary)">${esc(t.no_entry_reason)}</span>` : ""}${t.memory_error ? `<span style="color:var(--red)">memory step failed: ${esc(t.memory_error)}</span>` : ""}</div>
+        ${t.usage ? `<div class="meta-row" style="margin-top:3px">${ROLES.map(r => { const u = t.usage[r]; return u && u.calls ? `<span title="${u.calls} call(s), ${u.reasoning} reasoning tokens">${r} ${fmtTok(u.prompt)}→${fmtTok(u.completion)} · ${(u.ms / 1000).toFixed(1)}s</span>` : ""; }).join("")}<span>${fmtCost(usageTotals(t.usage).cost)}</span></div>` : ""}
         ${t.sources?.length ? `<div class="meta-row" style="margin-top:4px">${t.sources.map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener" style="color:var(--blue);text-decoration:none">[${x.n}] ${esc(x.title || x.url).slice(0, 60)}</a>`).join("")}</div>` : ""}
         ${t.status === "checked_failed" && t.issues?.length ? `<ul class="issues">${t.issues.map(i => `<li><b>${esc(i.code)}</b> [${i.start}–${i.end}] ${esc(i.reason)}</li>`).join("")}</ul>` : ""}
         ${t.summary_issues?.length ? `<ul class="issues">${t.summary_issues.map(i => `<li><b>summary · ${esc(i.code)}</b> claim ${i.claim_index}: ${esc(i.reason)}</li>`).join("")}</ul>` : ""}
@@ -1240,6 +1268,7 @@ async function renderMemory() {
   const sel = await selectLive(c, turn, conf, { log: false });
   const total = c.entries.length, live = sel.sent.length;
   $("pill-live").textContent = `${live} live · ${total} total`;
+  const ct = usageTotals(chatUsage(c)); $("pill-tokens").textContent = `${fmtTok(ct.prompt)}→${fmtTok(ct.completion)} · ${fmtCost(ct.cost)}`;
   $("pill-turn").textContent = `turn ${turn - 1}`;
   $("pill-chat").textContent = `chat ${c.name}`;
   $("ctx-info").textContent = `next send: ${live} entries · ~${sel.tokens} tok · ${recentTurns(c, conf.rawTurns).length} raw turns`;
@@ -1285,7 +1314,7 @@ function hBarRows(items) {
 async function renderStats() {
   const c = chat(); const done = c.turns.filter(t => t.answer && !t.error);
   const card = $("card-stats");
-  if (!done.length && !c.entries.length) { card.style.display = "none"; return; }
+  if (!done.length && !c.entries.length && !c.turns.some(t => t.usage)) { card.style.display = "none"; return; }
   card.style.display = "";
   const conf = cfg(); const sel = await selectLive(c, nextTurn(c), conf, { log: false });
   const byStatus = {}; for (const t of done) byStatus[t.status] = (byStatus[t.status] || 0) + 1;
@@ -1295,12 +1324,19 @@ async function renderStats() {
   for (const e of c.entries) for (const cl of e.claims) { src[cl.source] = (src[cl.source] || 0) + 1; if (cl.hypothetical) hyp.hypothetical++; if ((e.superseded_claims || []).includes(cl.claim_id)) hyp.superseded++; }
   const imp = {}; for (const e of c.entries) imp[e.importance] = (imp[e.importance] || 0) + 1;
   const es = { live: 0, decayed: 0, over_cap: 0, flagged: 0, mac_failed: 0 }; for (const s of sel.states.values()) es[s] = (es[s] || 0) + 1;
+  const cu = chatUsage(c); const ctot = usageTotals(cu); const turnsWithUsage = c.turns.filter(t => t.usage).length;
+  const ROLE_COLORS = { maker: "oklch(0.70 0.18 300)", checker: "oklch(0.70 0.15 240)", compressor: "oklch(0.75 0.18 145)" };
+  const tokRows = ROLES.flatMap(r => [{ label: `${r} in`, value: cu[r].prompt, color: ROLE_COLORS[r] }, { label: `${r} out`, value: cu[r].completion, color: ROLE_COLORS[r].replace(")", " / 0.55)") }]);
   $("stats-grid").innerHTML = `
+    <div class="stat" style="grid-column:1 / -1"><span class="nano">TOKENS BY ROLE · ${turnsWithUsage} turn${turnsWithUsage === 1 ? "" : "s"} · ${ctot.calls} calls · ${fmtTok(ctot.prompt)} in → ${fmtTok(ctot.completion)} out (${fmtTok(ctot.reasoning)} reasoning) · ${(ctot.ms / 1000).toFixed(0)} s model time · ${fmtCost(ctot.cost)}</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px">${hBarRows(tokRows)}</div>
+      <div class="hint" style="margin-top:8px">${ROLES.map(r => `${r}: ${cu[r].calls} call${cu[r].calls === 1 ? "" : "s"}, ${turnsWithUsage ? (cu[r].ms / 1000 / turnsWithUsage).toFixed(1) : "0"} s per turn, ${fmtCost(cu[r].cost)}`).join(" · ")}. Cost as reported by OpenRouter per call.</div></div>
     <div class="stat"><span class="nano">ANSWER STATUS</span><div class="donut-wrap">${donutChart(statusSlices)}<div class="legend">${statusSlices.map(s => `<div><i style="background:${s.color}"></i>${esc(s.label)} · ${s.value}</div>`).join("") || "<span class='hint'>no completed turns</span>"}</div></div></div>
     <div class="stat"><span class="nano">CLAIMS BY SOURCE</span>${hBarRows([...Object.entries(src).filter(([, v]) => v).map(([k, v]) => ({ label: k, value: v, color: SOURCE_COLORS[k] })), { label: "hypothetical", value: hyp.hypothetical, color: "oklch(0.8 0.15 80)" }, { label: "superseded", value: hyp.superseded, color: "oklch(0.55 0.02 280)" }])}</div>
     <div class="stat"><span class="nano">ENTRY IMPORTANCE</span>${hBarRows([5, 4, 3, 2, 1].map(k => ({ label: `importance ${k}`, value: imp[k] || 0, color: IMP_COLORS[k] })))}</div>
     <div class="stat"><span class="nano">ENTRY STATE AT NEXT SEND</span>${hBarRows(Object.entries(es).map(([k, v]) => ({ label: k.replace("_", " "), value: v, color: ENTRY_STATE_COLORS[k] })))}</div>`;
 }
+function chatUsage(c) { const u = emptyUsage(); for (const t of c.turns) for (const r of ROLES) { const x = t.usage?.[r]; if (!x) continue; for (const k of Object.keys(u[r])) u[r][k] += x[k] || 0; } return u; }
 function renderChats() {
   const list = [...state.chats].sort((a, b) => String(b.updated || b.created).localeCompare(String(a.updated || a.created)));
   const when = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toISOString().slice(0, 10) + " " + d.toTimeString().slice(0, 5); };

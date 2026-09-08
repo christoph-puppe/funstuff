@@ -2,7 +2,7 @@
 
 A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
 
-Version 0.2.3 · one `.html` file · no build step · OpenRouter only.
+Version 0.3.0 · one `.html` file · no build step · OpenRouter only.
 
 ---
 
@@ -54,7 +54,11 @@ An amber chip appears when checker and maker share a vendor. The plan's D2 wants
 
 ---
 
-## Rail settings
+## Config card and rail
+
+The rail holds what changes per send: the chat list, the PLAIN/CHECKED switch, the web-search toggle and strict memory. Everything else sits in the **Config** card in the main area, reachable from the navigation: OpenRouter key and catalog, the three model pickers with reasoning effort, web-search engine and result count, the caps below, MAC keys, the structured-output modes and the self-test.
+
+## Settings
 
 | setting | default | meaning |
 |---|---|---|
@@ -80,6 +84,10 @@ Two export paths with different purposes:
 
 - **backup all** (rail) writes every chat as one JSON file. It asks whether to include the MAC keys. **restore** reads such a file, adds the chats whose id is not present, and, if the file carries a different key, offers to install it as the current key with the present key kept as previous. Without the keys, restored entries from another browser do not verify and are dropped from context; that is the intended failure. A single-chat export from the Memory card restores the same way.
 - **import entries** (Memory card) is the trust ceremony from the plan: entries from anywhere, pins stripped, assistant claims dropped, re-signed as `imported`.
+
+## Token stats
+
+Every call reports OpenRouter's usage (`usage: { include: true }` is set on each request): prompt tokens, completion tokens, reasoning tokens where the provider separates them, cost in USD, and wall time. The app sums them per role (maker including patch rounds, checker including the summary check, compressor including retries) and stores the result on the turn. Three places show them: a line under each answer (`maker 323→922 · 9.7s`, and so on, plus the turn's cost), a pill in the top bar with the chat's totals, and a "tokens by role" chart at the top of the Stats card with calls, seconds per turn and cost per role. Cost is what OpenRouter reports per call; the web plugin's per-result fee is included in the maker's cost.
 
 ## Memory card
 
