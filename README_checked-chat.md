@@ -1,8 +1,8 @@
 # checked-chat
 
-A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the backend for maker, checker and compressor.
+A single-file browser chat whose memory lives in the browser, one signed entry per turn, and whose answers pass a second model family before the user sees them. It is the one-page-app cut of the "Checked Chat with Client-Held Memory" plan, version 0.2 (2026-09-07), with OpenRouter as the default backend for maker, checker and compressor and any OpenAI-compatible endpoint as the alternative.
 
-Version 0.3.0 · one `.html` file · no build step · OpenRouter only.
+Version 0.4.0 · one `.html` file · no build step · OpenRouter or any OpenAI-compatible endpoint.
 
 ---
 
@@ -46,17 +46,25 @@ Importing an export from another chat or browser lists the entries and waits for
 ## Quick start
 
 1. Open `checked-chat.html` in a browser. It works from `file://` in Chrome and Firefox; if OpenRouter calls fail with a CORS error, run `python -m http.server` in the folder and open `http://localhost:8000/checked-chat.html`.
-2. Paste an OpenRouter key (`sk-or-…`). It is stored in `localStorage` of that browser and sent only to `openrouter.ai`.
+2. Paste an OpenRouter key (`sk-or-…`). It is stored in `localStorage` of that browser and sent only to the configured endpoint, `openrouter.ai` by default (see "Other endpoints" below).
 3. The model catalog loads from `GET /api/v1/models` without a key and is cached for a day. Dropdowns for checker and compressor list only models whose catalog entry supports `structured_outputs`; the text field beside each dropdown takes any slug. On first load the app picks defaults from the live catalog by pattern (a Gemini Flash as maker, a Claude model as checker, a Flash-Lite as compressor) and logs what it chose. Nothing is baked in, so check the console and change what you disagree with.
 4. Pick **CHECKED** or **PLAIN**, write a message, send. The frames under the compose box show the loop; content arrives in one piece, as the plan's D1 requires for checked mode.
 
 An amber chip appears when checker and maker share a vendor. The plan's D2 wants them apart: a checker from the maker's family shares its blind spots.
 
+### Other endpoints
+
+The Config card has a **Base URL** field. Empty means `https://openrouter.ai/api/v1`. Any other OpenAI-compatible base URL works: Ollama (`http://localhost:11434/v1`), LM Studio, vLLM, LiteLLM, llama.cpp server, OpenAI itself. The app calls `{base}/chat/completions` and `{base}/models`; a pasted URL ending in `/chat/completions` is trimmed back to the base. Changing the field reloads the catalog, and the cache is kept per base URL.
+
+On a non-OpenRouter endpoint the app sends a plain OpenAI request: no `usage.include`, no `provider.require_parameters`, no web plugin, no `HTTP-Referer`/`X-Title` headers, and reasoning effort as `reasoning_effort` instead of `reasoning: { effort }`. The API key is optional and goes out as a Bearer header only when set. Since generic `/models` responses carry no `supported_parameters`, every model counts as structured-output capable; a server that rejects `response_format` falls back to the schema in the prompt as described above. The pattern defaults for the models rarely match local ids, so the app takes the first catalog entry for any role still empty, which puts maker and checker on the same model: pick a different checker. Web search is skipped with a warning, and token stats show no cost.
+
+The server has to answer CORS requests from the page's origin. Ollama needs `OLLAMA_ORIGINS=*` (or the page's origin) in its environment; LM Studio has a CORS switch in its server settings.
+
 ---
 
 ## Config card and rail
 
-The rail holds what changes per send: the chat list, the PLAIN/CHECKED switch, the web-search toggle and strict memory. Everything else sits in the **Config** card in the main area, reachable from the navigation: OpenRouter key and catalog, the three model pickers with reasoning effort, web-search engine and result count, the caps below, MAC keys, the structured-output modes and the self-test.
+The rail holds what changes per send: the chat list, the PLAIN/CHECKED switch, the web-search toggle and strict memory. Everything else sits in the **Config** card in the main area, reachable from the navigation: endpoint base URL, API key and catalog, the three model pickers with reasoning effort, web-search engine and result count, the caps below, MAC keys, the structured-output modes and the self-test.
 
 ## Settings
 
@@ -125,7 +133,7 @@ The checker returns codes, character offsets and a reason through a strict JSON 
 
 ## Privacy statement
 
-Persistent memory is stored in this browser's `localStorage`. The selected memory is transmitted to OpenRouter and from there to the maker's, checker's and compressor's providers on every send. The page keeps no server-side profile, because it has no server. Provider retention and training settings are OpenRouter's and the providers', not this page's.
+Persistent memory is stored in this browser's `localStorage`. The selected memory is transmitted to the configured endpoint (OpenRouter by default) and from there to the maker's, checker's and compressor's providers on every send. The page keeps no server-side profile, because it has no server. Provider retention and training settings are OpenRouter's and the providers', not this page's.
 
 ---
 

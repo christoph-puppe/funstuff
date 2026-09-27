@@ -329,8 +329,10 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
       <div class="cfg-grid">
         <div class="cfg-col">
         <div class="cfg-sec">
-      <div class="rail-lbl">OPENROUTER</div>
-      <div class="field"><label>API key</label><input type="password" id="or-key" placeholder="sk-or-…" autocomplete="off"></div>
+      <div class="rail-lbl">ENDPOINT</div>
+      <div class="field"><label>Base URL · OpenAI-compatible</label><input type="text" id="api-base" placeholder="https://openrouter.ai/api/v1" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label>API key</label><input type="password" id="or-key" placeholder="sk-or-… · optional for local servers" autocomplete="off"></div>
+      <div class="hint" id="api-info" style="margin-bottom:6px"></div>
       <div class="field"><label>Catalog</label>
         <div class="row"><span class="hint grow" id="cat-info">not loaded</span><button class="btn sm ghost" id="btn-catalog">↻ refresh</button></div>
       </div>
@@ -410,7 +412,7 @@ textarea::-webkit-resizer { background: linear-gradient(135deg, transparent 50%,
 /* ================================================================
    constants
    ================================================================ */
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 const SCHEMA_VERSION = 1;
 const USER_ID = "local";
 const LS = k => "checkedchat_" + k;
@@ -774,28 +776,38 @@ function fillTemplate(key, vars) {
 function truncateWords(s, n) { const w = s.trim().split(/\s+/); return w.length <= n ? w.join(" ") : w.slice(0, n).join(" ") + "…"; }
 
 /* ================================================================
-   OpenRouter
+   Endpoint: OpenRouter by default, any OpenAI-compatible base URL otherwise
    ================================================================ */
+const OR_BASE = "https://openrouter.ai/api/v1";
+function apiBase() { return (($("api-base").value || "").trim() || OR_BASE).replace(/\/+$/, "").replace(/\/chat\/completions$/, ""); }
+function isOR() { try { return /(^|\.)openrouter\.ai$/i.test(new URL(apiBase()).hostname); } catch { return false; } }
+function apiHeaders(json) {
+  const h = {}; const key = $("or-key").value.trim();
+  if (json) h["Content-Type"] = "application/json";
+  if (key) h["Authorization"] = `Bearer ${key}`;
+  if (isOR()) { h["HTTP-Referer"] = "https://localhost"; h["X-Title"] = "checked-chat"; }
+  return h;
+}
+function showApiInfo() { $("api-info").textContent = isOR() ? "OpenRouter: web plugin, cost per call and the catalog's structured-output flags are available." : `Generic endpoint ${apiBase()}: chat/completions and /models only. No web search, no cost figures; reasoning effort goes out as reasoning_effort. The server must allow CORS from this page.`; }
 function modelFor(role) { return ($(role + "-model").value || "").trim(); }
 const schemaInPrompt = (messages, schema) => messages.map((m, i) => i === messages.length - 1 && m.role === "user" ? { ...m, content: m.content + "\n\nReturn only a JSON object matching this schema, every field present, no prose, no code fence:\n" + JSON.stringify(schema) } : m);
 const schemaModes = (() => { try { return JSON.parse(localStorage.getItem(LS("schema_modes")) || "{}"); } catch { return {}; } })();
 function rememberPromptSchema(model, why) { if (schemaModes[model] === "prompt") return; schemaModes[model] = "prompt"; localStorage.setItem(LS("schema_modes"), JSON.stringify(schemaModes)); l.warn(`${model}: structured outputs unusable (${why}) — from now on the JSON schema goes into the prompt for this model; clear via "reset schema modes" in the rail`); }
 async function orOnce({ model, messages, schema, effort, label, noSchema, plugins }) {
   noSchema = noSchema || (schema && schemaModes[model] === "prompt");
-  const body = { model, messages: schema && noSchema ? schemaInPrompt(messages, schema) : messages, usage: { include: true } };
-  if (plugins && plugins.length) body.plugins = plugins;
-  if (schema && !noSchema) { body.response_format = { type: "json_schema", json_schema: { name: label.replace(/\W+/g, "_"), strict: true, schema } }; body.provider = { require_parameters: true }; }
-  if (effort) body.reasoning = { effort };
+  const or = isOR();
+  const body = { model, messages: schema && noSchema ? schemaInPrompt(messages, schema) : messages };
+  if (or) body.usage = { include: true };
+  if (or && plugins && plugins.length) body.plugins = plugins;
+  if (schema && !noSchema) { body.response_format = { type: "json_schema", json_schema: { name: label.replace(/\W+/g, "_"), strict: true, schema } }; if (or) body.provider = { require_parameters: true }; }
+  if (effort) { if (or) body.reasoning = { effort }; else body.reasoning_effort = effort; }
   for (let pass = 0; pass < 2; pass++) {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${$("or-key").value.trim()}`, "HTTP-Referer": "https://localhost", "X-Title": "checked-chat" },
-      body: JSON.stringify(body),
-    });
+    const res = await fetch(apiBase() + "/chat/completions", { method: "POST", headers: apiHeaders(true), body: JSON.stringify(body) });
     let data; try { data = await res.json(); } catch { throw new Error(`HTTP ${res.status} ${res.statusText}`); }
-    if (data.error) {
-      const msg = data.error.message || JSON.stringify(data.error).slice(0, 400);
-      if (pass === 0 && body.reasoning && /reasoning/i.test(msg)) { l.warn(`${label}: model rejects 'reasoning' — retrying without`); delete body.reasoning; continue; }
+    if (data.error || (!res.ok && !data.choices)) {
+      const err = data.error || data;
+      const msg = (typeof err === "string" ? err : err.message || JSON.stringify(err)).slice(0, 400) || `HTTP ${res.status}`;
+      if (pass === 0 && (body.reasoning || body.reasoning_effort) && /reasoning/i.test(msg)) { l.warn(`${label}: model rejects reasoning effort — retrying without`); delete body.reasoning; delete body.reasoning_effort; continue; }
       if (pass === 0 && body.response_format && /response_format|json_schema|structured|schema|parameters|endpoints/i.test(msg)) {
         l.warn(`${label}: provider rejects the JSON schema (${msg.slice(0, 120)}) — retrying without response_format, JSON requested in the prompt`);
         rememberPromptSchema(model, "provider rejects response_format");
@@ -825,7 +837,7 @@ function normalizeAnnotations(list, existing = []) {
   return out;
 }
 const webBlock = sources => sources.length ? sources.map(x => `[source ${x.n}] ${x.title || "(untitled)"} — ${x.url}\n  ${x.content || "(no text returned for this source: its URL and title are known, its content is not)"}`).join("\n") : "(no web sources)";
-const webPlugins = () => $("web-search").checked ? [{ id: "web", engine: $("web-engine").value === "native" ? "native" : "exa", max_results: Math.max(1, Math.min(10, num("web-results", 5) | 0)) }] : null;
+const webPlugins = () => !$("web-search").checked ? null : !isOR() ? (l.warn("web search needs OpenRouter's web plugin — skipped on a generic endpoint"), null) : [{ id: "web", engine: $("web-engine").value === "native" ? "native" : "exa", max_results: Math.max(1, Math.min(10, num("web-results", 5) | 0)) }];
 async function llm(opts) {
   const retries = cfg().retries; let attempt = 0;
   while (true) {
@@ -862,25 +874,29 @@ function extractJson(text) {
 /* ---- catalog ---- */
 async function loadCatalog(force) {
   try {
+    const base = apiBase();
     const cached = JSON.parse(localStorage.getItem(LS("catalog")) || "null");
     let list;
-    if (!force && cached && Date.now() - cached.ts < 864e5) list = cached.list;
+    if (!force && cached && cached.base === base && Date.now() - cached.ts < 864e5) list = cached.list;
     else {
-      const j = await (await fetch("https://openrouter.ai/api/v1/models")).json();
-      list = (j.data || []).map(m => ({ id: m.id, so: (m.supported_parameters || []).includes("structured_outputs"), rs: (m.supported_parameters || []).includes("reasoning"), pin: parseFloat(m.pricing?.prompt || "0"), pout: parseFloat(m.pricing?.completion || "0") })).sort((a, b) => a.id.localeCompare(b.id));
-      localStorage.setItem(LS("catalog"), JSON.stringify({ ts: Date.now(), list }));
+      const res = await fetch(base + "/models", { headers: isOR() ? {} : apiHeaders(false) });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      const j = await res.json();
+      // generic servers carry no supported_parameters: every model counts as structured-output capable, the schema-in-prompt fallback catches the rest
+      list = (j.data || j.models || []).map(m => ({ id: m.id || m.name, so: Array.isArray(m.supported_parameters) ? m.supported_parameters.includes("structured_outputs") : true, rs: (m.supported_parameters || []).includes("reasoning"), pin: parseFloat(m.pricing?.prompt || "0"), pout: parseFloat(m.pricing?.completion || "0") })).filter(m => m.id).sort((a, b) => a.id.localeCompare(b.id));
+      localStorage.setItem(LS("catalog"), JSON.stringify({ ts: Date.now(), base, list }));
     }
     state.catalog = list;
     const so = list.filter(m => m.so);
     $("cat-info").textContent = `${list.length} models · ${so.length} with structured outputs`;
-    l.info(`OpenRouter catalog: ${list.length} models, ${so.length} support structured_outputs`);
+    l.info(`catalog from ${base}: ${list.length} models, ${so.length} support structured_outputs`);
     for (const role of ["maker", "checker", "compressor"]) {
       const pool = role === "maker" ? list : so;
       const sel = $(role + "-select"); const cur = modelFor(role);
       sel.innerHTML = `<option value="">— pick from catalog —</option>` + pool.map(m => `<option value="${esc(m.id)}"${m.id === cur ? " selected" : ""}>${esc(m.id)}</option>`).join("");
     }
     autoDefaultModels();
-  } catch (e) { l.warn("could not load OpenRouter catalog: " + e.message); }
+  } catch (e) { state.catalog = []; $("cat-info").textContent = "not loaded"; l.warn(`could not load the catalog from ${apiBase()}/models: ${e.message} — type model ids by hand`); }
 }
 // Preference lists are patterns, not ids: the first live catalog match wins, nothing is baked in.
 function autoDefaultModels() {
@@ -894,6 +910,7 @@ function autoDefaultModels() {
     const pool = state.catalog.filter(m => role === "maker" || m.so).filter(m => !/:free$|:online$|:thinking$|:extended$|preview|exp/.test(m.id));
     let pick = null;
     for (const re of prefs[role]) { pick = pool.filter(m => re.test(m.id)).sort((a, b) => b.id.localeCompare(a.id))[0]; if (pick) break; }
+    if (!pick && !isOR()) pick = pool[0] || null;
     if (pick) { $(role + "-model").value = pick.id; $(role + "-select").value = pick.id; localStorage.setItem(LS(role + "_model"), pick.id); l.info(`${role}: defaulted to ${pick.id} from the live catalog — change it in the rail`); }
   }
   familyCheck();
@@ -917,7 +934,7 @@ function hideFrames() { setTimeout(() => $("progress").classList.remove("show"),
 
 async function runTurn(promptText) {
   const c = chat(); const conf = cfg();
-  if (!$("or-key").value.trim()) { l.err("no OpenRouter key"); return; }
+  if (isOR() && !$("or-key").value.trim()) { l.err("no OpenRouter key"); return; }
   const need = conf.mode === "checked" ? ["maker", "checker", "compressor"] : ["maker", "compressor"];
   for (const r of need) if (!modelFor(r)) { l.err(`no ${r} model selected`); return; }
   if (conf.mode === "checked" && vendor(modelFor("maker")) === vendor(modelFor("checker"))) l.warn("checker and maker share a vendor — the check loses independence (D2)");
@@ -1330,7 +1347,7 @@ async function renderStats() {
   $("stats-grid").innerHTML = `
     <div class="stat" style="grid-column:1 / -1"><span class="nano">TOKENS BY ROLE · ${turnsWithUsage} turn${turnsWithUsage === 1 ? "" : "s"} · ${ctot.calls} calls · ${fmtTok(ctot.prompt)} in → ${fmtTok(ctot.completion)} out (${fmtTok(ctot.reasoning)} reasoning) · ${(ctot.ms / 1000).toFixed(0)} s model time · ${fmtCost(ctot.cost)}</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px">${hBarRows(tokRows)}</div>
-      <div class="hint" style="margin-top:8px">${ROLES.map(r => `${r}: ${cu[r].calls} call${cu[r].calls === 1 ? "" : "s"}, ${turnsWithUsage ? (cu[r].ms / 1000 / turnsWithUsage).toFixed(1) : "0"} s per turn, ${fmtCost(cu[r].cost)}`).join(" · ")}. Cost as reported by OpenRouter per call.</div></div>
+      <div class="hint" style="margin-top:8px">${ROLES.map(r => `${r}: ${cu[r].calls} call${cu[r].calls === 1 ? "" : "s"}, ${turnsWithUsage ? (cu[r].ms / 1000 / turnsWithUsage).toFixed(1) : "0"} s per turn, ${fmtCost(cu[r].cost)}`).join(" · ")}. Cost as reported by OpenRouter per call; generic endpoints report none.</div></div>
     <div class="stat"><span class="nano">ANSWER STATUS</span><div class="donut-wrap">${donutChart(statusSlices)}<div class="legend">${statusSlices.map(s => `<div><i style="background:${s.color}"></i>${esc(s.label)} · ${s.value}</div>`).join("") || "<span class='hint'>no completed turns</span>"}</div></div></div>
     <div class="stat"><span class="nano">CLAIMS BY SOURCE</span>${hBarRows([...Object.entries(src).filter(([, v]) => v).map(([k, v]) => ({ label: k, value: v, color: SOURCE_COLORS[k] })), { label: "hypothetical", value: hyp.hypothetical, color: "oklch(0.8 0.15 80)" }, { label: "superseded", value: hyp.superseded, color: "oklch(0.55 0.02 280)" }])}</div>
     <div class="stat"><span class="nano">ENTRY IMPORTANCE</span>${hBarRows([5, 4, 3, 2, 1].map(k => ({ label: `importance ${k}`, value: imp[k] || 0, color: IMP_COLORS[k] })))}</div>
@@ -1406,8 +1423,10 @@ function setMode(m) { localStorage.setItem(LS("mode"), m); document.querySelecto
 
 async function init() {
   $("pill-version").textContent = "v" + VERSION;
-  l.info(`Checked Chat v${VERSION} · memory lives in this browser (IndexedDB) · OpenRouter backend for maker, checker and compressor`);
-  persist("or-key", "or_key");
+  persist("or-key", "or_key"); persist("api-base", "api_base");
+  l.info(`Checked Chat v${VERSION} · memory lives in this browser (IndexedDB) · endpoint ${apiBase()} for maker, checker and compressor`);
+  showApiInfo();
+  $("api-base").addEventListener("change", () => { showApiInfo(); l.info(`endpoint set to ${apiBase()} — reloading the catalog`); loadCatalog(true); });
   for (const r of ["maker", "checker", "compressor"]) { persist(r + "-model", r + "_model"); persist(r + "-effort", r + "_effort", "change"); $(r + "-select").addEventListener("change", () => { if ($(r + "-select").value) { $(r + "-model").value = $(r + "-select").value; localStorage.setItem(LS(r + "_model"), $(r + "-model").value); } familyCheck(); }); $(r + "-model").addEventListener("input", () => { $(r + "-select").value = $(r + "-model").value; familyCheck(); }); }
   for (const id of ["cap-entries", "cap-claims", "cap-words", "cap-turns", "cap-rounds", "decay-factor", "decay-threshold", "token-budget", "retries"]) { persist(id, id); $(id).addEventListener("input", () => renderMemory().then(renderStats)); }
   persist("strict-memory", "strict", "change"); persist("web-search", "web", "change"); persist("web-results", "web_results"); persist("web-engine", "web_engine", "change");
@@ -1447,7 +1466,7 @@ async function init() {
   await loadKeys(); await loadChats(); await renderAll();
   familyCheck();
   loadCatalog(false);
-  if (location.protocol === "file:") l.debug("running from file:// — if OpenRouter calls fail with a CORS error, serve the file with `python -m http.server` and open it via http://localhost:8000/");
+  if (location.protocol === "file:") l.debug("running from file:// — if endpoint calls fail with a CORS error, serve the file with `python -m http.server` and open it via http://localhost:8000/");
 }
 init();
 </script>
