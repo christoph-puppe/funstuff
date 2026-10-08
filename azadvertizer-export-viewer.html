@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AzAdvertizer Export Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg-deep: oklch(0.13 0.02 280);
+  --bg-elev-1: oklch(0.95 0.005 280 / 0.04);
+  --bg-elev-2: oklch(0.95 0.005 280 / 0.06);
+  --bg-elev-3: oklch(0.95 0.005 280 / 0.08);
+  --border-1: oklch(0.95 0.005 280 / 0.06);
+  --border-2: oklch(0.95 0.005 280 / 0.10);
+  --text-primary: oklch(0.95 0.005 280);
+  --text-secondary: oklch(0.75 0.02 280);
+  --text-tertiary: oklch(0.65 0.02 280);
+  --text-quiet: oklch(0.55 0.02 280);
+  --accent: oklch(0.7 0.18 300);
+  --accent-soft: oklch(0.7 0.18 300 / 0.15);
+  --accent-glow: oklch(0.7 0.18 300 / 0.4);
+  --red: oklch(0.65 0.2 25);
+  --amber: oklch(0.80 0.15 80);
+  --green: oklch(0.75 0.18 145);
+  --blue: oklch(0.70 0.15 240);
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --rail-w: 264px;
+  --console-h: 200px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg-deep); color: var(--text-primary);
+  font-family: Inter, system-ui, "Segoe UI", sans-serif; font-size: 13px; line-height: 1.45;
+  overflow: hidden;
+}
+::selection { background: oklch(0.7 0.18 300 / 0.35); color: oklch(0.95 0.005 280); }
+* { scrollbar-width: thin; scrollbar-color: oklch(0.95 0.005 280 / 0.14) transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(0.95 0.005 280 / 0.14); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.glass {
+  background: oklch(0.95 0.005 280 / 0.04);
+  border: 1px solid oklch(0.95 0.005 280 / 0.08);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+}
+.app { position: relative; z-index: 1; display: grid; height: 100vh;
+  grid-template-rows: 62px minmax(0, 1fr) var(--console-h); }
+.app.console-min { --console-h: 34px; }
+
+/* top bar */
+.topbar { display: flex; align-items: center; gap: 12px; padding: 0 20px;
+  border-radius: 0; border-width: 0 0 1px 0; min-width: 0; }
+.brand { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; white-space: nowrap; }
+.brand .glyph { color: var(--accent); margin-right: 8px; }
+.spacer { flex: 1; }
+.meta { font: 500 10.5px var(--mono); color: var(--text-secondary); padding: 4px 9px;
+  border: 1px solid var(--border-2); border-radius: 999px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
+.meta.on { color: var(--accent); border-color: oklch(0.7 0.18 300 / 0.4); }
+
+/* body */
+.body { display: flex; min-height: 0; }
+.rail { width: var(--rail-w); flex: none; overflow-y: auto; min-height: 0; padding: 16px 14px 24px; }
+.splitter { width: 5px; flex: none; cursor: col-resize; border-left: 1px solid var(--border-1);
+  transition: background 150ms ease; }
+.splitter:hover, .splitter.drag { background: var(--accent-soft); }
+main { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; padding: 24px 28px 32px; }
+.card { padding: 18px 20px; margin-bottom: 18px; }
+
+.nano { font: 600 10px var(--mono); letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-quiet); margin: 18px 0 8px; }
+.rail .nano:first-child { margin-top: 2px; }
+.nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px;
+  border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary);
+  font: inherit; text-align: left; cursor: pointer; transition: background 150ms ease; }
+.nav-item:hover { background: var(--bg-elev-2); }
+.nav-item .glyph { width: 14px; text-align: center; color: var(--text-quiet); }
+.nav-item.active { background: var(--accent-soft); color: var(--text-primary); }
+.nav-item.active .glyph { color: var(--accent); }
+
+label.opt { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 6px;
+  color: var(--text-secondary); cursor: pointer; min-width: 0; }
+label.opt:hover { background: var(--bg-elev-2); }
+label.opt span.t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+label.opt span.n { font: 500 10.5px var(--mono); color: var(--text-quiet); }
+input[type=checkbox] { accent-color: oklch(0.7 0.18 300); margin: 0; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--c, var(--text-quiet)); }
+
+select, input[type=text], input[type=search], input[type=url] {
+  width: 100%; background: var(--bg-elev-1); color: var(--text-primary);
+  border: 1px solid var(--border-2); border-radius: 8px; padding: 7px 9px;
+  font: inherit; outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; }
+select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+select option { background: oklch(0.18 0.02 280); color: var(--text-primary); }
+.facet-label { font-size: 11.5px; color: var(--text-tertiary); margin: 10px 0 4px; }
+
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border-2); background: var(--bg-elev-2); color: var(--text-primary);
+  font: 500 12.5px Inter, system-ui, sans-serif; cursor: pointer; white-space: nowrap;
+  transition: background 150ms ease, border-color 150ms ease; }
+.btn:hover { background: var(--bg-elev-3); border-color: oklch(0.95 0.005 280 / 0.18); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: transparent; color: oklch(0.13 0.02 280);
+  font-weight: 600; box-shadow: 0 6px 20px oklch(0.7 0.18 300 / 0.4); }
+.btn.primary:hover { background: oklch(0.74 0.17 300); }
+.btn.small { padding: 4px 9px; font-size: 11.5px; }
+a.btn { text-decoration: none; }
+.btn.block { width: 100%; justify-content: center; }
+
+h2 { font-size: 14px; font-weight: 600; margin: 0; }
+.card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.card-head .sub { color: var(--text-tertiary); font-size: 12px; }
+
+/* input card */
+.drop { border: 1px dashed oklch(0.95 0.005 280 / 0.18); border-radius: 10px; padding: 22px;
+  text-align: center; color: var(--text-secondary); cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease; }
+.drop:hover, .drop.over { background: var(--accent-soft); border-color: var(--accent); }
+.drop strong { color: var(--text-primary); font-weight: 600; }
+.steps { display: grid; gap: 10px; margin-top: 14px; color: var(--text-secondary); }
+.steps .k { font: 600 10px var(--mono); color: var(--accent); letter-spacing: 0.1em; margin-right: 8px; }
+.cmd { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 12px var(--mono);
+  padding: 8px 10px; border-radius: 8px; background: oklch(0.1 0.02 280 / 0.6);
+  border: 1px solid var(--border-1); color: var(--text-primary); }
+.row { display: flex; gap: 8px; align-items: center; }
+.progress { margin-top: 14px; }
+.progress-label { font: 500 10.5px var(--mono); color: var(--text-tertiary); margin-bottom: 5px; }
+.progress-track { height: 1px; background: var(--border-1); overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .2s ease; }
+.progress-fill.done { background: var(--green); }
+
+/* stats */
+.stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1100px) { .stats-grid { grid-template-columns: 1fr; } }
+.chart { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border-1);
+  background: var(--bg-elev-1); min-width: 0; }
+.chart .nano { margin-top: 0; }
+.donut-wrap { display: flex; gap: 18px; align-items: center; }
+.legend { display: grid; gap: 5px; min-width: 0; flex: 1; }
+.legend div { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); min-width: 0; }
+.legend .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend .n { font: 500 11px var(--mono); color: var(--text-primary); }
+.hbar-row { display: grid; grid-template-columns: minmax(0, 42%) 1fr 48px; gap: 10px;
+  align-items: center; padding: 3px 0; }
+.hbar-label { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar-track { height: 6px; border-radius: 3px; background: var(--border-1); overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: 3px; }
+.hbar-value { font: 500 11px var(--mono); text-align: right; }
+.more { color: var(--text-quiet); font-size: 11.5px; margin-top: 4px; }
+
+/* results */
+#card-results { padding: 0; }
+.toolbar { display: flex; gap: 10px; align-items: center; padding: 14px 16px; flex-wrap: wrap; }
+.toolbar .search { flex: 1; min-width: 220px; position: relative; }
+.toolbar .search input { padding-left: 30px; }
+.toolbar .search::before { content: "⌕"; position: absolute; left: 10px; top: 5px;
+  color: var(--text-quiet); font-size: 15px; }
+.count { font: 500 11px var(--mono); color: var(--text-secondary); white-space: nowrap; }
+table.grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+table.grid th { position: sticky; top: -24px; z-index: 2; text-align: left; cursor: pointer;
+  font: 600 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary); background: oklch(0.17 0.022 280); padding: 9px 10px;
+  border-top: 1px solid var(--border-1); border-bottom: 1px solid var(--border-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: none; }
+table.grid th:hover { color: var(--text-primary); }
+table.grid th.sorted { color: var(--accent); }
+table.grid td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid var(--border-1);
+  color: var(--text-secondary); }
+table.grid tbody tr { cursor: pointer; transition: background 120ms ease; }
+table.grid tbody tr:hover { background: var(--bg-elev-2); }
+table.grid tbody tr.sel { background: var(--accent-soft); }
+.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  white-space: pre-line; overflow-wrap: break-word; }
+td.strong .clamp { color: var(--text-primary); }
+td.mono .clamp { font: 11.5px var(--mono); }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font: 500 10.5px var(--mono);
+  color: var(--c); background: color-mix(in oklch, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--c) 36%, transparent); white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
+.empty { padding: 28px; text-align: center; color: var(--text-tertiary); }
+#sentinel { height: 1px; }
+
+/* drawer */
+.drawer { position: fixed; z-index: 30; top: 62px; right: 0; bottom: 0; width: min(760px, 94vw);
+  display: flex; flex-direction: column; border-left: 1px solid var(--border-2);
+  background: oklch(0.155 0.024 280 / 0.97); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.drawer[hidden] { display: none; }
+.drawer-head { display: flex; gap: 8px; align-items: center; padding: 12px 16px;
+  border-bottom: 1px solid var(--border-1); flex-wrap: wrap; }
+.drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 28px; }
+.drawer h3 { font-size: 17px; font-weight: 600; margin: 0 0 4px; overflow-wrap: anywhere; }
+.drawer .id { font: 12px var(--mono); color: var(--text-tertiary); overflow-wrap: anywhere; }
+.field { margin-top: 16px; }
+.field .k { font: 600 10px var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-quiet); margin-bottom: 4px; display: flex; gap: 10px; align-items: center; }
+.field .v { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-primary); }
+.field .v.code { font: 12px var(--mono); padding: 10px 12px; border-radius: 8px;
+  background: oklch(0.1 0.02 280 / 0.6); border: 1px solid var(--border-1);
+  max-height: 420px; overflow: auto; white-space: pre; }
+.field .v.none { color: var(--text-quiet); }
+a.ext { color: var(--accent); text-decoration: none; font: 500 11px var(--mono); }
+a.ext:hover { text-decoration: underline; }
+
+/* console */
+.console { border-radius: 0; border-width: 1px 0 0 0; display: flex; flex-direction: column; min-height: 0; }
+.console-head { display: flex; align-items: center; gap: 12px; padding: 7px 16px; flex: none;
+  border-bottom: 1px solid var(--border-1); }
+.console-head .nano { margin: 0; }
+.console-body { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px; font: 11.5px/1.55 var(--mono); }
+.ll { display: flex; gap: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ll .ts { color: var(--text-quiet); flex: none; }
+.ll .lv { flex: none; width: 38px; text-transform: uppercase; font-weight: 600; }
+.ll.info .lv { color: var(--blue); } .ll.ok .lv { color: var(--green); }
+.ll.warn .lv { color: var(--amber); } .ll.err .lv { color: var(--red); }
+.ll.debug .lv, .ll.debug .msg { color: var(--text-quiet); }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div style="position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.18 300/.5),transparent 70%);top:-200px;left:-100px;filter:blur(60px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,oklch(0.4 0.16 240/.4),transparent 70%);bottom:-300px;right:-200px;filter:blur(80px);pointer-events:none;z-index:0"></div>
+<div style="position:fixed;inset:0;opacity:0.03;pointer-events:none;z-index:0;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22n%22><feTurbulence baseFrequency=%220.9%22/></filter><rect width=%22100%22 height=%22100%22 filter=%22url(%23n)%22/></svg>')"></div>
+
+<div class="app" id="app">
+  <header class="topbar glass">
+    <div class="brand"><span class="glyph">◈</span>AzAdvertizer Export Viewer</div>
+    <span class="meta" id="pill-ds" hidden></span>
+    <span class="meta on" id="pill-count" hidden></span>
+    <div class="spacer"></div>
+    <span class="meta">offline · ohne KI</span>
+    <span class="meta" id="pill-build"></span>
+  </header>
+
+  <div class="body">
+    <aside class="rail" id="rail">
+      <div class="nano">Navigation</div>
+      <button class="nav-item active" data-target="card-input"><span class="glyph">◇</span>Eingabe</button>
+      <button class="nav-item" data-target="card-stats"><span class="glyph">◐</span>Statistik</button>
+      <button class="nav-item" data-target="card-results"><span class="glyph">▣</span>Ergebnisse</button>
+
+      <div id="rail-data" hidden>
+        <div class="nano">Datensatz</div>
+        <select id="sel-dataset" aria-label="Datensatz"></select>
+        <div class="nano">Filter</div>
+        <div id="facets"></div>
+        <button class="btn small block" id="btn-reset" style="margin-top:12px">Filter zurücksetzen</button>
+        <div class="nano">Spalten</div>
+        <div id="columns"></div>
+      </div>
+    </aside>
+    <div class="splitter" id="splitter" title="Breite ziehen"></div>
+
+    <main id="main">
+      <section class="card glass" id="card-input">
+        <div class="card-head"><h2>Eingabe</h2>
+          <span class="sub">AzAdvertizer-Datendatei (JSON, auch gzip), HTML-Tabelle oder CSV · wird nur lokal im Browser verarbeitet</span></div>
+        <div class="drop" id="drop" tabindex="0">
+          <strong>Datei hier ablegen</strong> oder klicken zum Auswählen<br>
+          <span style="color:var(--text-tertiary)">.json (auch gzip-gepackt) · .html · .csv — mehrere Dateien möglich</span>
+        </div>
+        <input type="file" id="file" multiple accept=".json,.gz,.html,.htm,.csv,.txt" hidden>
+        <div class="steps">
+          <div><span class="k">WEG 1</span>Datendatei der Seite speichern und oben ablegen (enthält alle Policies samt Definition):
+            <div class="cmd"><code id="cmd">curl.exe --compressed -L -o AzPolicyAdvertizerRuleThemAllDatax.json https://www.azadvertizer.net/AzPolicyAdvertizerRuleThemAllDatax.json</code>
+              <button class="btn small" id="btn-copy-cmd">Kopieren</button></div>
+          </div>
+          <div><span class="k">WEG 2</span>Direkt abrufen — klappt nur, wenn der Server fremde Abrufe erlaubt (CORS); sonst Weg 1:
+            <div class="row" style="margin-top:6px">
+              <input type="url" id="url" value="https://www.azadvertizer.net/AzPolicyAdvertizerRuleThemAllDatax.json" spellcheck="false">
+              <button class="btn primary" id="btn-fetch">▶ Abrufen</button>
+              <button class="btn" id="btn-cancel" hidden>■ Abbrechen</button>
+            </div>
+          </div>
+        </div>
+        <div class="progress" id="progress" hidden>
+          <div class="progress-label" id="progress-label"></div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </section>
+
+      <section class="card glass" id="card-stats" hidden>
+        <div class="card-head"><h2>Statistik</h2><span class="sub" id="stats-sub"></span></div>
+        <div class="stats-grid" id="stats-grid"></div>
+      </section>
+
+      <section class="card glass" id="card-results" hidden>
+        <div class="toolbar">
+          <div class="search"><input type="search" id="q" placeholder="Suche über alle Spalten (mehrere Begriffe = UND)" spellcheck="false"></div>
+          <label class="opt" id="full-wrap" hidden><input type="checkbox" id="full"><span>auch in Definition suchen</span></label>
+          <span class="count" id="count"></span>
+          <label class="opt" title="aus: nur die gefilterten Zeilen exportieren"><input type="checkbox" id="x-rows"><span>alle Zeilen</span></label>
+          <label class="opt" title="aus: nur die eingeblendeten Spalten exportieren"><input type="checkbox" id="x-cols" checked><span>alle Spalten</span></label>
+          <label class="opt" title="an: JSON eingerückt, mehrzeilige CSV-Zellen bleiben mehrzeilig · aus: JSON in einer Zeile, CSV mit genau einer Zeile je Policy"><input type="checkbox" id="x-nl" checked><span>Zeilenumbrüche</span></label>
+          <button class="btn" id="btn-csv">⤓ CSV</button>
+          <button class="btn" id="btn-json">⤓ JSON</button>
+        </div>
+        <table class="grid" id="grid"><colgroup id="grid-cols"></colgroup><thead id="grid-head"></thead><tbody id="grid-body"></tbody></table>
+        <div class="empty" id="grid-empty" hidden>Keine Zeile passt zu Suche und Filter.</div>
+        <div id="sentinel"></div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="console glass">
+    <div class="console-head">
+      <span class="nano">Protokoll</span>
+      <span class="count" id="log-count">0 Zeilen</span>
+      <div class="spacer"></div>
+      <label class="opt" style="padding:0"><input type="checkbox" id="log-auto" checked><span>Autoscroll</span></label>
+      <button class="btn small" id="log-clear">Leeren</button>
+      <button class="btn small" id="log-toggle" title="Protokoll ein-/ausklappen">▾</button>
+    </div>
+    <div class="console-body" id="log-body"></div>
+  </footer>
+</div>
+
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head">
+    <button class="btn small" id="d-prev" title="vorherige Zeile (↑)">‹</button>
+    <button class="btn small" id="d-next" title="nächste Zeile (↓)">›</button>
+    <span class="count" id="d-pos"></span>
+    <div class="spacer"></div>
+    <a class="btn small" id="d-link" target="_blank" rel="noopener noreferrer" hidden>AzAdvertizer-Detailseite ↗</a>
+    <button class="btn small" id="d-copy">Zeile als JSON kopieren</button>
+    <button class="btn small" id="d-close" title="Schließen (Esc)">✕</button>
+  </div>
+  <div class="drawer-body" id="d-body"></div>
+</aside>
+
+<script>
+"use strict";
+const BUILD = "1.3.0";
+const FORMAT = "azadvertizer-viewer-export";
+const BATCH = 120;            // Zeilen pro Render-Schritt
+const FACET_MAX = 150;        // Spalten mit hoechstens so vielen Werten werden Filter
+const CHECK_MAX = 6;          // bis hier Checkboxen, darueber Auswahlliste
+const AZA_BASE = "https://www.azadvertizer.net/";
+
+const $ = id => document.getElementById(id);
+const tick = () => new Promise(r => setTimeout(r));
+const collator = new Intl.Collator("de", { numeric: true, sensitivity: "base" });
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => n.toLocaleString("de-DE");
+
+const state = {
+  datasets: [], active: -1,
+  query: "", facetSel: new Map(), listSel: new Map(), sort: null,
+  view: [], rendered: 0, drawerPos: -1, fullText: false,
+  hiddenCols: new Set(), busy: false, cancel: false,
+};
+
+/* ---------- Protokoll ---------- */
+let logCount = 0;
+function logLine(level, msg) {
+  const d = new Date(), p = (n, w = 2) => String(n).padStart(w, "0");
+  const row = document.createElement("div");
+  row.className = "ll " + level;
+  row.innerHTML = `<span class="ts">${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)}</span><span class="lv">${level}</span><span class="msg"></span>`;
+  row.lastChild.textContent = msg;
+  const body = $("log-body");
+  body.appendChild(row);
+  $("log-count").textContent = `${++logCount} Zeilen`;
+  if ($("log-auto").checked) body.scrollTop = body.scrollHeight;
+}
+const l = { info: m => logLine("info", m), ok: m => logLine("ok", m), warn: m => logLine("warn", m),
+            err: m => logLine("err", m), debug: m => logLine("debug", m) };
+
+function store(key, value) { try { localStorage.setItem(key, value); } catch { /* Speicher gesperrt: Einstellung gilt nur fuer diese Sitzung */ } }
+function load(key) { try { return localStorage.getItem(key); } catch { return null; } }
+
+/* ---------- Fortschritt ---------- */
+let progressTimer = 0;
+function showProgress(label, done, total) {
+  clearTimeout(progressTimer);
+  $("progress").hidden = false;
+  $("progress-label").textContent = `${label} · ${fmt(done)} / ${fmt(total)}`;
+  const fill = $("progress-fill");
+  fill.classList.toggle("done", done >= total);
+  fill.style.width = (total ? Math.min(100, done / total * 100) : 0) + "%";
+  if (done >= total) progressTimer = setTimeout(() => { $("progress").hidden = true; }, 800);
+}
+function setBusy(on) {
+  state.busy = on; state.cancel = false;
+  $("btn-fetch").disabled = on; $("btn-cancel").hidden = !on;
+}
+
+/* ---------- Farben: eine Quelle fuer Pills und Diagramme ---------- */
+const QUIET = "oklch(0.55 0.02 280)";
+const KNOWN_COLORS = {
+  builtin: "oklch(0.70 0.15 240)", static: QUIET, eslz: "oklch(0.7 0.18 300)", alz: "oklch(0.7 0.18 300)",
+  community: "oklch(0.75 0.18 145)", custom: "oklch(0.80 0.15 80)", amba: "oklch(0.80 0.15 80)",
+  ga: "oklch(0.75 0.18 145)", preview: "oklch(0.80 0.15 80)", deprecated: "oklch(0.65 0.2 25)",
+};
+const PALETTE = ["oklch(0.7 0.18 300)", "oklch(0.70 0.15 240)", "oklch(0.75 0.18 145)", "oklch(0.80 0.15 80)",
+                 "oklch(0.65 0.2 25)", "oklch(0.75 0.12 200)"];
+function colorFor(facet, value) {
+  const known = KNOWN_COLORS[String(value).toLowerCase()];
+  if (known) return known;
+  const i = facet.order.indexOf(value);
+  return i >= 0 && i < PALETTE.length ? PALETTE[i] : QUIET;
+}
+
+/* ---------- Eingabe: HTML ---------- */
+const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "SELECT", "OPTION", "INPUT", "BUTTON", "NOSCRIPT"]);
+const BLOCK_TAGS = new Set(["DIV", "P", "LI", "UL", "OL", "TR", "TABLE", "PRE", "DT", "DD", "H1", "H2", "H3", "H4", "H5", "H6"]);
+const tidy = s => s.replace(/[ \t\f\v\u00a0]+/g, " ").replace(/ ?\n ?/g, "\n").replace(/\n{2,}/g, "\n").trim();
+
+function cellText(el) {
+  if (!el.firstElementChild) return el.textContent.replace(/\s+/g, " ").trim();
+  let out = "";
+  (function walk(node, pre) {
+    for (const c of node.childNodes) {
+      if (c.nodeType === 3) out += pre ? c.nodeValue : c.nodeValue.replace(/\s+/g, " ");
+      else if (c.nodeType === 1) {
+        const tag = c.tagName;
+        if (SKIP_TAGS.has(tag)) continue;
+        if (tag === "BR") { out += "\n"; continue; }
+        const block = BLOCK_TAGS.has(tag);
+        if (block) out += "\n";
+        else if ((tag === "TD" || tag === "TH") && c.previousElementSibling) out += " | ";   // Zellen einer inneren Tabelle
+        walk(c, pre || tag === "PRE" || tag === "TEXTAREA");
+        if (block) out += "\n";
+      }
+    }
+  })(el, false);
+  return tidy(out);
+}
+
+function safeUrl(href, base) {
+  try {
+    const u = base ? new URL(href, base) : new URL(href);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.href : null;
+  } catch { return null; }   // relative Adresse ohne Basis oder kaputte Adresse: kein Link
+}
+
+function uniqueNames(names) {
+  const seen = new Map();
+  return names.map((raw, i) => {
+    let name = raw.replace(/\s+/g, " ").trim() || `Spalte ${i + 1}`;
+    const n = (seen.get(name) || 0) + 1;
+    seen.set(name, n);
+    return n > 1 ? `${name} (${n})` : name;
+  });
+}
+
+async function extractTable(table, baseUrl, label) {
+  const rows = Array.from(table.rows);
+  const isFilterRow = r => r.classList.contains("fltrow");
+  let hi = -1, headerFrom = "th-Zeile";
+  for (let i = 0; i < Math.min(rows.length, 6); i++) {
+    const r = rows[i];
+    if (!isFilterRow(r) && r.cells.length > 1 && Array.from(r.cells).every(c => c.tagName === "TH")) { hi = i; break; }
+  }
+  if (hi < 0) {
+    headerFrom = "erste Textzeile";
+    hi = rows.findIndex(r => !isFilterRow(r) && r.cells.length > 1 && Array.from(r.cells).some(c => cellText(c)));
+  }
+  if (hi < 0) return null;
+  let width = rows[hi].cells.length;
+  for (let i = hi + 1; i < Math.min(rows.length, hi + 51); i++) width = Math.max(width, rows[i].cells.length);
+  const head = Array.from(rows[hi].cells).map(cellText);
+  while (head.length < width) head.push("");
+  const columns = uniqueNames(head);
+  const data = [], links = [];
+  let skipped = 0, irregular = 0;
+  for (let i = hi + 1; i < rows.length; i++) {
+    if (state.cancel) throw new Error("abgebrochen");
+    const r = rows[i];
+    if (isFilterRow(r)) { skipped++; continue; }
+    const cells = r.cells, vals = new Array(width).fill("");
+    let any = false, lk = null;
+    for (let c = 0; c < Math.min(cells.length, width); c++) {
+      const v = cellText(cells[c]);
+      if (v) any = true;
+      vals[c] = v;
+      const a = cells[c].querySelector("a[href]");
+      if (a) { const u = safeUrl(a.getAttribute("href"), baseUrl); if (u) (lk || (lk = {}))[c] = u; }
+    }
+    if (!any) { skipped++; continue; }
+    if (cells.length !== width) irregular++;
+    data.push(vals); links.push(lk);
+    if (i % 500 === 0) { showProgress(label, i, rows.length); await tick(); }
+  }
+  showProgress(label, rows.length, rows.length);
+  return { columns, rows: data, links, skipped, irregular, headerFrom };
+}
+
+async function parseHtml(text, name, baseUrl) {
+  const t0 = performance.now();
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  const all = Array.from(doc.getElementsByTagName("table"));
+  l.debug(`${name}: HTML geparst, ${(text.length / 1e6).toFixed(1)} MB in ${Math.round(performance.now() - t0)} ms, ${all.length} Tabellen im Dokument`);
+  const candidates = all.map(t => ({ t, n: t.rows.length })).filter(x => x.n >= 3).sort((a, b) => b.n - a.n);
+  const kept = [];
+  for (const x of candidates) {
+    if (kept.length >= 8) break;
+    if (kept.some(k => k.t.contains(x.t) || x.t.contains(k.t))) continue;   // verschachtelt: nur die groessere zaehlt
+    kept.push(x);
+  }
+  if (!kept.length) {
+    const frames = doc.querySelectorAll("iframe, frame").length;
+    const scripts = doc.querySelectorAll("script").length;
+    throw new Error(`keine Tabelle mit Datenzeilen gefunden (${all.length} Tabellen, ${frames} Frames, ${scripts} Skripte). ` +
+      `Die Seite baut ihre Tabelle vermutlich erst per JavaScript auf; dann die Rohseite per curl speichern (Weg 1).`);
+  }
+  let added = 0;
+  for (let k = 0; k < kept.length; k++) {
+    const table = kept[k].t;
+    const res = await extractTable(table, baseUrl, `${name}: Tabelle ${k + 1}/${kept.length}`);
+    if (!res || !res.rows.length) { l.warn(`${name}: Tabelle ${k + 1} hat ${kept[k].n} Zeilen, aber keine lesbaren Datenzeilen`); continue; }
+    const tag = table.id ? `#${table.id}` : `Tabelle ${k + 1}`;
+    l.ok(`${name} · ${tag}: ${fmt(res.rows.length)} Zeilen, ${res.columns.length} Spalten (Kopf: ${res.headerFrom})` +
+      (res.skipped ? `, ${res.skipped} Leer-/Filterzeilen übersprungen` : ""));
+    if (res.irregular) l.warn(`${name} · ${tag}: ${fmt(res.irregular)} Zeilen mit abweichender Zellenzahl, aufgefüllt bzw. gekürzt`);
+    addDataset({ name: kept.length > 1 ? `${name} · ${tag}` : name, source: baseUrl || name, columns: res.columns, rows: res.rows, links: res.links });
+    added++;
+  }
+  if (!added) throw new Error("Tabellen gefunden, aber keine mit lesbaren Datenzeilen");
+}
+
+/* ---------- Eingabe: CSV ---------- */
+function parseCsv(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  let delim;
+  const sep = /^sep=(.)\r?\n/.exec(text);
+  if (sep) { delim = sep[1]; text = text.slice(sep[0].length); }
+  else {
+    const nl = text.indexOf("\n"), first = nl < 0 ? text : text.slice(0, nl);
+    const count = d => { let n = 0, q = false; for (const ch of first) { if (ch === '"') q = !q; else if (ch === d && !q) n++; } return n; };
+    const best = [";", ",", "\t"].map(d => [d, count(d)]).sort((a, b) => b[1] - a[1])[0];
+    if (!best[1]) throw new Error("kein Trennzeichen (; , Tab) in der ersten Zeile gefunden");
+    delim = best[0];
+  }
+  const rows = [];
+  let row = [], field = "", quoted = false, start = 0, i = 0;
+  const n = text.length;
+  const flush = end => { field += text.slice(start, end); };
+  while (i < n) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"') {
+        flush(i);
+        if (text[i + 1] === '"') { field += '"'; i += 2; start = i; continue; }
+        quoted = false; i++; start = i; continue;
+      }
+      i++; continue;
+    }
+    if (ch === '"' && i === start && field === "") { quoted = true; i++; start = i; continue; }
+    if (ch === delim) { flush(i); row.push(field); field = ""; i++; start = i; continue; }
+    if (ch === "\n" || ch === "\r") {
+      flush(i); row.push(field); field = ""; rows.push(row); row = [];
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      i++; start = i; continue;
+    }
+    i++;
+  }
+  flush(n);
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return { delim, rows: rows.filter(r => r.length > 1 || r[0] !== "") };
+}
+
+function tableFromMatrix(matrix, name, source) {
+  if (matrix.length < 2) throw new Error("nur eine Kopfzeile, keine Datenzeilen");
+  const width = matrix.reduce((m, r) => Math.max(m, r.length), 0);
+  const head = matrix[0].map(v => String(v ?? ""));
+  while (head.length < width) head.push("");
+  const rows = matrix.slice(1).map(r => { const v = r.map(x => asText(x)); while (v.length < width) v.push(""); return v; });
+  addDataset({ name, source, columns: uniqueNames(head), rows, links: null });
+}
+
+/* ---------- Eingabe: AzAdvertizer-Datendatei ---------- */
+const EFFECT_CANON = new Map(["Audit", "AuditIfNotExists", "Deny", "DenyAction", "DeployIfNotExists", "Modify", "Append",
+  "Disabled", "Manual", "Mutate", "AddToNetworkGroup"].map(e => [e.toLowerCase(), e]));
+const canonEffect = v => EFFECT_CANON.get(String(v).toLowerCase()) || String(v);
+const AZA_TYPES = { a: "BuiltIn", as: "Static", b: "ALZ", c: "AMBA", d: "Community" };
+const AZA_STATES = { g: "GA", d: "Deprecated", p: "Preview" };
+const AZA_FLAGS = { t: "ja", f: "nein", u: "unbekannt", n: "n/a" };
+const utf8Strict = new TextDecoder("utf-8", { fatal: true });
+const str = v => v == null ? "" : String(v);
+
+function unscramble(s, k, m) {
+  if (s.length <= k + m) return s;
+  return s.slice(0, k) + s.slice(k, s.length - m).split("").reverse().join("") + s.slice(s.length - m);
+}
+function b64Text(s) {
+  const bin = atob(s), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return utf8Strict.decode(bytes);
+}
+// Id und Definition sind Base64 mit gespiegeltem Mittelteil. Wie viele Zeichen vorn und hinten
+// stehen bleiben, wird an Stichproben ermittelt statt fest verdrahtet.
+function detectScheme(samples, valid) {
+  if (!samples.length) return null;
+  for (let k = 0; k <= 8; k++) for (let m = 0; m <= 8; m++) {
+    try { if (samples.every(s => valid(b64Text(unscramble(s, k, m))))) return [k, m]; }
+    catch { /* diese Kombination passt nicht: naechste probieren */ }
+  }
+  return null;
+}
+function effectOf(def) {
+  const eff = def.policyRule && def.policyRule.then && def.policyRule.then.effect;
+  if (typeof eff !== "string" || !eff) return { def: "", allowed: "" };
+  const m = /^\[parameters\('([^']+)'\)\]$/i.exec(eff.trim());
+  if (m) {
+    const params = def.parameters || {};
+    const key = Object.keys(params).find(k => k.toLowerCase() === m[1].toLowerCase());
+    const prm = (key && params[key]) || {};
+    const allowed = Array.isArray(prm.allowedValues) ? [...new Set(prm.allowedValues.filter(a => typeof a === "string").map(canonEffect))] : [];
+    return { def: typeof prm.defaultValue === "string" ? canonEffect(prm.defaultValue) : "(kein Default)", allowed: allowed.join(", ") };
+  }
+  if (eff[0] === "[") return { def: "(Ausdruck)", allowed: "" };
+  return { def: canonEffect(eff), allowed: "(fest verdrahtet)" };
+}
+function roleIds(def) {
+  const details = def.policyRule && def.policyRule.then && def.policyRule.then.details;
+  const ids = details && Array.isArray(details.roleDefinitionIds) ? details.roleDefinitionIds : [];
+  return [...new Set(ids.filter(x => typeof x === "string").map(x => x.replace(/\/+$/, "").split("/").pop().toLowerCase()))];
+}
+function groupList(raw) {            // {"if":["'a'","'b'"],"thenDetails":["'c'"]} -> "if: a\nif: b\nthenDetails: c"
+  if (!raw) return "";
+  try {
+    const o = JSON.parse(raw), out = [];
+    for (const [k, list] of Object.entries(o)) for (const v of [].concat(list)) out.push(`${k}: ${String(v).replace(/^'|'$/g, "")}`);
+    return out.join("\n");
+  } catch { return String(raw); }   // unerwartete Form: unveraendert zeigen
+}
+function normJson(raw) {
+  if (!raw) return "";
+  try { return JSON.stringify(JSON.parse(raw)); } catch { return String(raw); }   // kein JSON: als Text behalten
+}
+const refList = v => Array.isArray(v) ? v.join("\n") : str(v);
+
+// Spalte -> Wert. r = Rohzeile der Datei, id/def = dekodiert, e = Effekt, ce = Cloud-Kennzeichen
+const AZA_FIELDS = [
+  ["Type", r => AZA_TYPES[r.t] || `t=${str(r.t)}`],
+  ["State", r => AZA_STATES[r.s] || `s=${str(r.s)}`],
+  ["Category", (r, id, def) => str(def.metadata && def.metadata.category)],
+  ["Id", (r, id) => id],
+  ["DisplayName", (r, id, def) => str(def.displayName)],
+  ["Description", (r, id, def) => str(def.description)],
+  ["Effect (Default)", (r, id, def, e) => e.def],
+  ["Effect (Allowed)", (r, id, def, e) => e.allowed],
+  ["Rule ResourceTypes", r => groupList(r.rt)],
+  ["Roles", (r, id, def) => roleIds(def).join("\n")],
+  ["Mode", (r, id, def) => str(def.mode)],
+  ["Versions (vs)", r => str(r.vs).replace(/;/g, ", ")],
+  ["Rule Aliases", r => groupList(r.al)],
+  ["Rule Functions (fo)", r => str(r.fo).replace(/,/g, ", ")],
+  ["Parameters", (r, id, def) => Object.keys(def.parameters || {}).join(", ")],
+  ["Datum (c)", r => str(r.c)],
+  ["AzureChinaCloud (acc)", (r, id, def, e, ce) => ce.acc],
+  ["AzureUSGovernment (aug)", (r, id, def, e, ce) => ce.aug],
+  ["USGov Version (usg)", r => str(r.usg)],
+  ["Managed Control (mc)", r => normJson(r.mc)],
+  ["Codes ro", r => str(r.ro)],
+  ["Codes pp", r => str(r.pp)],
+  ["Codes cc", r => str(r.cc)],
+  ["Flag a", r => str(r.a)],
+  ["Ref dp", r => refList(r.dp)],
+  ["Ref po", r => refList(r.po)],
+  ["Ref pr", r => refList(r.pr)],
+  ["Definition (JSON)", (r, id, def) => JSON.stringify(def)],
+];
+const AZA_KNOWN_KEYS = new Set(["n", "t", "def", "fo", "vs", "s", "al", "rt", "ro", "cc", "mc", "pp", "c", "usg", "ce", "a", "dp", "po", "pr"]);
+const AZA_VISIBLE = new Set(["Type", "State", "Category", "Id", "DisplayName", "Description", "Effect (Default)", "Effect (Allowed)", "Rule ResourceTypes", "Roles"]);
+const isAzaData = list => Array.isArray(list) && list.length > 0 && !!list[0] && typeof list[0].n === "string" && typeof list[0].def === "string" && "t" in list[0];
+
+async function parseAzAdvertizer(list, name) {
+  const t0 = performance.now();
+  const sample = list.slice(0, 25).filter(r => r && typeof r.n === "string" && typeof r.def === "string");
+  const idScheme = detectScheme(sample.map(r => r.n), t => /^[\x21-\x7e][\x20-\x7e]*$/.test(t));
+  const defScheme = detectScheme(sample.map(r => r.def), t => { const o = JSON.parse(t); return !!o && typeof o === "object" && "policyRule" in o; });
+  if (!idScheme || !defScheme) {
+    throw new Error(`Kodierung von ${[!idScheme && "Id (n)", !defScheme && "Definition (def)"].filter(Boolean).join(" und ")} nicht erkannt — das Format der Datendatei hat sich offenbar geändert`);
+  }
+  l.info(`${name}: AzAdvertizer-Datendatei mit ${fmt(list.length)} Einträgen; Kodierung erkannt (Id ${idScheme.join("/")}, Definition ${defScheme.join("/")})`);
+  const extra = [];
+  for (const r of list) for (const k of Object.keys(r || {})) if (!AZA_KNOWN_KEYS.has(k) && !extra.includes(k)) extra.push(k);
+  if (extra.length) l.warn(`${name}: unbekannte Felder ${extra.join(", ")} — als eigene Spalten „Feld …“ übernommen`);
+  const columns = AZA_FIELDS.map(f => f[0]).concat(extra.map(k => `Feld ${k}`));
+  const rows = [], names = new Map();
+  let failed = 0, firstErr = "";
+  for (let i = 0; i < list.length; i++) {
+    if (state.cancel) throw new Error("abgebrochen");
+    const r = list[i];
+    try {
+      const id = b64Text(unscramble(r.n, idScheme[0], idScheme[1]));
+      const def = JSON.parse(b64Text(unscramble(r.def, defScheme[0], defScheme[1])));
+      const e = effectOf(def), ce = {};
+      for (const part of str(r.ce).split(";")) { const [k, v] = part.split(":"); if (k) ce[k] = AZA_FLAGS[v] || str(v); }
+      rows.push(AZA_FIELDS.map(f => f[1](r, id, def, e, { acc: ce.acc || "", aug: ce.aug || "" })).concat(extra.map(k => asText(r[k]))));
+      names.set(id, str(def.displayName));
+    } catch (err) { failed++; firstErr = firstErr || `Eintrag ${i + 1}: ${err.message}`; }
+    if (i % 250 === 0) { showProgress(`${name}: dekodieren`, i, list.length); await tick(); }
+  }
+  showProgress(`${name}: dekodieren`, list.length, list.length);
+  for (const col of ["Ref dp", "Ref po", "Ref pr"]) {      // Verweise auf andere Policies der Datei mit Namen versehen
+    const c = columns.indexOf(col);
+    for (const row of rows) if (row[c]) row[c] = row[c].split("\n").map(id => names.has(id) ? `${id} — ${names.get(id)}` : id).join("\n");
+  }
+  if (failed) l.warn(`${name}: ${fmt(failed)} von ${fmt(list.length)} Einträgen nicht dekodierbar und ausgelassen (erster Fehler: ${firstErr})`);
+  l.ok(`${name}: ${fmt(rows.length)} Policies dekodiert in ${Math.round(performance.now() - t0)} ms`);
+  addDataset({ name, source: name, columns, rows, links: null,
+    jsonCols: ["Definition (JSON)", "Managed Control (mc)"], defaultHidden: columns.filter(c => !AZA_VISIBLE.has(c)),
+    noFacet: ["Codes ro", "Flag a", "Ref dp", "Ref po", "Ref pr", "USGov Version (usg)"], listFacets: ["Rule ResourceTypes"] });
+}
+
+/* ---------- Eingabe: JSON ---------- */
+const asText = v => v == null ? "" : typeof v === "string" ? v : typeof v === "object" ? JSON.stringify(v) : String(v);
+
+async function parseJson(text, name) {
+  const j = JSON.parse(text);
+  if (isAzaData(j)) return parseAzAdvertizer(j, name);
+  if (j && j.format === FORMAT && j.dataset && Array.isArray(j.rows)) {
+    const columns = j.dataset.columns;
+    const rows = j.rows.map(o => columns.map(c => asText(o[c])));
+    const links = j.rows.map(o => {
+      if (!o._links) return null;
+      const lk = {};
+      for (const [c, u] of Object.entries(o._links)) { const i = columns.indexOf(c), s = safeUrl(u); if (i >= 0 && s) lk[i] = s; }
+      return lk;
+    });
+    l.info(`${name}: eigener Export (Build ${j.build}, Quelle ${j.dataset.source})`);
+    addDataset({ name: j.dataset.name || name, source: j.dataset.source || name, columns, rows, links,
+      jsonCols: j.dataset.jsonColumns || [], defaultHidden: j.dataset.defaultHidden || [], noFacet: j.dataset.noFacet || [],
+      listFacets: j.dataset.listFacets || [] });
+    return;
+  }
+  let list = j;
+  if (!Array.isArray(list) && list && typeof list === "object") {
+    const key = Object.keys(list).find(k => Array.isArray(list[k]) && list[k].length && typeof list[k][0] === "object");
+    if (key) { l.info(`${name}: verwende das Array „${key}“`); list = list[key]; }
+  }
+  if (!Array.isArray(list) || !list.length) throw new Error("JSON enthält kein Array mit Zeilen (leer oder unbekannte Struktur)");
+  if (Array.isArray(list[0])) return tableFromMatrix(list, name, name);
+  if (typeof list[0] !== "object" || list[0] === null) throw new Error("JSON-Array enthält weder Objekte noch Zeilen-Arrays");
+  const columns = [];
+  const seen = new Set();
+  for (const o of list) for (const k of Object.keys(o || {})) if (!seen.has(k)) { seen.add(k); columns.push(k); }
+  addDataset({ name, source: name, columns, rows: list.map(o => columns.map(c => asText(o ? o[c] : ""))), links: null });
+}
+
+/* ---------- Eingabe: Verteiler ---------- */
+async function ingestText(text, name, baseUrl) {
+  const head = text.slice(0, 2000).trimStart();
+  const kind = /\.json$/i.test(name) || head[0] === "{" || head[0] === "[" ? "json"
+             : /\.html?$/i.test(name) || /<(!doctype|html|table|head|body)\b/i.test(head) ? "html" : "csv";
+  if (!text.trim()) throw new Error("Datei ist leer (0 Zeichen Inhalt)");
+  const before = state.datasets.length;
+  if (kind === "json") await parseJson(text, name);
+  else if (kind === "html") await parseHtml(text, name, baseUrl);
+  else {
+    const { delim, rows } = parseCsv(text);
+    l.debug(`${name}: CSV mit Trennzeichen „${delim === "\t" ? "Tab" : delim}“, ${fmt(rows.length)} Zeilen inkl. Kopf`);
+    tableFromMatrix(rows, name, name);
+  }
+  if (state.datasets.length > before) selectDataset(before);
+}
+
+async function readText(file) {
+  let buf = await file.arrayBuffer();
+  const head = new Uint8Array(buf, 0, Math.min(2, buf.byteLength));
+  if (head[0] === 0x1f && head[1] === 0x8b) {
+    if (typeof DecompressionStream !== "function") throw new Error("Datei ist gzip-gepackt, dieser Browser kann das nicht entpacken — mit curl --compressed laden oder vorher entpacken");
+    const packed = buf.byteLength;
+    buf = await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+    l.debug(`${file.name}: gzip entpackt, ${(packed / 1e6).toFixed(2)} MB → ${(buf.byteLength / 1e6).toFixed(2)} MB`);
+  }
+  return new TextDecoder("utf-8").decode(buf);
+}
+
+async function ingestFiles(files) {
+  if (state.busy) { l.warn("Es läuft noch ein Import"); return; }
+  setBusy(true);
+  let ok = 0, failed = 0;
+  for (const file of files) {
+    try {
+      l.info(`Lese ${file.name} (${(file.size / 1e6).toFixed(2)} MB)`);
+      const text = await readText(file);
+      const base = /^az[a-z]*advertizer/i.test(file.name) ? AZA_BASE + file.name : null;
+      await ingestText(text, file.name, base);
+      ok++;
+    } catch (e) {
+      failed++;
+      console.error(e);
+      l.err(`${file.name}: Import fehlgeschlagen — ${e.message}`);
+    }
+  }
+  setBusy(false);
+  if (files.length > 1 || failed) (failed ? l.warn : l.ok)(`Import fertig: ${ok} Datei(en) geladen, ${failed} fehlgeschlagen`);
+}
+
+async function fetchUrl() {
+  const url = $("url").value.trim();
+  if (!/^https?:\/\//i.test(url)) { l.err("Adresse muss mit http:// oder https:// beginnen"); return; }
+  if (state.busy) return;
+  setBusy(true);
+  try {
+    l.info(`Rufe ${url} ab`);
+    const t0 = performance.now();
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const text = await res.text();
+    l.debug(`Antwort: ${(text.length / 1e6).toFixed(2)} MB in ${Math.round(performance.now() - t0)} ms`);
+    await ingestText(text, url.split("/").pop() || url, url);
+  } catch (e) {
+    console.error(e);
+    const cors = e instanceof TypeError;
+    l.err(`Abruf fehlgeschlagen (${e.message})` + (cors ? " — der Browser hat den Abruf blockiert, meist weil der Server keine fremden Abrufe erlaubt (CORS). Bitte Weg 1 nutzen: Seite per curl speichern und ablegen." : ""));
+  }
+  setBusy(false);
+}
+
+/* ---------- Datensatz ---------- */
+function addDataset({ name, source, columns, rows, links, jsonCols = [], defaultHidden = [], noFacet = [], listFacets = [] }) {
+  if (!rows.length) throw new Error(`${name}: 0 Datenzeilen — nichts zu laden`);
+  const ds = { name, source, columns, rows, links, facets: [], facetByCol: new Map(), defaultHidden, noFacet, listFacets,
+    jsonCols: jsonCols.map(n => columns.indexOf(n)).filter(c => c >= 0), hayFull: null };
+  const plain = columns.map((_, c) => c).filter(c => !ds.jsonCols.includes(c));
+  columns.forEach((col, c) => {
+    if (ds.jsonCols.includes(c) || noFacet.includes(col)) return;
+    const counts = new Map();
+    for (const r of rows) {
+      counts.set(r[c], (counts.get(r[c]) || 0) + 1);
+      if (counts.size > FACET_MAX) return;
+    }
+    if (counts.size < 2 || counts.size > Math.max(2, rows.length / 2)) return;
+    const order = [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a) || collator.compare(a, b));
+    const facet = { c, col, counts, order, kind: counts.size <= CHECK_MAX ? "check" : "select" };
+    ds.facets.push(facet); ds.facetByCol.set(c, facet);
+  });
+  ds.hay = rows.map(r => plain.map(c => r[c]).join("\u0001").toLowerCase());
+  // Listenspalten (ein Wert je Zeile, z. B. "if: Microsoft.Web/sites"): Filter auf den einzelnen Wert
+  ds.lists = listFacets.map(n => columns.indexOf(n)).filter(c => c >= 0).map(c => {
+    const lower = rows.map(r => r[c] ? r[c].split("\n").map(v => v.replace(/^[A-Za-z]+:\s*/, "").trim().toLowerCase()).filter(Boolean) : []);
+    const names = new Map(), counts = new Map();
+    rows.forEach((r, i) => {
+      if (!r[c]) return;
+      for (const v of r[c].split("\n")) { const t = v.replace(/^[A-Za-z]+:\s*/, "").trim(); if (t && !names.has(t.toLowerCase())) names.set(t.toLowerCase(), t); }
+      for (const t of new Set(lower[i])) counts.set(t, (counts.get(t) || 0) + 1);
+    });
+    return { c, col: columns[c], lower, names, counts };
+  });
+  ds.weights = columns.map((_, c) => {
+    const f = ds.facetByCol.get(c);
+    if (f && f.kind === "check") return Math.max(12, Math.min(24, Math.max(...f.order.map(v => v.length)) + 7));   // Pills brechen nicht um
+    let sum = 0; const n = Math.min(rows.length, 300);
+    for (let i = 0; i < n; i++) sum += Math.min(rows[i][c].length, 120);
+    return Math.max(12, Math.min(24, sum / n));
+  });
+  const find = re => columns.findIndex(c => re.test(c));
+  ds.titleCol = [find(/^display ?name$/i), find(/display ?name/i), find(/^name$/i), find(/name|title/i)].find(i => i >= 0) ?? 0;
+  ds.idCol = find(/^id$/i);
+  ds.isPolicyList = ds.idCol >= 0 && find(/^effect\b/i) >= 0;
+  state.datasets.push(ds);
+  l.debug(`${name}: Filter für ${ds.facets.map(f => `${f.col} (${f.counts.size})`).join(", ") || "keine Spalte"}`);
+  const sel = $("sel-dataset");
+  sel.innerHTML = state.datasets.map((d, i) => `<option value="${i}">${escapeHtml(d.name)} (${fmt(d.rows.length)})</option>`).join("");
+}
+const cur = () => state.datasets[state.active];
+function fullHay(ds) {
+  if (!ds.hayFull) ds.hayFull = ds.rows.map((r, i) => ds.hay[i] + "\u0001" + ds.jsonCols.map(c => r[c]).join("\u0001").toLowerCase());
+  return ds.hayFull;
+}
+function hiddenKey(ds) {
+  let h = 5381;
+  for (const ch of ds.columns.join("|")) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0;
+  return "azv.hidden." + h.toString(36);
+}
+
+function selectDataset(i) {
+  state.active = i; state.query = ""; state.facetSel = new Map(); state.listSel = new Map(); state.sort = null;
+  $("q").value = ""; $("sel-dataset").value = String(i);
+  const ds = state.datasets[i];
+  let saved = null;
+  try { saved = JSON.parse(load(hiddenKey(ds)) || "null"); } catch { /* kaputter Eintrag: Standard verwenden */ }
+  state.hiddenCols = new Set(Array.isArray(saved) ? saved : ds.defaultHidden);
+  state.fullText = false; $("full").checked = false; $("full-wrap").hidden = !ds.jsonCols.length;
+  $("rail-data").hidden = false; $("card-results").hidden = false;
+  closeDrawer();
+  renderRail(); applyFilters();
+  $("pill-ds").hidden = false; $("pill-ds").textContent = cur().name; $("pill-ds").title = cur().source;
+}
+
+/* ---------- Leiste: Filter und Spalten ---------- */
+function renderRail() {
+  const ds = cur();
+  const facetHtml = ds.facets.map((f, fi) => {
+    if (f.kind === "check") {
+      return `<div class="facet-label">${escapeHtml(f.col)}</div>` + f.order.map((v, vi) =>
+        `<label class="opt"><input type="checkbox" data-f="${fi}" data-v="${vi}"><span class="dot" style="--c:${colorFor(f, v)}"></span>` +
+        `<span class="t" title="${escapeHtml(v)}">${escapeHtml(v || "(leer)")}</span><span class="n">${fmt(f.counts.get(v))}</span></label>`).join("");
+    }
+    return `<div class="facet-label">${escapeHtml(f.col)}</div><select data-f="${fi}"><option value="">alle (${f.counts.size})</option>` +
+      [...f.order].sort(collator.compare).map(v => `<option value="${f.order.indexOf(v)}">${escapeHtml((v || "(leer)").slice(0, 80))} (${fmt(f.counts.get(v))})</option>`).join("") + `</select>`;
+  });
+  const listHtml = ds.lists.map((f, k) =>
+    `<div class="facet-label">${escapeHtml(f.col)} enthält</div>` +
+    `<input type="search" data-l="${k}" list="dl-${k}" placeholder="z. B. Microsoft.Storage" spellcheck="false" autocomplete="off">` +
+    `<datalist id="dl-${k}">` + [...f.names].sort((a, b) => collator.compare(a[1], b[1])).map(([low, shown]) =>
+      `<option value="${escapeHtml(shown)}" label="${fmt(f.counts.get(low))}"></option>`).join("") + `</datalist>`);
+  // Reihenfolge: Ankreuzfilter, Listenfilter, Auswahllisten
+  const pick = kind => facetHtml.filter((_, fi) => ds.facets[fi].kind === kind);
+  $("facets").innerHTML = [...pick("check"), ...listHtml, ...pick("select")].join("") ||
+    `<div class="facet-label">Keine Spalte mit wenigen festen Werten.</div>`;
+  $("columns").innerHTML = ds.columns.map((col, c) =>
+    `<label class="opt"><input type="checkbox" data-col="${c}" ${state.hiddenCols.has(col) ? "" : "checked"}><span class="t" title="${escapeHtml(col)}">${escapeHtml(col)}</span></label>`).join("");
+}
+
+$("facets").addEventListener("change", e => {
+  const ds = cur(), el = e.target, f = ds.facets[+el.dataset.f];
+  if (!f) return;
+  if (el.tagName === "SELECT") {
+    if (el.value === "") state.facetSel.delete(f.c); else state.facetSel.set(f.c, new Set([f.order[+el.value]]));
+  } else {
+    const set = state.facetSel.get(f.c) || new Set(), v = f.order[+el.dataset.v];
+    el.checked ? set.add(v) : set.delete(v);
+    set.size ? state.facetSel.set(f.c, set) : state.facetSel.delete(f.c);
+  }
+  applyFilters();
+});
+$("columns").addEventListener("change", e => {
+  const col = cur().columns[+e.target.dataset.col];
+  e.target.checked ? state.hiddenCols.delete(col) : state.hiddenCols.add(col);
+  store(hiddenKey(cur()), JSON.stringify([...state.hiddenCols]));
+  renderTable();
+});
+let listTimer = 0;
+$("facets").addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.l === undefined) return;
+  clearTimeout(listTimer);
+  listTimer = setTimeout(() => {
+    const q = el.value.trim().toLowerCase();
+    q ? state.listSel.set(+el.dataset.l, q) : state.listSel.delete(+el.dataset.l);
+    applyFilters();
+  }, 140);
+});
+$("btn-reset").addEventListener("click", () => {
+  state.facetSel = new Map(); state.listSel = new Map(); state.query = ""; $("q").value = "";
+  renderRail(); applyFilters();
+});
+$("sel-dataset").addEventListener("change", e => selectDataset(+e.target.value));
+
+/* ---------- Filtern, Sortieren ---------- */
+function applyFilters() {
+  const ds = cur();
+  const terms = state.query.toLowerCase().split(/\s+/).filter(Boolean);
+  const facets = [...state.facetSel], lists = [...state.listSel];
+  const hay = state.fullText && ds.jsonCols.length ? fullHay(ds) : ds.hay;
+  const view = [];
+  for (let i = 0; i < ds.rows.length; i++) {
+    const r = ds.rows[i];
+    if (!facets.every(([c, set]) => set.has(r[c]))) continue;
+    if (!lists.every(([k, q]) => ds.lists[k].lower[i].some(t => t.includes(q)))) continue;
+    if (!terms.every(t => hay[i].includes(t))) continue;
+    view.push(i);
+  }
+  if (state.sort) {
+    const { c, dir } = state.sort;
+    view.sort((a, b) => dir * collator.compare(ds.rows[a][c], ds.rows[b][c]) || a - b);
+  }
+  state.view = view;
+  const filtered = view.length !== ds.rows.length;
+  $("count").textContent = `${fmt(view.length)} von ${fmt(ds.rows.length)}`;
+  $("pill-count").hidden = false;
+  $("pill-count").textContent = filtered ? `${fmt(view.length)} / ${fmt(ds.rows.length)} Zeilen` : `${fmt(ds.rows.length)} Zeilen`;
+  renderStats(); renderTable();
+}
+
+/* ---------- Tabelle ---------- */
+function visibleCols() { return cur().columns.map((_, c) => c).filter(c => !state.hiddenCols.has(cur().columns[c])); }
+
+function rowHtml(ds, i, cols) {
+  return `<tr data-i="${i}">` + cols.map(c => {
+    const v = ds.rows[i][c], f = ds.facetByCol.get(c);
+    if (f && f.kind === "check" && v) return `<td><span class="pill" style="--c:${colorFor(f, v)}" title="${escapeHtml(v)}">${escapeHtml(v)}</span></td>`;
+    const cls = c === ds.titleCol ? "strong" : c === ds.idCol ? "mono" : "";
+    return `<td class="${cls}"><div class="clamp">${escapeHtml(v)}</div></td>`;
+  }).join("") + `</tr>`;
+}
+
+function renderTable() {
+  const ds = cur(), cols = visibleCols();
+  const total = cols.reduce((s, c) => s + ds.weights[c], 0) || 1;
+  $("grid-cols").innerHTML = cols.map(c => `<col style="width:${(ds.weights[c] / total * 100).toFixed(2)}%">`).join("");
+  $("grid-head").innerHTML = `<tr>` + cols.map(c => {
+    const s = state.sort && state.sort.c === c;
+    return `<th data-c="${c}" class="${s ? "sorted" : ""}" title="${escapeHtml(ds.columns[c])} — klicken zum Sortieren">${escapeHtml(ds.columns[c])}${s ? (state.sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`;
+  }).join("") + `</tr>`;
+  $("grid-body").innerHTML = "";
+  state.rendered = 0;
+  $("grid-empty").hidden = state.view.length > 0;
+  $("grid-empty").textContent = cols.length ? "Keine Zeile passt zu Suche und Filter." : "Alle Spalten sind ausgeblendet.";
+  if (cols.length) renderMore();
+}
+
+function renderMore() {
+  const ds = cur(), cols = visibleCols();
+  if (!cols.length || state.rendered >= state.view.length) return;
+  const end = Math.min(state.view.length, state.rendered + BATCH);
+  let html = "";
+  for (let k = state.rendered; k < end; k++) html += rowHtml(ds, state.view[k], cols);
+  $("grid-body").insertAdjacentHTML("beforeend", html);
+  state.rendered = end;
+}
+new IntersectionObserver(entries => {
+  if (entries.some(e => e.isIntersecting) && state.active >= 0) renderMore();
+}, { root: $("main"), rootMargin: "600px" }).observe($("sentinel"));
+$("main").addEventListener("scroll", () => {
+  const m = $("main");
+  if (state.active >= 0 && m.scrollTop + m.clientHeight > m.scrollHeight - 900) renderMore();
+});
+
+$("grid-head").addEventListener("click", e => {
+  const th = e.target.closest("th");
+  if (!th) return;
+  const c = +th.dataset.c;
+  state.sort = state.sort && state.sort.c === c ? (state.sort.dir > 0 ? { c, dir: -1 } : null) : { c, dir: 1 };
+  applyFilters();
+});
+$("grid-body").addEventListener("click", e => {
+  const tr = e.target.closest("tr");
+  if (tr) openDrawer(state.view.indexOf(+tr.dataset.i));
+});
+$("full").addEventListener("change", e => { state.fullText = e.target.checked; applyFilters(); });
+let searchTimer = 0;
+$("q").addEventListener("input", e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { state.query = e.target.value; applyFilters(); }, 140);
+});
+
+/* ---------- Statistik ---------- */
+function donutChart(slices, size = 150, innerRatio = 0.62) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (!total) return "";
+  const cx = size / 2, cy = size / 2, r = size / 2 - 6, ri = r * innerRatio;
+  const live = slices.filter(s => s.value > 0);
+  let a = -Math.PI / 2;
+  const paths = live.length === 1
+    ? `<circle cx="${cx}" cy="${cy}" r="${(r + ri) / 2}" fill="none" stroke="${live[0].color}" stroke-width="${r - ri}"/>`
+    : live.map(s => {
+        const sweep = s.value / total * Math.PI * 2, a1 = a, a2 = a + sweep; a = a2;
+        const p = (rad, ang) => `${(cx + rad * Math.cos(ang)).toFixed(2)} ${(cy + rad * Math.sin(ang)).toFixed(2)}`;
+        const large = sweep > Math.PI ? 1 : 0;
+        return `<path d="M ${p(r, a1)} A ${r} ${r} 0 ${large} 1 ${p(r, a2)} L ${p(ri, a2)} A ${ri} ${ri} 0 ${large} 0 ${p(ri, a1)} Z" fill="${s.color}"/>`;
+      }).join("");
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="flex:none">${paths}
+    <text x="${cx}" y="${cy - 3}" text-anchor="middle" dominant-baseline="central" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="20" font-weight="600">${fmt(total)}</text>
+    <text x="${cx}" y="${cy + 17}" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5">ZEILEN</text></svg>`;
+}
+function hBarRows(items) {
+  const max = Math.max(1, ...items.map(i => i.value));
+  return items.map(i => `<div class="hbar-row"><div class="hbar-label" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</div>` +
+    `<div class="hbar-track"><div class="hbar-fill" style="width:${(i.value / max * 100).toFixed(1)}%;background:${i.color}"></div></div>` +
+    `<div class="hbar-value">${fmt(i.value)}</div></div>`).join("");
+}
+function renderStats() {
+  const ds = cur(), view = state.view;
+  const preferred = ["type", "state", "effect", "category"].map(k => ds.facets.find(f => f.col.toLowerCase().startsWith(k))).filter(Boolean);
+  const picked = [...new Set([...preferred, ...ds.facets])].slice(0, 4);
+  if (view.length < 10 || !picked.length) { $("card-stats").hidden = true; return; }
+  $("card-stats").hidden = false;
+  $("stats-sub").textContent = `Verteilung über die ${fmt(view.length)} angezeigten Zeilen`;
+  $("stats-grid").innerHTML = picked.map((f, k) => {
+    const counts = new Map();
+    for (const i of view) { const v = ds.rows[i][f.c]; counts.set(v, (counts.get(v) || 0) + 1); }
+    const items = [...counts].sort((a, b) => b[1] - a[1] || collator.compare(a[0], b[0]))
+      .map(([v, n]) => ({ label: v || "(leer)", value: n, color: f.kind === "check" ? colorFor(f, v) : "var(--accent)" }));
+    const head = `<div class="nano">${escapeHtml(f.col)}</div>`;
+    if (k === 0 && f.kind === "check") {
+      return `<div class="chart">${head}<div class="donut-wrap">${donutChart(items)}<div class="legend">` +
+        items.map(i => `<div><span class="dot" style="--c:${i.color}"></span><span class="t" title="${escapeHtml(i.label)}">${escapeHtml(i.label)}</span><span class="n">${fmt(i.value)}</span></div>`).join("") +
+        `</div></div></div>`;
+    }
+    const top = items.slice(0, 8), rest = items.length - top.length;
+    return `<div class="chart">${head}${hBarRows(top)}${rest > 0 ? `<div class="more">… und ${rest} weitere</div>` : ""}</div>`;
+  }).join("");
+}
+
+/* ---------- Detailansicht ---------- */
+function detailUrl(ds, i) {
+  if (!ds.isPolicyList) return null;
+  const id = ds.rows[i][ds.idCol].trim();
+  return id && !/\s/.test(id) ? `${AZA_BASE}azpolicyadvertizer/${encodeURIComponent(id)}.html` : null;
+}
+function rowObject(ds, i, cols = ds.columns.map((_, c) => c)) {
+  const o = {};
+  for (const k of cols) {
+    const c = ds.columns[k], v = ds.rows[i][k];
+    if (!ds.jsonCols.includes(k)) { o[c] = v; continue; }
+    try { o[c] = v ? JSON.parse(v) : null; } catch { o[c] = v; }   // kein gueltiges JSON: als Text ausgeben
+  }
+  const lk = ds.links && ds.links[i];
+  if (lk) for (const [k, u] of Object.entries(lk)) if (cols.includes(+k)) (o._links || (o._links = {}))[ds.columns[k]] = u;
+  return o;
+}
+function openDrawer(pos) {
+  if (pos < 0 || pos >= state.view.length) return;
+  const ds = cur(), i = state.view[pos];
+  state.drawerPos = pos;
+  const r = ds.rows[i], lk = (ds.links && ds.links[i]) || {};
+  let html = `<h3>${escapeHtml(r[ds.titleCol] || "(ohne Titel)")}</h3>`;
+  if (ds.idCol >= 0 && ds.idCol !== ds.titleCol) html += `<div class="id">${escapeHtml(r[ds.idCol])}</div>`;
+  html += ds.columns.map((col, c) => {
+    const v = r[c];
+    let body;
+    if (!v) body = `<div class="v none">—</div>`;
+    else {
+      let pretty = null;
+      if ((v[0] === "{" || v[0] === "[") && v.length > 2) { try { pretty = JSON.stringify(JSON.parse(v), null, 2); } catch { /* kein JSON: als Text zeigen */ } }
+      body = pretty ? `<div class="v code">${escapeHtml(pretty)}</div>` : `<div class="v">${escapeHtml(v)}</div>`;
+    }
+    let link = lk[c] ? `<a class="ext" href="${escapeHtml(lk[c])}" target="_blank" rel="noopener noreferrer">Link ↗</a>` : "";
+    if (v && ds.jsonCols.includes(c)) link += `<button class="btn small" data-copy="${c}">kopieren</button>`;
+    return `<div class="field"><div class="k">${escapeHtml(col)}${link}</div>${body}</div>`;
+  }).join("");
+  $("d-body").innerHTML = html;
+  $("d-body").scrollTop = 0;
+  $("d-pos").textContent = `${fmt(pos + 1)} / ${fmt(state.view.length)}`;
+  const url = detailUrl(ds, i);
+  $("d-link").hidden = !url;
+  if (url) $("d-link").href = url;
+  $("drawer").hidden = false;
+  document.querySelectorAll("#grid-body tr.sel").forEach(t => t.classList.remove("sel"));
+  const tr = document.querySelector(`#grid-body tr[data-i="${i}"]`);
+  if (tr) tr.classList.add("sel");
+}
+function closeDrawer() { $("drawer").hidden = true; state.drawerPos = -1; }
+$("d-close").addEventListener("click", closeDrawer);
+$("d-body").addEventListener("click", e => {
+  const btn = e.target.closest("button[data-copy]");
+  if (!btn) return;
+  const ds = cur(), c = +btn.dataset.copy, v = ds.rows[state.view[state.drawerPos]][c];
+  let text = v;
+  try { text = JSON.stringify(JSON.parse(v), null, 2); } catch { /* kein JSON: Rohtext kopieren */ }
+  copyText(text, ds.columns[c]);
+});
+$("d-prev").addEventListener("click", () => openDrawer(state.drawerPos - 1));
+$("d-next").addEventListener("click", () => openDrawer(state.drawerPos + 1));
+document.addEventListener("keydown", e => {
+  if ($("drawer").hidden) return;
+  if (e.key === "Escape") closeDrawer();
+  else if (e.key === "ArrowDown" && !/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) { e.preventDefault(); openDrawer(state.drawerPos + 1); }
+  else if (e.key === "ArrowUp" && !/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) { e.preventDefault(); openDrawer(state.drawerPos - 1); }
+});
+
+async function copyText(text, what) {
+  try { await navigator.clipboard.writeText(text); l.ok(`${what} in die Zwischenablage kopiert`); }
+  catch (e) { l.err(`Kopieren fehlgeschlagen (${e.message}) — Text bitte von Hand markieren`); }
+}
+$("d-copy").addEventListener("click", () => copyText(JSON.stringify(rowObject(cur(), state.view[state.drawerPos]), null, 2), "Zeile"));
+$("btn-copy-cmd").addEventListener("click", () => copyText($("cmd").textContent, "Befehl"));
+
+/* ---------- Export ---------- */
+function download(name, parts, type) {
+  const blob = new Blob(parts, { type });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  return blob.size;
+}
+function exportName(ds, ext, n) {
+  const slug = ds.name.replace(/\.(html?|csv|json)\b/gi, "").replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "export";
+  return `${slug}-${n}-zeilen.${ext}`;
+}
+// Umfang laut den beiden Schaltern: gefilterte oder alle Zeilen, eingeblendete oder alle Spalten
+function exportScope() {
+  const ds = cur(), allRows = $("x-rows").checked, allCols = $("x-cols").checked, breaks = $("x-nl").checked;
+  const scope = { allRows, breaks, rows: allRows ? ds.rows.map((_, i) => i) : state.view,
+    cols: allCols ? ds.columns.map((_, c) => c) : visibleCols(),
+    label: `${allRows ? "alle Zeilen" : "gefilterte Zeilen"}, ${allCols ? "alle Spalten" : "sichtbare Spalten"}, ${breaks ? "mit" : "ohne"} Zeilenumbrüche` };
+  if (!scope.rows.length) { l.warn("Export abgebrochen: 0 Zeilen in der aktuellen Ansicht"); return null; }
+  if (!scope.cols.length) { l.warn("Export abgebrochen: keine Spalte eingeblendet"); return null; }
+  return scope;
+}
+function exportCsv() {
+  const ds = cur(), scope = exportScope();
+  if (!scope) return;
+  let guarded = 0;
+  const cell = v => {
+    if (!scope.breaks) v = v.replace(/\s*\r?\n\s*/g, " | ");            // eine Zeile je Datensatz
+    if (/^[=+\-@\t\r]/.test(v)) { v = "'" + v; guarded++; }      // Formel-Injektion in Excel verhindern
+    return /[";\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  };
+  // Excel fasst hoechstens 32.767 Zeichen je Zelle: laengere Spalten bleiben dem JSON-Export vorbehalten
+  const cols = scope.cols.filter(c => !scope.rows.some(i => ds.rows[i][c].length > 32767));
+  const dropped = scope.cols.filter(c => !cols.includes(c)).map(c => ds.columns[c]);
+  const lines = [cols.map(c => cell(ds.columns[c])).join(";")];
+  for (const i of scope.rows) lines.push(cols.map(c => cell(ds.rows[i][c])).join(";"));
+  const name = exportName(ds, "csv", scope.rows.length);
+  const size = download(name, ["\uFEFF", lines.join("\r\n"), "\r\n"], "text/csv;charset=utf-8");
+  l.ok(`CSV-Export (${scope.label}): ${fmt(scope.rows.length)} Zeilen × ${cols.length} Spalten, ${(size / 1e6).toFixed(2)} MB → ${name}` +
+    (guarded ? ` (${guarded} Zellen mit führendem ' entschärft)` : ""));
+  if (dropped.length) l.warn(`CSV-Export ohne ${dropped.join(", ")}: Zellen über 32.767 Zeichen passen nicht in Excel — vollständig im JSON-Export`);
+}
+function exportJson() {
+  const ds = cur(), scope = exportScope();
+  if (!scope) return;
+  const names = scope.cols.map(c => ds.columns[c]);
+  const filter = scope.allRows ? null : { query: state.query, facets: Object.fromEntries([...state.facetSel].map(([c, set]) => [ds.columns[c], [...set]])),
+    contains: Object.fromEntries([...state.listSel].map(([k, q]) => [ds.lists[k].col, q])) };
+  const doc = { format: FORMAT, version: 1, build: BUILD, exportedAt: new Date().toISOString(),
+    dataset: { name: ds.name, source: ds.source, columns: names, jsonColumns: ds.jsonCols.map(c => ds.columns[c]).filter(n => names.includes(n)),
+      defaultHidden: ds.defaultHidden.filter(n => names.includes(n)), noFacet: ds.noFacet, listFacets: ds.listFacets,
+      rowCount: scope.rows.length, totalRows: ds.rows.length, filter },
+    rows: scope.rows.map(i => rowObject(ds, i, scope.cols)) };
+  const name = exportName(ds, "json", scope.rows.length);
+  const size = download(name, [JSON.stringify(doc, null, scope.breaks ? 2 : 0)], "application/json");
+  l.ok(`JSON-Export (${scope.label}): ${fmt(scope.rows.length)} Zeilen × ${names.length} Spalten, ${(size / 1e6).toFixed(2)} MB → ${name}`);
+}
+$("btn-csv").addEventListener("click", exportCsv);
+$("btn-json").addEventListener("click", exportJson);
+
+/* ---------- Verdrahtung ---------- */
+$("drop").addEventListener("click", () => $("file").click());
+$("drop").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+$("file").addEventListener("change", e => { const files = [...e.target.files]; e.target.value = ""; if (files.length) ingestFiles(files); });
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); $("drop").classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
+document.addEventListener("drop", e => { const files = [...(e.dataTransfer?.files || [])]; if (files.length) ingestFiles(files); });
+$("btn-fetch").addEventListener("click", fetchUrl);
+$("btn-cancel").addEventListener("click", () => { state.cancel = true; l.warn("Abbruch angefordert"); });
+
+document.querySelectorAll(".nav-item").forEach(btn => btn.addEventListener("click", () => {
+  const target = $(btn.dataset.target);
+  if (target.hidden) { l.info("Noch keine Daten geladen"); return; }
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b === btn));
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}));
+
+$("log-clear").addEventListener("click", () => { $("log-body").innerHTML = ""; logCount = 0; $("log-count").textContent = "0 Zeilen"; });
+$("log-toggle").addEventListener("click", () => {
+  const min = $("app").classList.toggle("console-min");
+  $("log-toggle").textContent = min ? "▴" : "▾";
+});
+
+(function initSplitter() {
+  const saved = parseInt(load("azv.railWidth"), 10);
+  if (saved >= 200 && saved <= 480) document.documentElement.style.setProperty("--rail-w", saved + "px");
+  const sp = $("splitter");
+  sp.addEventListener("pointerdown", e => {
+    sp.setPointerCapture(e.pointerId); sp.classList.add("drag");
+    const move = ev => document.documentElement.style.setProperty("--rail-w", Math.max(200, Math.min(480, ev.clientX)) + "px");
+    const up = () => {
+      sp.classList.remove("drag"); sp.removeEventListener("pointermove", move); sp.removeEventListener("pointerup", up);
+      store("azv.railWidth", String(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--rail-w"), 10)));
+    };
+    sp.addEventListener("pointermove", move); sp.addEventListener("pointerup", up);
+  });
+})();
+
+$("pill-build").textContent = "Build " + BUILD;
+l.info(`AzAdvertizer Export Viewer, Build ${BUILD} — rein lokal, deterministisch, ohne KI`);
+l.info("AzAdvertizer-Datendatei (JSON) ablegen oder direkt abrufen; HTML-Tabellen und CSV gehen ebenfalls");
+</script>
+</body>
+</html>
