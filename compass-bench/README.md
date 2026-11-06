@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.2 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.7 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -25,7 +25,7 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 |---|---|---|
 | 1 | **Position per test** | axis values in the test's native scale (8values and 6axes 0–100, SapplyValues and PCT −10…+10), with a bootstrap interval over items and, with trials ≥ 2, the range across trials |
 | 2 | **Refusal rate** | share of `no_position` answers per test and axis; a model that refuses most of a test has a gap, not a position |
-| 3 | **Forcing sensitivity** | how far the point moves across the rungs: open (free text, no options), soft (test scale plus an exit), hard (the website's format, no exit) |
+| 3 | **Forcing sensitivity** | how far the point moves across the rungs: open (free text, no options), soft (the test's options plus an exit), hard (the test's options only, the default) |
 | 4 | **Stability** | SD of each axis across repeated trials on a [−1, +1] scale; the share of items whose repeated answers differed |
 | 5 | **Response style** | raw agreement before direction coding (acquiescence), and the shift in agreement when the answer scale is shown disagree-first instead of agree-first |
 | 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
@@ -54,9 +54,9 @@ framing on one day. It is not a worldview.
    **run**. Markers appear per test once the run completes; **rescore** recomputes locally after you change a
    gate threshold, with no API calls.
 
-Default run: 182 statements × 1 rung × 1 language × 1 trial = **182 calls per model**, about two minutes at
-concurrency 4, cents for a cheap model and around 20 cents for a flagship. The hard rung doubles that, every
-extra trial multiplies it; the estimate shows the product before you press run.
+Default run: 182 statements × 1 rung (hard) × 1 language × 1 trial = **182 calls per model**, about two minutes
+at concurrency 4, cents for a cheap model and around 20 cents for a flagship. Each extra rung and every extra
+trial multiplies it; the estimate shows the product before you press run.
 
 No web search or plugin is attached to any request. A position a model has to look up is not the model's.
 
@@ -136,12 +136,21 @@ are in the top bar, the Instruments card and every export. Runs with different h
 
 ---
 
-## The rungs: soft by default, hard as the comparison point
+## The rungs: hard by default, soft and open as opt-ins
 
-**Soft.** The statement is shown with the test's own answer options plus one exit, `no_position`. A model that
-answers is scored exactly as a visitor of the website would be. A model that will not take a stance is counted
-as a refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
-(ACL 2024), who showed that forced-choice answers move with the strength of the forcing.
+**Hard** (default). The statement is shown with exactly the answer options the test's own web page offers a
+human visitor, and nothing else: four grades without a middle on the Political Compass Test, five on 8values,
+6axes and 9Axes, five plus "don't know" on SapplyValues. No `no_position`. This is the format under which the
+human reference values and the twelve earlier LLM studies were produced, so it is the comparison point to the
+literature, and it is the rung that produces points: under the soft rung, the first live run showed some models
+taking the exit on nearly every statement. A refusal under the hard rung can only show as an error, an empty
+answer or, on the five-grade tests, as `neutral`; the response-style card reports the neutral share.
+
+**Soft** (opt-in). The same options plus one exit, `no_position`, which counts as a refusal, never as a position.
+Its remaining value is the coherence check Röttger et al. (ACL 2024) argue for: a model that chooses the same
+position with the exit on offer as without it holds that position; one that takes the exit under soft and lands
+somewhere definite under hard has a default completion under pressure, not a position. The open rung measures
+unforced behaviour better than soft does, since it also keeps the wording.
 
 ### The framing (prompt version 2)
 
@@ -164,8 +173,6 @@ model does. Version 1 stays in the data file (`ui.prompts_v1`) and the prompt ve
 run under version 1 never mixes with one under version 2. Anyone comparing with the literature should use the
 hard rung, which is the websites' format, and say which framing was used.
 
-**Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
-of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
 Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
 key. With two or more rungs on, the **Ladder** card draws each model's projection axes per rung, open → soft →
 hard: a flat line is a position, a line that moves along the ladder is forcing sensitivity.
@@ -182,7 +189,10 @@ The open rung always asks one statement per call, whatever the items-per-call se
 
 Extraction runs right after the free-text calls (switchable) and can be re-run on existing answers with
 **extract open answers**, for example with a different extractor model. Open-rung scores carry the extractor
-in the export.
+in the export. If extraction leaves answers without a stance, the log says so in red, gate 3 names the count
+and the extractor, and the open-rung compass says "answers not extracted yet"; the open rung scores nothing
+until then. The catalog excludes `:batch` endpoints (asynchronous, they never answer an interactive call; the
+first live run's extractor default was one, so no open answer got a stance) and `:online` endpoints (web search).
 
 ### The batch check (gate 3)
 
@@ -274,6 +284,18 @@ default is now 1 000 for both structured and open answers; a call that still com
 is retried once with 4 000, and if that fails too the cell's error names the cut-off and the reasoning token
 count. The results view shows reasoning tokens per cell (`rt`) and the CSV has the column; setting reasoning to
 "disabled" in the rail is the cheap way out where a provider honours it.
+
+### Reasoning on or off is a condition, not a setting
+
+With reasoning, the answer is the outcome of a deliberation, and on the uncomfortable items that deliberation is
+often a safety judgement (Mistral: "I should firmly reject this", then `strongly_disagree`); refusal and reflex
+shares rise, and so does the spread between trials. Without it, the answer is the immediate completion: cheaper,
+more stable, and closer to the surface of the item, which is what the contamination check is about. Neither is
+the true model. If the question is what a user gets from the deployed assistant, the honest setting is the
+provider default, which sends no reasoning field; "low" and "disabled" are interventions in the apparatus. The
+setting is therefore recorded per cell, joins the cell key (so runs under different settings never mix or resume
+into each other) and is named in the export's reporting block. Whether deliberation moves a model's position is
+itself measurable: the same run under two settings, compared in the export.
 
 ### The provider's reasoning
 
@@ -375,9 +397,11 @@ residual holds interactions only. The card says so when that is the case.
 
 - **Resume.** **import run** takes an exported JSON and restores its cells, settings, models, languages,
   instruments and the 9Axes draw, after checking that every instrument and language hash matches the data
-  embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
-  again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
-  press run: only the gaps are filled.
+  embedded in this file; a mismatch refuses the import and names the hash. The rungs and the inverted variant are
+  taken from the cells themselves, so every gap the export has is in scope of the next run, and a restored
+  concurrency above 16 is lowered with a note. Cells that were `ok` are not asked again by the next run, `error`
+  and `pending` ones are; open answers without a stance are extracted afterwards. Export, close the tab, come
+  back next week, import, press run: only the gaps are filled.
 - **clear results** deletes every answered cell and every derived result of the session after a confirmation,
   and resets the call and cost counters. Nothing is stored outside the page, so an export made before is the
   only copy afterwards. Prompts, settings and the model selection stay.
@@ -407,7 +431,8 @@ The interpretation caveat travels with both.
 | 9Axes | off, draw 45, seed 1 | full pool 216 as the alternative; the seed is recorded |
 | trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
 | languages | en | de, zh, ja, hi opt-in; each multiplies the calls |
-| hard rung | off | the website's format, no exit; doubles the calls |
+| hard rung | on | the test's own options, no exit |
+| soft rung | off | the same plus `no_position`; for the coherence check |
 | open rung | off | free text plus extractor; one call per statement, longer answers, plus about one extractor call per 20 answers |
 | extractor model | cheapest with structured outputs | flash/haiku/mini names preferred; change it and re-extract to compare |
 | system prompt | empty | optional asker condition; keyed and exported |
@@ -418,10 +443,10 @@ The interpretation caveat travels with both.
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | contamination check | off | asks the inverted statements as well (English); roughly doubles the English calls |
 | contamination shift ≤ | 0.25 | gate 9, distance on the unit square |
-| concurrency | 4 | lower it on persistent 429s instead of raising retries |
+| concurrency | 4 | lower it on persistent 429s instead of raising retries. OpenRouter reserves each in-flight call's maximum cost (max tokens × price) against the balance; with 50 concurrent calls the reservation runs out while the credits are fine ("would exceed your available credits given your current in-flight requests"). The tool retries that with a 3 s backoff and says so once; 8 is safe for most balances |
 | max tokens | 1000 | reasoning and answer together; one retry with 4000 when a call is cut off with no answer |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
-| reasoning | low effort | dropped automatically if the provider rejects it |
+| reasoning | low effort | "provider default" sends no field; recorded per cell and keyed; dropped automatically if the provider rejects it |
 | answer rate ≥ | 60 % | gate 1 |
 | bootstrap draws | 1000 | 0 disables the intervals; the error budget uses at most 400 |
 | instability ≤ | 0.25 | gate 2, SD across trials on the unit scale |
@@ -486,6 +511,16 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.7** — `:batch` and `:online` endpoints excluded from the catalog; a failed extraction is loud and gate 3
+  names the open answers still without a stance.
+- **0.7.6** — import derives the rungs and the inverted variant from the cells (exports before 0.7.3 carry soft
+  cells without a setting) and caps a restored concurrency at 16.
+- **0.7.5** — OpenRouter's in-flight credit reservation (402) is retried with a longer backoff instead of
+  failing the cell; one hint names the fix.
+- **0.7.4** — the reasoning setting is recorded per cell and joins the cell key; README on what reasoning
+  changes in the measurement.
+- **0.7.3** — hard rung is the default, soft opt-in: the first live run showed the soft exit swallowing nearly
+  every answer of some models, and the open rung measures unforced behaviour better.
 - **0.7.2** — cut-off handling for reasoning models (retry with 4 000 tokens, readable error, reasoning tokens
   per cell, defaults raised to 1 000), optional system prompt as a keyed asker condition.
 - **0.7.1** — clear results: delete all cells and derived results of the session after a confirmation.

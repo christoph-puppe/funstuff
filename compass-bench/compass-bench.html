@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.2</div>
+    <div class="pill" id="pill-version">v0.7.7</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -254,7 +254,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           </select></div>
         <div class="row2">
           <div class="field"><label>trials / cell</label><input type="number" id="trials" value="1" min="1" max="10"></div>
-          <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="4" min="1" max="16"></div>
+          <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="4" min="1" max="64" title="OpenRouter reserves each in-flight call's maximum cost; high values hit the reservation before the balance"></div>
         </div>
         <div class="row2">
           <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="1000" min="30" max="16000"></div>
@@ -268,13 +268,13 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <option value="">provider default</option>
             <option value="off">disabled</option>
           </select></div>
-        <div class="hint">max tokens covers reasoning and answer together. A reasoning model that spends it all thinking returns no answer; the tool then retries once with 4000 and otherwise reports the cut-off with the reasoning token count.</div>
+        <div class="hint">The reasoning setting is part of the measurement: it is recorded per cell and joins the cell key, so runs under different settings never mix. "provider default" sends no reasoning field and measures the assistant as deployed. max tokens covers reasoning and answer together. A reasoning model that spends it all thinking returns no answer; the tool then retries once with 4000 and otherwise reports the cut-off with the reasoning token count.</div>
       </div>
 
       <div class="rail-group">
         <span class="nano">⟐ rungs</span>
-        <label class="check"><input type="checkbox" id="rung-soft" checked disabled> soft — test scale + no_position</label>
-        <label class="check"><input type="checkbox" id="rung-hard"> hard — website format, no exit</label>
+        <label class="check"><input type="checkbox" id="rung-hard" checked> hard — the test's own options, no exit (default)</label>
+        <label class="check"><input type="checkbox" id="rung-soft"> soft — the same options plus no_position</label>
         <label class="check"><input type="checkbox" id="rung-open"> open — free text, then a blind extractor</label>
       </div>
 
@@ -348,13 +348,13 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <button class="tiny" id="reset-system">clear</button></div>
           <textarea id="prompt-system" rows="3" placeholder="empty = no system turn. Anything here is the asker condition: it changes the instrument, is recorded in every export and in the cell key, and runs with and without it never mix."></textarea>
         </div>
-        <div class="prompt-block">
+        <div class="prompt-block" id="pb-single">
           <div class="prompt-head"><span class="nano">soft · single item — {statement} {options}</span>
             <button class="tiny" id="reset-single">reset to default</button></div>
           <textarea id="prompt-single" rows="9"></textarea>
           <div class="warn-chip" id="warn-single"></div>
         </div>
-        <div class="prompt-block">
+        <div class="prompt-block" id="pb-page">
           <div class="prompt-head"><span class="nano">soft · page mode — {statements} {options}</span>
             <button class="tiny" id="reset-page">reset to default</button></div>
           <textarea id="prompt-page" rows="9"></textarea>
@@ -384,7 +384,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <textarea id="prompt-extract" rows="12"></textarea>
           <div class="warn-chip" id="warn-extract"></div>
         </div>
-        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position. The hard rung offers exactly the website's options and nothing else: it is the format of the literature and the comparison point, not the measurement of choice. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject. Prompt version 2 frames the task as a study of how assistants respond and says that choosing records a position and endorses nothing: the first live run under the "answer as yourself" framing produced refusal rates up to 98 %, and the provider's reasoning showed models reading a questionnaire item as a request to endorse it.</div>
+        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; The hard rung (default) offers exactly the test's own options and nothing else, the format under which the human reference values and the earlier LLM studies were produced. The soft rung adds <span class="mono">no_position</span>, which counts as a refusal, never as a position; the first live run showed some models taking that exit on nearly every statement, so it is opt-in and the open rung is the better measure of unforced behaviour. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject. Prompt version 2 frames the task as a study of how assistants respond and says that choosing records a position and endorses nothing: the first live run under the "answer as yourself" framing produced refusal rates up to 98 %, and the provider's reasoning showed models reading a questionnaire item as a request to endorse it.</div>
       </div>
 
       <div class="card">
@@ -420,7 +420,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
       <div class="card" id="compass-card" style="display:none">
         <div class="card-head"><span class="ic">⌖</span><h2>Compasses</h2>
           <div class="spacer"></div>
-          <select id="compass-rung" style="width:auto;min-width:120px"><option value="open">open rung</option><option value="soft">soft rung</option><option value="hard">hard rung</option></select>
+          <select id="compass-rung" style="width:auto;min-width:120px"><option value="open">open rung</option><option value="soft">soft rung</option><option value="hard" selected>hard rung</option></select>
           <select id="compass-lang" style="width:auto;min-width:100px"></select>
           <span class="nano" id="compass-meta"></span></div>
         <div class="caveat" style="margin-bottom:14px">
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.2";
-const BUILD = "2026-11-06.10";
+const TOOL_VERSION = "0.7.7";
+const BUILD = "2026-11-06.15";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15124,9 +15124,13 @@ const LENGTH_RETRY_TOKENS = 4000;   // a reasoning model that spent the whole bu
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function apiError(status, message) { const e = new Error(String(message).slice(0, 400)); e.status = status; return e; }
-// Worth another attempt: rate limit, server error, network drop, timeout. Everything else raises at once.
+// Worth another attempt: rate limit, server error, network drop, timeout, and OpenRouter's credit reservation
+// (402 "would exceed your available credits given your current in-flight requests"): every in-flight call reserves
+// its possible maximum cost, so a high concurrency can exhaust the reservation while the balance is fine.
+// Everything else raises at once.
+const inflightCredit = e => e.status === 402 && /in-flight/i.test(String(e.message));
 function isTransient(e) {
-  if (typeof e.status === "number") return e.status === 429 || e.status >= 500;
+  if (typeof e.status === "number") return e.status === 429 || e.status >= 500 || inflightCredit(e);
   return e instanceof TypeError || e.name === "TimeoutError";
 }
 
@@ -15211,7 +15215,7 @@ async function llm(body, cfg, label = "call") {
       return out;
     } catch (e) {
       const m = String(e.message || e);
-      if (e.status && e.status < 500 && e.status !== 429) {
+      if (e.status && e.status < 500 && e.status !== 429 && !inflightCredit(e)) {
         if (/reasoning/i.test(m) && b.reasoning) { l.warn(`${label}: provider rejects 'reasoning' — retrying without`); b = { ...b }; delete b.reasoning; continue; }
         if (/response_format|json_schema|structured|schema/i.test(m) && b.response_format) { l.warn(`${label}: provider rejects response_format — retrying without; JSON must now come from the prompt`); b = { ...b }; delete b.response_format; delete b.provider; continue; }
         if (/system/i.test(m) && /role|support|unsupported|allowed/i.test(m) && b.messages?.[0]?.role === "system" && b.messages.length > 1) { l.warn(`${label}: provider rejects the system role — folding the system prompt into the user message`); b = { ...b, messages: [{ role: "user", content: b.messages[0].content + "\n\n" + b.messages[1].content }] }; continue; }
@@ -15220,7 +15224,9 @@ async function llm(body, cfg, label = "call") {
       if (!isTransient(e)) throw e;
       attempt++;
       if (attempt > retries) throw e;
-      const wait = 500 * Math.pow(2, attempt - 1);
+      // credit reservations settle when other calls finish: wait longer than for a plain 429, and say what helps
+      const wait = (inflightCredit(e) ? 3000 : 500) * Math.pow(2, attempt - 1);
+      if (inflightCredit(e) && !state.creditHintShown) { state.creditHintShown = true; l.warn("OpenRouter reserves each in-flight call's maximum cost against your balance; with many concurrent calls the reservation runs out before the credits do. Lower the concurrency (8 is safe for most balances) or the max tokens."); }
       l.warn(`${label} failed (${m.slice(0, 140)}) — retry ${attempt}/${retries} in ${wait}ms`);
       await sleep(wait);
     }
@@ -15673,7 +15679,8 @@ const enabledLangs = () => availableLangs().filter(l => $("lang-" + l)?.checked)
 const langKey = l => `${l}@${DATA.languages[l].hash.slice(0, 8)}`;
 
 /* ===================== catalog ===================== */
-const EXCLUDE_RE = /(:free|image|embed|tts|whisper|audio|guard|moderation|ocr|rerank|vision-only)/i;
+// :batch endpoints answer asynchronously (an extractor on one never returns), :online endpoints attach web search
+const EXCLUDE_RE = /(:free|:batch|:online|image|embed|tts|whisper|audio|guard|moderation|ocr|rerank|vision-only)/i;
 const VENDOR_NAMES = { "anthropic": "Anthropic", "openai": "OpenAI", "google": "Google", "x-ai": "xAI", "meta-llama": "Meta", "mistralai": "Mistral",
   "deepseek": "DeepSeek", "qwen": "Alibaba Qwen", "moonshotai": "Moonshot", "z-ai": "Zhipu", "cohere": "Cohere", "amazon": "Amazon", "nvidia": "NVIDIA",
   "microsoft": "Microsoft", "perplexity": "Perplexity", "minimax": "MiniMax", "baidu": "Baidu", "tencent": "Tencent", "ai21": "AI21" };
@@ -15683,17 +15690,19 @@ const priceIn = m => Number(m?.pricing?.prompt || 0), priceOut = m => Number(m?.
 const fmtPrice = m => { const i = priceIn(m) * 1e6, o = priceOut(m) * 1e6; return (!i && !o) ? "free" : `$${i.toFixed(2)}/$${o.toFixed(2)}`; };
 const supportsStructured = m => (m.supported_parameters || []).some(p => p === "structured_outputs" || p === "response_format");
 const LS = { sel: "cb1.sel", cfg: "cb3.cfg", rail: "cb1.rail", prompts: "cb3.prompts", catalog: "cb1.catalog", langs: "cb3.langs" };
-const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "gate-contam", "bootstrap", "cat-structured", "rung-hard", "rung-open", "randomise", "inverted", "batch-size", "max-tokens-open", "check-sample", "auto-extract", "nine-mode", "nine-seed"];
+const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "gate-contam", "bootstrap", "cat-structured", "rung-hard", "rung-soft", "rung-open", "randomise", "inverted", "batch-size", "max-tokens-open", "check-sample", "auto-extract", "nine-mode", "nine-seed"];
 const RUNG_ORDER = ["open", "soft", "hard"];
 // textarea id → [prompt key, warn chip, placeholders]; the texts themselves live in state.prompts[lang][key]
 const PROMPT_FIELDS = { "prompt-single": ["soft_single", "warn-single", ["{statement}", "{options}"]], "prompt-page": ["soft_page", "warn-page", ["{statements}", "{options}"]],
   "prompt-hard-single": ["hard_single", "warn-hard-single", ["{statement}", "{options}"]], "prompt-hard-page": ["hard_page", "warn-hard-page", ["{statements}", "{options}"]],
   "prompt-open": ["open_single", "warn-open", ["{statement}"]] };
-const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), "soft", ...($("rung-hard").checked ? ["hard"] : [])];
+const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), ...($("rung-soft").checked ? ["soft"] : []), ...($("rung-hard").checked ? ["hard"] : [])];
 const LS_EXTRACT = "cb4.prompt.extract", LS_EXTRACT_MODEL = "cb4.extractModel", LS_SYSTEM = "cb7.prompt.system";
 const systemPrompt = () => $("prompt-system").value.trim();
 // prompt version as it enters the cell key: the system prompt, when set, is part of the asker condition
-const promptKey = rung => PROMPT_VERSIONS[rung] + (systemPrompt() ? "+sys:" + hash53(systemPrompt()).slice(0, 8) : "");
+// reasoning setting as a condition label: "low", "default" (no field sent) or "off"
+const reasoningLabel = () => ({ low: "low", "": "default", off: "off" })[$("reasoning").value] || $("reasoning").value;
+const promptKey = rung => PROMPT_VERSIONS[rung] + (systemPrompt() ? "+sys:" + hash53(systemPrompt()).slice(0, 8) : "") + (reasoningLabel() === "low" ? "" : "+r:" + reasoningLabel());
 state.prompts = {};   // lang → { soft_single, soft_page, hard_single, hard_page }, user edits persisted as one object
 const promptFor = (rung, mode, lang) => state.prompts[lang]?.[rung === "open" ? "open_single" : `${rung}_${mode}`] ?? defaultPrompt(rung, mode, lang);
 const savePrompts = () => { try { localStorage.setItem(LS.prompts, JSON.stringify(state.prompts)); } catch (e) {} };
@@ -15854,6 +15863,7 @@ function checkPlaceholders() {
   const ex = $("warn-extract"); const exMissing = !$("prompt-extract").value.includes("{items}");
   ex.textContent = exMissing ? "missing placeholder: {items} — it will be appended at runtime" : ""; ex.classList.toggle("show", exMissing);
   $("pb-hard-single").style.opacity = $("pb-hard-page").style.opacity = $("rung-hard").checked ? "" : ".5";
+  $("pb-single").style.opacity = $("pb-page").style.opacity = $("rung-soft").checked ? "" : ".5";
   $("pb-open").style.opacity = $("pb-extract").style.opacity = $("rung-open").checked ? "" : ".5";
 }
 
@@ -15896,7 +15906,7 @@ function updatePlan() {
   $("plan").innerHTML = models.length && langs.length
     ? `<b>${est.calls.toLocaleString()}</b> calls = ${models.length} model${models.length > 1 ? "s" : ""} × ${Math.round(groupsPerLang)} ${mode === "page" ? "pages" : "items"} × ${structured.length} structured rung${structured.length > 1 ? "s" : ""} × ${langs.length} language${langs.length > 1 ? "s" : ""} × ${trials} trial${trials > 1 ? "s" : ""}${est.open ? ` + open ${est.open.calls.toLocaleString()} free-text calls + ${est.open.extractCalls} extractor batches (~$${(est.open.usd + est.open.extractUsd).toFixed(3)})` : ""}${est.inverted ? ` + contamination ${est.inverted.calls.toLocaleString()} calls on ${est.inverted.items} inverted statements (en)` : ""}
        · ~${(est.inTok / 1000).toFixed(0)}k in / ${(est.outTok / 1000).toFixed(1)}k out tokens · <b>~$${est.usd.toFixed(3)}</b> at catalog prices · ~${est.minutes < 1 ? "<1" : est.minutes.toFixed(0)} min at concurrency ${conc}
-       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}${systemPrompt() ? " · system prompt set: asker condition changed, cells keyed separately" : ""}`
+       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}${systemPrompt() ? " · system prompt set: asker condition changed, cells keyed separately" : ""} · reasoning ${reasoningLabel()}${reasoningLabel() !== "low" ? " (keyed separately)" : ""}`
     : `select at least one model and one language — ${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} are ready`;
   $("run-meta").textContent = state.lastRun ? `last run ${state.lastRun}` : "";
   renderSelected();
@@ -15927,6 +15937,7 @@ async function run() {
   const models = [...state.selected].sort();
   if (!models.length) { l.err("no model selected"); return; }
   const rungs = enabledRungs(), langs = enabledLangs();
+  if (!rungs.length) { l.err("no rung enabled — tick hard, soft or open in the rail"); return; }
   if (!activeItems().length) { l.err("no instrument enabled"); return; }
   if (!langs.length) { l.err("no language enabled"); return; }
   const mode = $("mode").value, trials = Math.max(1, parseInt($("trials").value) || 1), conc = Math.max(1, parseInt($("concurrency").value) || 1), randomise = $("randomise").checked;
@@ -15948,7 +15959,7 @@ async function run() {
       const it = g.items[0];
       const k = cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order: "none", mode: "single", promptVersion: promptKey("open"), variant });
       if (state.cells[k]?.status === "ok") { skipped++; continue; }
-      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, prompt: promptKey("open"), status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
+      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, prompt: promptKey("open"), reasoning_setting: reasoningLabel(), status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
       planned++;
       tasks.push(async () => {
         const label = `${model} open ${lang}${variant === "inverted" ? " inv" : ""} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
@@ -15963,7 +15974,7 @@ async function run() {
     const order = orderFor(model, g.id, trial, randomise);
     const keys = g.items.map(it => cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order, mode, promptVersion: promptKey(rung), variant }));
     if (keys.every(k => state.cells[k]?.status === "ok")) { skipped += keys.length; continue; }
-    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, prompt: promptKey(rung), status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
+    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, prompt: promptKey(rung), reasoning_setting: reasoningLabel(), status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
     planned += keys.length;
     const codes = orderedCodes(optionsFor(g.items[0], rung), order);
     tasks.push(async () => {
@@ -16053,7 +16064,8 @@ async function extractOpen(force) {
     }), conc, (d, t) => showProgress("extract repair", d, t));
   }
   const done = todo.filter(c => c.extract).length;
-  l.ok(`extracted ${done}/${todo.length}: ${STANCES.map(st => `${st} ${todo.filter(c => c.extract?.stance === st).length}`).join(" · ")}`);
+  if (done < todo.length) l.err(`extraction: ${todo.length - done} of ${todo.length} open answers still have no stance (extractor ${cfg.model}); the open rung scores nothing until they do — pick another extractor model in the rail and press "extract open answers"`);
+  l[done === todo.length ? "ok" : "warn"](`extracted ${done}/${todo.length}: ${STANCES.map(st => `${st} ${todo.filter(c => c.extract?.stance === st).length}`).join(" · ")}`);
   hideProgress(); setRunning(false);
 }
 // Gate 3: re-extract a deterministic sample per language at batch size 1 and compare with the batched stances.
@@ -16182,7 +16194,8 @@ function computeGates(scores, models, thr, instThr, rungs, langs, contamThr) {
     { id: 1, name: "Answer rate", pass: g1.length === 0, detail: g1.length ? g1.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung} · ${s.lang}: ${Object.entries(s.axes).filter(([a]) => !s.gate1[a]).map(([a, v]) => `${a} ${v.answered}/${v.total}`).join(", ")}`).join("\n") : `every axis of every model answered ≥ ${Math.round(thr * 100)} % of its items`, consequence: "hollow marker, no claim on that axis" },
     { id: 2, name: "Instability across trials", pass: multiTrial ? g2.length === 0 : null, detail: multiTrial ? (g2.length ? g2.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung} · ${s.lang}: worst axis SD ${s.instability.worst.toFixed(2)} > ${instThr}`).join("\n") : `every axis SD across trials ≤ ${instThr} on the unit scale`) : "needs ≥ 2 trials; every marker carries n=1", consequence: "hollow marker with the trial range instead of a point" },
     { id: 3, name: "Extractor batch check", pass: state.batchCheck ? Object.values(state.batchCheck).every(b => b.pct != null && b.pct >= 0.95) : null,
-      detail: state.batchCheck ? Object.entries(state.batchCheck).map(([l, b]) => `${l}: ${b.same}/${b.n} agree${b.pct != null ? ` (${(b.pct * 100).toFixed(1)} %)` : ""}${b.pct != null && b.pct < 0.95 ? " — below 95 %, read the disagreements" : ""}`).join("\n") : (scores.some(s => s.rung === "open") ? "open answers extracted in batches; run the batch check before quoting open-rung scores" : "only for the open rung"), consequence: "below 95 % the open-rung scores carry an extractor caveat" },
+      detail: (() => { const un = Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok" && !c.extract).length; const pre = un ? `${un} open answer(s) have no stance yet — press "extract open answers" (extractor: ${$("extract-model").value || "none selected"})\n` : "";
+      return pre + (state.batchCheck ? Object.entries(state.batchCheck).map(([l, b]) => `${l}: ${b.same}/${b.n} agree${b.pct != null ? ` (${(b.pct * 100).toFixed(1)} %)` : ""}${b.pct != null && b.pct < 0.95 ? " — below 95 %, read the disagreements" : ""}`).join("\n") : (scores.some(s => s.rung === "open") ? "open answers extracted in batches; run the batch check before quoting open-rung scores" : "only for the open rung")); })(), consequence: "below 95 % the open-rung scores carry an extractor caveat" },
     { id: 4, name: "Convergence across instruments", pass: convAny ? conv.length === 0 : null, detail: convAny ? (conv.length ? conv.map(c => `${c.model} · ${c.rung} · ${c.lang}: ${c.quadrants.map(q => `${q.inst} ${q.q}`).join(", ")}`).join("\n") : "every model lands in the same quadrant on every instrument that passed gate 1") : "needs ≥ 2 instruments with a passed answer-rate gate", consequence: "both markers shown and joined, no average" },
     { id: 5, name: "Cohort size", pass: models.length >= 3, detail: `${models.length} model(s) in this run${models.length < 3 ? " — no cohort means are computed or shown" : ""}`, consequence: "no cohort means below 3 models" },
     { id: 6, name: "Translation verdicts", pass: tl.length ? !tl.some(t => t.limited) : null, detail: tl.length ? tl.map(t => `${t.lang}: ${t.ex} of ${t.total} items excluded (wrong / uncertain)${t.limited ? " — translation-limited" : ""}`).join("\n") : "English only in this run", consequence: "excluded items are not asked; a language above 10 % is marked translation-limited" },
@@ -16262,7 +16275,8 @@ function renderCompasses() {
   const sc = all.filter(s => s.rung === sel.value && s.lang === ls.value);
   const insts = INST_ORDER.filter(k => sc.some(s => s.inst === k));
   const nTrials = Math.max(...sc.map(s => s.trials), 1);
-  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · ${sel.value} rung · ${ls.value} · n=${nTrials}`;
+  const unextracted = sel.value === "open" ? Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok" && !c.extract).length : 0;
+  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · ${sel.value} rung · ${ls.value} · n=${nTrials}${unextracted ? ` · ${unextracted} answers not extracted yet` : ""}`;
   $("compass-grid").innerHTML = insts.map(inst => {
     const rows = sc.filter(s => s.inst === inst), meta = INSTRUMENTS[inst];
     const tracks = Object.keys(meta.axes).map(a => `<div class="track"><span class="lo">${escapeHtml(meta.axes[a].lo)}</span>${trackSvg(inst, a, rows)}<span class="hi">${escapeHtml(meta.axes[a].hi)}</span></div>`).join("");
@@ -16438,7 +16452,7 @@ function buildExport() {
     languages: Object.fromEntries(availableLangs().map(l => [l, { ...DATA.languages[l], enabled: enabledLangs().includes(l), excluded_items: ITEMS.filter(it => it.text[l] && !usableInLang(it, l)).map(it => it.id) }])),
     prompt_versions: PROMPT_VERSIONS, system_prompt: systemPrompt() || null, prompts: Object.fromEntries(enabledLangs().map(l => [l, Object.fromEntries(["soft_single", "soft_page", "hard_single", "hard_page", "open_single"].map(k => [k, promptFor(k.split("_")[0], k.split("_")[1], l)]))])),
     extractor: { prompt: $("prompt-extract").value, version: EXTRACT_VERSION, model: $("extract-model").value, batch_size: $("batch-size").value, batch_check: state.batchCheck || null }, settings,
-    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: systemPrompt() ? "system prompt set (see system_prompt) ahead of the user turn; prompt text under prompts" : "neutral user turn, no system prompt, no persona; prompt text under prompts", repetitions: Number(settings.trials) || 1,
+    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: systemPrompt() ? "system prompt set (see system_prompt) ahead of the user turn; prompt text under prompts" : "neutral user turn, no system prompt, no persona; prompt text under prompts", reasoning: reasoningLabel() === "default" ? "provider default (no reasoning field sent)" : `reasoning: ${reasoningLabel()}`, repetitions: Number(settings.trials) || 1,
       dispersion: "bootstrap interval over items (2.5/97.5 pct), draws under settings.bootstrap; per-trial scores and SD across trials under scores[].perTrial / instability when trials ≥ 2", variance_decomposition: state.errorBudget ? "error_budget: crossed main-effect sums of squares over instrument-axis, model, rung, language; residual = trial noise + interactions; bootstrap CI over observations" : "not computed", contamination_check: (state.contamination || []).length ? `${state.contamination.filter(x => x.flagged && !x.gated).length} of ${state.contamination.length} model × instrument × rung pairs flagged (shift > ${$("gate-contam").value} on the unit square and above trial noise, or item agreement below one half); see contamination` : "not run", extractor_batch_check: state.batchCheck ? Object.fromEntries(Object.entries(state.batchCheck).map(([l, b]) => [l, b.pct])) : "not run",
       option_order: settings.randomise ? "randomised per cell by hash parity (agree-first / disagree-first), recorded per cell" : "fixed agree-first",
       item_level_results: "cells", web_search: "none attached to any request", pct_scoring: PCT_VALIDATION },
@@ -16462,6 +16476,12 @@ function importRun(obj) {
   if (obj.languages) for (const [l, v] of Object.entries(obj.languages)) { const el = $("lang-" + l); if (el && !el.disabled) el.checked = !!v.enabled; }
   if (obj.instruments) for (const [k, v] of Object.entries(obj.instruments)) { const el = $("inst-" + k); if (el) el.checked = !!v.enabled; }
   if (obj.nine_axes) { $("nine-mode").value = obj.nine_axes.mode; if (obj.nine_axes.seed) $("nine-seed").value = obj.nine_axes.seed; }
+  // the rungs and the inverted variant come from the cells themselves, so the next run can fill every gap the export has;
+  // exports of versions before 0.7.3 carry soft cells without a rung-soft setting
+  const rungsInCells = new Set(obj.cells.map(c => c.rung)), variants = new Set(obj.cells.map(c => c.variant || "original"));
+  for (const r of ["soft", "hard", "open"]) if (rungsInCells.has(r)) $("rung-" + r).checked = true;
+  if (variants.has("inverted")) $("inverted").checked = true;
+  const conc = parseInt($("concurrency").value) || 4; if (conc > 16) { $("concurrency").value = 16; l.warn(`concurrency ${conc} from the export lowered to 16: OpenRouter reserves each in-flight call's maximum cost, and ${conc} in flight emptied the reservation in that run`); }
   saveCfg(); updateInstMeta(); updateLangMeta(); renderCatalog(); checkPlaceholders();
   l.ok(`resumed ${obj.cells.length} cells from ${obj.version ? "v" + obj.version : "an export"} (${obj.run_at || "no date"}): ${ok} ok, ${err} error, ${pend} pending → ${err + pend} will be asked again by the next run${before ? `; ${before} cells were already in this session` : ""}`);
   state.lastRun = "resumed " + (obj.run_at || "").slice(0, 16).replace("T", " ");
@@ -16528,10 +16548,10 @@ function buildMarkdown() {
 function exportMd() { download(`compass-bench-${stamp()}.md`, buildMarkdown(), "text/markdown;charset=utf-8"); }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
-  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "reasoning_tokens", "latency_ms", "cost_usd", "error"];
+  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "prompt", "reasoning_setting", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "reasoning_tokens", "latency_ms", "cost_usd", "error"];
   const lines = [head.join(",")];
   for (const c of Object.values(state.cells)) { const it = ITEM_BY_ID.get(c.item_id);
-    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.reasoning_tokens ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
+    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.prompt ?? "", c.reasoning_setting ?? "", c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.reasoning_tokens ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
   download(`compass-bench-${stamp()}.csv`, "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
 }
 
@@ -16558,7 +16578,7 @@ function init() {
   $("extract-model").addEventListener("change", e => { localStorage.setItem(LS_EXTRACT_MODEL, e.target.value); updateExtractPrice(); updatePlan(); });
   $("btn-extract").addEventListener("click", () => extractOpen(true).then(rescore).catch(e => { l.err("extraction failed: " + e.message); setRunning(false); }));
   $("btn-check").addEventListener("click", () => batchCheck().catch(e => { l.err("batch check failed: " + e.message); setRunning(false); }));
-  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); if (id === "rung-hard" || id === "rung-open") checkPlaceholders(); updatePlan(); }));
+  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); if (id === "rung-hard" || id === "rung-soft" || id === "rung-open") checkPlaceholders(); updatePlan(); }));
   $("compass-rung").addEventListener("change", () => { renderCompasses(); renderConvergence(); renderShift(); renderLadder(); renderContamination(); });
   $("compass-lang").addEventListener("change", () => { renderCompasses(); renderConvergence(); renderLadder(); });
   $("btn-catalog").addEventListener("click", () => fetchCatalog(true));
