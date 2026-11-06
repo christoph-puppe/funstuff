@@ -33,7 +33,7 @@ vm.createContext(ctx);
 try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } catch (e) { console.error(`core block does not evaluate: ${e.message}`); process.exit(2); }
 for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
   "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit",
-  "setUi", "defaultPrompt", "usableInLang", "shiftDistance"])
+  "setUi", "defaultPrompt", "usableInLang", "shiftDistance", "buildOpenPrompt", "buildExtractPrompt", "extractSchema", "sampleForCheck", "agreement", "stanceToAnswer"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -280,6 +280,31 @@ await test("per-language prompts and labels: defaultPrompt and option lines use 
   assert.ok(p.includes(DATA.ui.option_labels.zh.agree) && p.includes("- no_position:"), "labels in the run language, codes unchanged");
   assert.ok(Math.abs(ctx.shiftDistance({ economic: 0, authority: 0 }, { economic: 0.3, authority: -0.4 }) - 0.5) < 1e-9);
   assert.equal(ctx.shiftDistance({ economic: 0, authority: null }, { economic: 0, authority: 0 }), null);
+});
+await test("open rung: prompt has no options, extractor prompt is blind (ids a1…aN, no model id), schema echoes ids and stances", () => {
+  const it = ITEMS[5];
+  const p = ctx.buildOpenPrompt("", it, "en");
+  assert.ok(p.includes(it.text.en) && !/strongly_agree|no_position|Options/.test(p), "open prompt carries the statement and no options");
+  assert.ok(ctx.buildOpenPrompt("Say {statement}", it, "de").includes(it.text.de), "open prompt in the run language");
+  const batch = [{ id: "a1", statement: "S1", answer: "I agree.\nStrongly." }, { id: "a2", statement: "S2", answer: "No comment as an AI" }];
+  const ep = ctx.buildExtractPrompt("", batch);
+  assert.ok(ep.includes("[a1]") && ep.includes("[a2]") && ep.includes("ANSWER: I agree. Strongly.") && ep.includes("2 free-text answers"), "items block and count substituted, newlines in answers flattened");
+  assert.ok(!/anthropic|openai|model/i.test(ep.split("[a1]")[1]), "no model names reach the extractor");
+  const sch = ctx.extractSchema();
+  assert.equal(JSON.stringify([...sch.properties.items.items.properties.stance.enum]), JSON.stringify(["strongly_agree", "agree", "neutral", "disagree", "strongly_disagree", "refused"]));
+  assert.equal(sch.properties.items.items.additionalProperties, false);
+  assert.equal(ctx.stanceToAnswer("refused"), "no_position"); assert.equal(ctx.stanceToAnswer("agree"), "agree");
+  assert.equal(ctx.defaultPrompt("open", "single", "en").includes("{statement}"), true);
+});
+await test("open rung: cells without an extracted stance never enter the majority; a deterministic sample; agreement with diffs", () => {
+  const cells = [{ item_id: "a", status: "ok", answer: null }, { item_id: "a", status: "ok", answer: "agree" }, { item_id: "b", status: "ok", answer: null }];
+  const m = ctx.majorityAnswers(cells); assert.equal(m.get("a"), "agree"); assert.ok(!m.has("b"));
+  const pool = Array.from({ length: 50 }, (_, i) => ({ key: "k" + i }));
+  const s1 = ctx.sampleForCheck(pool, 10, 5), s2 = ctx.sampleForCheck(pool, 10, 5);
+  assert.equal(s1.length, 10); assert.equal(JSON.stringify(s1.map(c => c.key)), JSON.stringify(s2.map(c => c.key)));
+  assert.notEqual(JSON.stringify(s1.map(c => c.key)), JSON.stringify(pool.slice(0, 10).map(c => c.key)), "sample is not simply the first n");
+  const ag = ctx.agreement(new Map([["k1", "agree"], ["k2", "disagree"], ["k3", "refused"], ["k9", "agree"]]), new Map([["k1", "agree"], ["k2", "neutral"], ["k3", "refused"]]));
+  assert.equal(ag.n, 3); assert.equal(ag.same, 2); assert.ok(Math.abs(ag.pct - 2 / 3) < 1e-9); assert.equal(ag.diffs[0].key, "k2"); assert.equal(ag.diffs[0].single, "neutral");
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

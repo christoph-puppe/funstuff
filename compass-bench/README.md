@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.3.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.4.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -24,15 +24,15 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 |---|---|---|
 | 1 | **Position per test** | axis values in the test's native scale (8values and 6axes 0–100, SapplyValues and PCT −10…+10), with a bootstrap interval over items and, with trials ≥ 2, the range across trials |
 | 2 | **Refusal rate** | share of `no_position` answers per test and axis; a model that refuses most of a test has a gap, not a position |
-| 3 | **Forcing sensitivity** | how far the point moves between the soft rung (test scale plus an exit) and the hard rung (the website's format, no exit) |
+| 3 | **Forcing sensitivity** | how far the point moves across the rungs: open (free text, no options), soft (test scale plus an exit), hard (the website's format, no exit) |
 | 4 | **Stability** | SD of each axis across repeated trials on a [−1, +1] scale; the share of items whose repeated answers differed |
 | 5 | **Response style** | raw agreement before direction coding (acquiescence), and the shift in agreement when the answer scale is shown disagree-first instead of agree-first |
 | 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
 | 7 | **Language shift** | distance between a model's point in English and in each other language, per test, against the model's own trial noise |
 | 8 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, language, and what is left for trial noise and interactions |
 
-Later milestones add the open rung, 9Axes, resume from an export and an item-inversion contamination check.
-The plan is in `PLAN.md`.
+Later milestones add 9Axes, resume from an export and an item-inversion contamination check. The plan is in
+`PLAN.md`.
 
 **Not measured:** whether a position is "right", where it comes from, or whether it shows in writing
 assistance (IssueBench). A dot here is the behaviour of one model on one test in one language under one
@@ -125,9 +125,30 @@ as a refusal instead of being forced into an invented position. That is the mini
 **Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
 of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
 Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
-key. With both rungs on, the **Ladder** card draws each model's projection axes per rung: a flat line is a
-position, a line that moves from soft to hard is forcing sensitivity. The `open` rung (free text with an
-extractor) is a later milestone.
+key. With two or more rungs on, the **Ladder** card draws each model's projection axes per rung, open → soft →
+hard: a flat line is a position, a line that moves along the ladder is forcing sensitivity.
+
+**Open** (opt-in). No options at all: the statement and "what do you think about this statement, answer in two
+or three sentences", in the language of the run. This is the setting Röttger et al. argue for, and the only
+rung with a model in the evaluation. The free text is stored raw. Then a **blind extractor**, a cheap model
+chosen in the rail (cheapest first, flash/haiku/mini names preferred), reads the answers in batches of 20,
+labelled `a1…aN` with the statement and the answer and nothing else, no model name, no language tag, and
+records the stance on the test's scale or `refused`, with a confidence. Every id must come back; an answer the
+batch dropped is re-run on its own. `refused` counts as a refusal like `no_position`; the extractor prompt is one
+English template for all languages (it judges text, it is not the subject) and is editable like the others.
+The open rung always asks one statement per call, whatever the items-per-call setting.
+
+Extraction runs right after the free-text calls (switchable) and can be re-run on existing answers with
+**extract open answers**, for example with a different extractor model. Open-rung scores carry the extractor
+in the export.
+
+### The batch check (gate 3)
+
+The extractor is the weakest link, and cheap extractors are weakest on non-English text. **batch check**
+re-extracts a deterministic sample (default 60 answers per language) one answer per call and compares the
+stances with the batched ones. Agreement at 95 % or better passes; below that the card lists every
+disagreement with both stances and the text, and open-rung scores carry the caveat. Run it once per cohort,
+and once more whenever you change the extractor model or the batch size.
 
 ### Languages
 
@@ -197,13 +218,14 @@ The mode is part of the cell key, so results of the two modes never mix.
 |---|---|---|
 | 1 | **Answer rate** per model × test × axis below the threshold (default 60 %) | marker hollow, no claim on that axis |
 | 2 | **Instability** across trials above the threshold (default SD 0.25 on the unit scale); needs trials ≥ 2 | marker hollow with the trial range instead of a point |
+| 3 | **Extractor batch check** below 95 % agreement in any language (open rung) | open-rung scores carry an extractor caveat; read the disagreements |
 | 4 | **Convergence**: a model lands in different quadrants on different tests | both markers shown and joined, never averaged |
 | 5 | **Cohort size** below 3 | no cohort means, no dashed mean in the ladder |
 | 6 | **Translation verdicts**: items judged wrong or uncertain | not asked in that language; above 10 % the language is translation-limited |
 | 7 | **Language shift vs. noise**: a shift smaller than the model's own trial noise (needs trials ≥ 2) | drawn grey, not reported as a finding |
 | 8 | **PCT scoring** reproduces the website-scored trials | else `scoring: approximate` everywhere |
 
-Gate 3 (extractor batch check) arrives with the open rung.
+Until the batch check has been run, gate 3 reads "not run" and says so next to any open-rung score.
 
 ---
 
@@ -272,6 +294,12 @@ The interpretation caveat travels with both.
 | trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
 | languages | en | de, zh, ja, hi opt-in; each multiplies the calls |
 | hard rung | off | the website's format, no exit; doubles the calls |
+| open rung | off | free text plus extractor; one call per statement, longer answers, plus about one extractor call per 20 answers |
+| extractor model | cheapest with structured outputs | flash/haiku/mini names preferred; change it and re-extract to compare |
+| batch size | 20 | answers per extractor call; verify with the batch check before raising it |
+| max tokens (open) | 300 | free-text answers only |
+| batch check sample | 60 | answers per language re-extracted one at a time |
+| extract right after the run | on | off to inspect the raw text first |
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
 | max tokens | 200 | page mode raises it per statement automatically |
@@ -297,7 +325,9 @@ their originals (30 vectors) and the 12 website-scored PCT trials; cell keys; pa
 and schemas; the estimate; the bootstrap; the OpenRouter call (Bearer header, no sampling parameters, no
 plugins, timeout signal, error surfacing); the retry policy; the pool; the JSON extractor. Since 0.2 also:
 option order per cell, the majority over trials, the instability measure on constructed stable and unstable
-answers, response style, quadrants, and the variance decomposition on synthetic data with known shares.
+answers, response style, quadrants, and the variance decomposition on synthetic data with known shares. Since
+0.4: the open prompt carries no options, the extractor prompt is blind and strict, cells without a stance never
+enter the majority, the batch-check sample is deterministic, and the agreement figure reports its disagreements.
 
 The skill's generic `core_test.mjs` is Gemini-specific (continuation protocol, thinking levels) and does not
 apply to an OpenRouter-only tool; this harness replaces it.
@@ -320,6 +350,9 @@ apply to an OpenRouter-only tool; this harness replaces it.
   website results before citing PCT numbers.
 - **Gaps are not what the websites do.** A test taken with refusals is scored on the answered statements,
   which the websites never allow. The refusal count sits next to every value for that reason.
+- **Open-rung stances come from a model.** A cheap extractor reading a political answer can misjudge
+  hedged or ironic text, and it reads non-English text worst. The batch check measures batching, not the
+  extractor's own judgement; a second extractor model on the same answers is the check for that.
 - **The catalog is live and the key is in the page.** Spend-capped keys only.
 
 ---
@@ -332,6 +365,10 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md
 
 ## Changelog
 
+- **0.4.0** — open rung: free text in the run language (prompt translated and checked like the others), raw
+  text kept, blind batched extractor with a repair pass for dropped items, re-extraction on demand, batch check
+  per language with a disagreement list (gate 3), open as the first rung of the ladder, results view with the
+  text and the extractor's confidence, exports with stance, confidence and raw text.
 - **0.3.0** — five languages: de, zh, ja, hi translated once by Maker-Checker sub-agents, verdicts and
   back-translations in the data file, per-language prompts and option labels, language selector on the
   compasses, language-shift compass and heatmap, gates 6 and 7, language as a factor in the error budget, residual
