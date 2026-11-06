@@ -146,6 +146,20 @@ with stay English, so scoring is language-independent. Items judged `wrong` or `
 that language (gate 6); a language with more than 10 % excluded items is marked translation-limited. The
 cell key carries the language hash, so a corrected translation never mixes with results of the old one.
 
+Verdicts of the shipped sets (182 items each; "revised" = sent back to a Maker once after a major_shift or
+uncertain verdict and re-judged better; "excluded" = still wrong or uncertain after that round):
+
+| lang | name | faithful | minor_shift | major_shift | wrong + uncertain | revised | excluded | hash |
+|---|---|---|---|---|---|---|---|---|
+| `de` | Deutsch | 174 | 8 | 0 | 0 | 1 | 0 | `0c4bfd8708b6` |
+| `zh` | 中文 | 177 | 5 | 0 | 0 | 1 | 0 | `c7cef572610d` |
+| `ja` | 日本語 | 172 | 10 | 0 | 0 | 0 | 0 | `e9dcbb25461b` |
+| `hi` | हिन्दी | 166 | 16 | 0 | 0 | 1 | 0 | `26e3aa0a53be` |
+
+The three revisions were the German "gender" (`Geschlecht` covers sex and gender, now the loanword `Gender`),
+the Chinese "jury nullification" (no settled term; now a descriptive rendering) and the Hindi "spank"
+(`पिटाई` reads as a beating; now a light smack). Minor shifts are listed with their notes in the data file.
+
 What a shift between languages measures: the model and the translation together. The back-translations are in
 the data file so a critic can tell the two apart; a review of the German set as a diff on that file is welcome.
 
@@ -225,9 +239,11 @@ shift is measured but none is judged.
 ### Error budget
 
 A crossed main-effect decomposition of the normalised axis values over four factors: instrument × axis, model,
-rung, language; the residual is trial-to-trial noise plus interactions. Shares of the total sum of squares, with
-a basic (reflected) bootstrap interval over observations, clipped to 0–100 %, because resampling inflates the
-main-effect sums of squares and a plain percentile interval can miss the point estimate. Amber ticks mark the 2026 study's values on 19 models (instrument and
+rung, language; the residual is trial-to-trial noise plus interactions. Shares are ω² (each factor's sum of squares
+minus the noise its degrees of freedom are expected to collect, over the total plus the residual mean square), which
+needs repeated cells; without residual degrees of freedom the card falls back to raw η² and says so. Intervals come
+from a residual bootstrap: the main-effects fit is kept and its residuals are resampled onto the fitted values,
+because resampling whole observations duplicates rows and inflates every main-effect sum of squares. Amber ticks mark the 2026 study's values on 19 models (instrument and
 axis 52 %, model 13 %, noise 35 %). With one model the model share is zero by construction; with one trial the
 residual holds interactions only. The card says so when that is the case.
 
@@ -296,8 +312,9 @@ apply to an OpenRouter-only tool; this harness replaces it.
   the diff). The verdicts say how the back-translation compared, not that a native speaker would phrase the
   item that way. Treat a language shift as a hypothesis about model plus translation until a native speaker
   has read the items that drive it.
-- **The error budget is a main-effects decomposition**, not the study's random-effects model with cluster
-  bootstrap. It answers the same question at the level of one run; it is not comparable number for number.
+- **The error budget is a main-effects decomposition** with ω² correction, not the study's random-effects model
+  with cluster bootstrap. It answers the same question at the level of one run; it is not comparable number for
+  number, and with one trial it cannot separate noise from interactions at all.
 - **The PCT weights are a reconstruction.** They reproduce the website on every trial we could check; the
   website could change its scoring without notice, and the badge would not know. Re-validate against fresh
   website results before citing PCT numbers.
@@ -317,7 +334,7 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md
 
 - **0.3.0** — five languages: de, zh, ja, hi translated once by Maker-Checker sub-agents, verdicts and
   back-translations in the data file, per-language prompts and option labels, language selector on the
-  compasses, language-shift compass and heatmap, gates 6 and 7, language as a factor in the error budget, basic
+  compasses, language-shift compass and heatmap, gates 6 and 7, language as a factor in the error budget, residual
   bootstrap for the shares; files moved into their own directory with a zip for download.
 - **0.2.0** — hard rung with its own prompts; trials ≥ 2 with per-trial scoring, instability (gate 2) and
   trial-range whiskers; option-order randomisation per cell; response-style card (acquiescence, order shift,

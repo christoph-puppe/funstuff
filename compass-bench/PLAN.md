@@ -6,7 +6,7 @@ jedes Modell dort einzeichnet, wo der jeweilige Test es einzeichnen würde. Dazu
 dieser Punkt ist: über Wiederholungen, über den Fragezwang, über die Optionsreihenfolge, über die
 Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdote.
 
-Status: **Meilensteine 0.1 und 0.2 gebaut** (`compass-bench.html` 0.2.0, Build 2026-11-06.2), Rest Plan. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
+Status: **Meilensteine 0.1 bis 0.3 gebaut** (`compass-bench/compass-bench.html` 0.3.0, Build 2026-11-06.3), Rest Plan. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
 Revision 6: Übersetzung einmalig durch Claude mit Sub-Agenten, Ergebnis als JSON im Repo; Stufen,
@@ -436,7 +436,7 @@ Schätzung vor dem Start neben dem Run-Button, mit Katalogpreisen je gewähltem 
 |---|---|---|
 | **0.1** ✓ | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, Modellauswahl aus der Live-Liste, `items pro Aufruf`, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte (30 Vektoren + 12 PCT-Trials); Dedup findet 182; `compass-bench.test.mjs` grün (19 Tests); Headless-Lauf mit gemocktem OpenRouter; **Live-Lauf mit echtem Key steht aus** |
 | **0.2** ✓ | Stufe `hard` (Opt-in), Leiter, Trials ≥ 2, Reihenfolge-Randomisierung, Ja-Sage-Quote, Konvergenz-Kompass, Error-Budget-Karte, Gatter 1, 2, 4, 5, 8 | konstruierte instabile Antworten lösen Gatter 2 aus (Unit-Test und Headless-Lauf mit einem Modell, das zwischen Trials kippt); Varianzzerlegung auf einem synthetischen Datensatz mit bekannten Anteilen stimmt (80/20/0 und mit Trial-Rauschen); 25 Tests grün |
-| **0.3** | Übersetzung de/zh/ja/hi durch Sub-Agenten (Maker, Checker, eine Korrekturrunde), `compass-bench-items.json` im Repo, Einbettung plus Gleichheitstest, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | jedes Item in jeder Sprache hat Text, Rückübersetzung und Verdikt; Anteil `faithful` + `minor_shift` pro Sprache im Log; dein `de`-Review als Diff; Lauf in fünf Sprachen vergleichbar |
+| **0.3** ✓ | Übersetzung de/zh/ja/hi durch Sub-Agenten (Maker, Checker, eine Korrekturrunde), `compass-bench-items.json` im Repo, Einbettung plus Gleichheitstest, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | jedes Item in jeder Sprache hat Text, Rückübersetzung und Verdikt (de 174/8, zh 177/5, ja 172/10, hi 166/16 faithful/minor, drei Korrekturen, null ausgeschlossen); 27 Tests grün; Headless-Lauf mit drei Sprachen; `de`-Review durch dich als Diff möglich |
 | **0.4** | Stufe `open`, blinder Extraktor, Batch-Check pro Sprache (Gatter 3) | ≥ 95 % in jeder Sprache, sonst Extraktor wechseln |
 | **0.5** | 9Axes (Seed/Pool, Übersetzung on demand), 8values-Ideologielabel, Resume, Markdown, README mit Lizenz- und Copyright-Block | Lauf abbrechen, importieren, fortsetzen: keine `ok`-Zelle läuft erneut |
 | **0.6** | Kontaminationscheck: invertierte Items durch Sub-Agenten (Maker invertiert, Checker prüft), Ergebnis als zweite Datei im Repo, Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt Fixture-Fehlinversionen; ein Modell mit konstruiert symmetrischen Antworten zeigt null Verschiebung |

@@ -32,7 +32,8 @@ const ctx = { console, performance, AbortSignal, Math, Map, Set, Promise, Array,
 vm.createContext(ctx);
 try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } catch (e) { console.error(`core block does not evaluate: ${e.message}`); process.exit(2); }
 for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
-  "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit"])
+  "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit",
+  "setUi", "defaultPrompt", "usableInLang", "shiftDistance"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -227,11 +228,58 @@ await test("variance decomposition: synthetic data with known shares (axis 80 %,
   assert.equal(v.parts.axis_levels, 2); assert.equal(v.n, 8);
   const noisy = obs.map(o => ({ ...o, value: o.value + (o.trial === 1 ? 0.5 : -0.5) }));   // ±0.5 per trial: SS 8×0.25 = 2 on top of 10
   const w = ctx.varianceDecomposition(noisy, ["axis", "model", "rung"]);
-  assert.ok(Math.abs(w.shares.residual - 2 / 12) < 1e-9 && Math.abs(w.shares.axis - 8 / 12) < 1e-9, JSON.stringify(w.shares));
+  // raw η²: 8/12, 2/12, 2/12. ω² with df_res = 8−1−(1+1+0) = 5, MS_res = 2/5: axis (8−0.4)/(12+0.4), model (2−0.4)/(12+0.4), rest residual
+  assert.ok(Math.abs(w.sharesRaw.residual - 2 / 12) < 1e-9 && Math.abs(w.sharesRaw.axis - 8 / 12) < 1e-9, JSON.stringify(w.sharesRaw));
+  assert.ok(w.corrected && w.dfRes === 5, `corrected shares when residual df exist (dfRes ${w.dfRes})`);
+  assert.ok(Math.abs(w.shares.axis - 7.6 / 12.4) < 1e-9 && Math.abs(w.shares.model - 1.6 / 12.4) < 1e-9, JSON.stringify(w.shares));
+  assert.ok(Math.abs(w.shares.residual - (1 - w.shares.axis - w.shares.model)) < 1e-9 && Math.abs(w.shares.rung) < 1e-9);
+  assert.ok(v.corrected && Math.abs(v.shares.axis - 0.8) < 1e-9, "no noise: corrected shares equal the raw ones");
   assert.equal(ctx.varianceDecomposition([{ value: 1, axis: "A", model: "m", rung: "soft" }], ["axis"]), null);
-  const b1 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3), b2 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3);
-  assert.equal(JSON.stringify(b1), JSON.stringify(b2)); assert.ok(b1.axis[0] <= w.shares.axis + 1e-9 && b1.axis[1] >= w.shares.axis - 1e-9, `basic interval ${b1.axis} must bracket ${w.shares.axis}`);
-  assert.ok(Object.values(b1).every(([lo, hi]) => lo >= 0 && hi <= 1 && lo <= hi), "shares intervals clipped to [0, 1]");
+  const b1 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 200, 3), b2 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 200, 3);
+  assert.equal(JSON.stringify(b1), JSON.stringify(b2), "deterministic for a seed");
+  assert.ok(b1.axis[0] <= w.shares.axis + 1e-9 && b1.axis[1] >= w.shares.axis - 1e-9, `residual-bootstrap interval ${b1.axis} must bracket ${w.shares.axis}`);
+  assert.ok(b1.residual[0] <= w.shares.residual + 1e-9 && b1.residual[1] >= w.shares.residual - 1e-9, `residual share ${b1.residual} must bracket ${w.shares.residual}`);
+  const b0 = ctx.bootstrapShares(obs, ["axis", "model", "rung"], 50, 3); assert.ok(Math.abs(b0.axis[0] - 0.8) < 1e-9 && Math.abs(b0.axis[1] - 0.8) < 1e-9, "no residuals → degenerate interval at the point");
+  // pure noise: ω² must not credit the factors with much; raw η² would
+  const rnd = (() => { let a = 7; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })();
+  const pure = []; for (const axis of ["A", "B", "C", "D"]) for (const model of ["m1", "m2", "m3"]) for (const trial of [1, 2, 3, 4]) pure.push({ value: rnd() - 0.5, axis, model, rung: "soft", trial });
+  const pv = ctx.varianceDecomposition(pure, ["axis", "model", "rung"]);
+  assert.ok(pv.shares.residual > 0.8 && pv.shares.residual > pv.sharesRaw.residual, `pure noise: ω² residual ${pv.shares.residual} should dominate and exceed raw ${pv.sharesRaw.residual}`);
+});
+await test("languages: five sets, every item translated with a verdict, hashes distinct, excluded items follow the verdicts", () => {
+  const langs = ["en", "de", "zh", "ja", "hi"];
+  for (const l of langs) assert.ok(DATA.languages[l]?.hash, `language ${l} present with hash`);
+  assert.equal(new Set(langs.map(l => DATA.languages[l].hash)).size, 5, "language hashes distinct");
+  const V = new Set(["faithful", "minor_shift", "major_shift", "wrong", "uncertain"]);
+  for (const it of ITEMS) for (const l of langs.slice(1)) {
+    assert.ok(it.text[l] && it.text[l].trim().length > 0, `${it.id} has ${l} text`);
+    assert.ok(V.has(it.translations?.[l]?.verdict), `${it.id} ${l} has a verdict`);
+    assert.ok(typeof it.translations[l].back === "string" && it.translations[l].back.length > 0, `${it.id} ${l} has a back-translation`);
+  }
+  for (const l of langs.slice(1)) {
+    const excluded = ITEMS.filter(it => !ctx.usableInLang(it, l)).length;
+    assert.equal(excluded, DATA.languages[l].excluded, `${l}: excluded count matches the language record`);
+    assert.ok(excluded / ITEMS.length <= 0.10, `${l}: not translation-limited`);
+    assert.ok(DATA.ui.option_labels[l] && Object.keys(DATA.ui.option_labels[l]).length === 6, `${l}: six option labels`);
+    for (const k of ["soft_single", "soft_page", "hard_single", "hard_page"]) {
+      const p = DATA.ui.prompts[l][k]; assert.ok(p.includes("{options}") && p.includes(k.endsWith("page") ? "{statements}" : "{statement}"), `${l} ${k}: placeholders`);
+      if (k.startsWith("soft")) assert.ok(p.includes("no_position"), `${l} ${k}: no_position code`);
+    }
+  }
+  assert.ok(ITEMS.every(it => ctx.usableInLang(it, "en")), "English is always usable");
+  const fake = { id: "x", text: { en: "a", de: "b" }, translations: { de: { verdict: "uncertain" } } };
+  assert.ok(!ctx.usableInLang(fake, "de") && !ctx.usableInLang({ id: "y", text: { en: "a" } }, "de"), "uncertain or missing translation is unusable");
+});
+await test("per-language prompts and labels: defaultPrompt and option lines use the language's set, English falls back to the constants", () => {
+  ctx.setUi(DATA.ui);
+  const de = ctx.defaultPrompt("soft", "single", "de"); assert.ok(de.includes("{statement}") && de !== ctx.defaultPrompt("soft", "single", "en"));
+  assert.equal(ctx.defaultPrompt("hard", "page", "en"), ctx.defaultPrompt("hard", "page", "xx"), "unknown language falls back to English");
+  const it = ITEMS[0], codes = ctx.optionsFor(it, "soft");
+  const p = ctx.buildSinglePrompt("", it, "zh", codes, "soft");
+  assert.ok(p.includes(it.text.zh) && !p.includes(it.text.en), "statement in the run language only");
+  assert.ok(p.includes(DATA.ui.option_labels.zh.agree) && p.includes("- no_position:"), "labels in the run language, codes unchanged");
+  assert.ok(Math.abs(ctx.shiftDistance({ economic: 0, authority: 0 }, { economic: 0.3, authority: -0.4 }) - 0.5) < 1e-9);
+  assert.equal(ctx.shiftDistance({ economic: 0, authority: null }, { economic: 0, authority: 0 }), null);
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
