@@ -375,5 +375,15 @@ await test("contamination: a model answering the meaning shows full item agreeme
   // refusals are left out of the comparison
   const withRef = new Map(origA); withRef.set(items[0].id, "no_position"); assert.equal(ctx.itemAgreement(withRef, invA).n, items.length - 1);
 });
+await test("inversion set: every item of the four fixed tests has an inversion with a verdict, 182 usable, hash present, torture test recorded as passed", () => {
+  const four = ITEMS.filter(inFour);
+  for (const it of four) { assert.ok(it.inverted?.en && it.inverted.en.trim().length > 0, `${it.id} has an inversion`); assert.ok(["inverted", "partial", "not_inverted", "uncertain"].includes(it.inversion?.en?.verdict), `${it.id} has a verdict`);
+    assert.notEqual(it.inverted.en.trim().toLowerCase(), it.text.en.trim().toLowerCase(), `${it.id}: inversion differs from the original`); }
+  assert.equal(four.filter(it => ctx.invertedUsable(it, "en")).length, DATA.inversion.en.usable);
+  assert.equal(DATA.inversion.en.usable, 182); assert.equal(DATA.inversion.en.total, 182);
+  assert.ok(/^[0-9a-f]{64}$/.test(DATA.inversion.en.hash));
+  assert.equal(DATA.inversion.en.checker_torture_test.passed, true, "the Checker flagged all three planted bad inversions");
+  assert.ok(ITEMS.filter(it => !inFour(it)).every(it => !it.inverted), "9Axes-only items have no inversion yet");
+});
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
