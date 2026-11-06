@@ -224,6 +224,9 @@ original answer. A pair is flagged when the distance exceeds the threshold (defa
 trial noise, or when fewer than half the items agree; the second catches a model that lands in the middle twice
 by agreeing with everything. Flagged pairs carry a caveat; the original position is still reported.
 
+**Status:** the checked inversion set is still being produced by the Maker-Checker sub-agents; until it lands in
+`compass-bench-items.json`, the contamination check has no statements to ask and the rail option does nothing.
+
 What a flag means: the answers depend on the wording in a way the meaning does not explain. Whether that is
 memorisation, acquiescence or a model that does not read carefully, the check cannot say; it says the position
 is not a position on the statement.
