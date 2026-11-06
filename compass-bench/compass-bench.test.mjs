@@ -34,7 +34,7 @@ try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } cat
 for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
   "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit",
   "setUi", "defaultPrompt", "usableInLang", "shiftDistance", "buildOpenPrompt", "buildExtractPrompt", "extractSchema", "sampleForCheck", "agreement", "stanceToAnswer",
-  "scoreNineAxes", "drawNineAxes", "ideologyMatch", "validateImport"])
+  "scoreNineAxes", "drawNineAxes", "ideologyMatch", "validateImport", "flipAnswer", "invertedUsable", "asInverted", "itemAgreement"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -346,6 +346,34 @@ await test("import validation: same hashes pass, a changed instrument or languag
   const bad = JSON.parse(JSON.stringify(ok)); bad.instruments.pct.hash = "0000"; bad.languages.de.hash = "1111"; bad.cells.push({ key: "x", item_id: "it_nope" });
   const problems = ctx.validateImport(bad, DATA); assert.equal(problems.length, 3, problems.join("; "));
   assert.ok(ctx.validateImport({ tool: "other" }, DATA).length >= 2);
+});
+await test("contamination: flips are involutions, refusals stay, inverted items need a clean verdict, keys of original cells are unchanged", () => {
+  for (const c of ["strongly_agree", "agree", "neutral", "disagree", "strongly_disagree"]) assert.equal(ctx.flipAnswer(ctx.flipAnswer(c)), c);
+  assert.equal(ctx.flipAnswer("strongly_agree"), "strongly_disagree"); assert.equal(ctx.flipAnswer("neutral"), "neutral"); assert.equal(ctx.flipAnswer("no_position"), "no_position"); assert.equal(ctx.flipAnswer(null), null);
+  const it = { id: "x", text: { en: "The rich are too highly taxed.", de: "…" }, inverted: { en: "The rich are taxed too little." }, inversion: { en: { verdict: "inverted" } }, effects: { pct: {} } };
+  assert.ok(ctx.invertedUsable(it, "en")); assert.ok(!ctx.invertedUsable(it, "de")); assert.ok(!ctx.invertedUsable({ ...it, inversion: { en: { verdict: "partial" } } }, "en"));
+  const inv = ctx.asInverted(it, "en"); assert.equal(inv.text.en, "The rich are taxed too little."); assert.equal(inv.id, "x"); assert.equal(it.text.en, "The rich are too highly taxed.", "the original item is untouched");
+  const p = { itemId: "it_1", lang: "en@abc", model: "a/b", rung: "soft", trial: 1, order: "agree-first", mode: "single", promptVersion: "soft-en-1" };
+  assert.equal(ctx.cellKey(p), ctx.cellKey({ ...p, variant: "original" }), "original keys are the 0.5 keys, so old exports still resume");
+  assert.notEqual(ctx.cellKey(p), ctx.cellKey({ ...p, variant: "inverted" }));
+});
+await test("contamination: a model answering the meaning shows full item agreement and zero shift; a yes-man shows neither", () => {
+  const items = instItems("sapply");
+  const dir = it => Object.values(it.effects.sapply)[0];
+  // model A: agrees with +1 items, disagrees with −1 items; on the inverted statements it does the opposite
+  const origA = new Map(items.map(it => [it.id, dir(it) > 0 ? "agree" : "disagree"]));
+  const invA = new Map(items.map(it => [it.id, dir(it) > 0 ? "disagree" : "agree"]));
+  const agA = ctx.itemAgreement(origA, invA); assert.equal(agA.pct, 1); assert.equal(agA.n, items.length);
+  const flippedA = new Map([...invA].map(([id, c]) => [id, ctx.flipAnswer(c)]));
+  const sA = ctx.scoreInstrument("sapply", items, origA), sInvA = ctx.scoreInstrument("sapply", items, flippedA);
+  assert.equal(ctx.shiftDistance(ctx.normaliseAxes("sapply", sA), ctx.normaliseAxes("sapply", sInvA)), 0);
+  // model B: agrees with everything, original and inverted alike
+  const origB = new Map(items.map(it => [it.id, "agree"])), invB = new Map(items.map(it => [it.id, "agree"]));
+  assert.equal(ctx.itemAgreement(origB, invB).pct, 0);
+  const sB = ctx.scoreInstrument("sapply", items, origB), sInvB = ctx.scoreInstrument("sapply", items, new Map([...invB].map(([id, c]) => [id, ctx.flipAnswer(c)])));
+  assert.ok(ctx.shiftDistance(ctx.normaliseAxes("sapply", sB), ctx.normaliseAxes("sapply", sInvB)) > 0.05, "a yes-man's two positions differ");
+  // refusals are left out of the comparison
+  const withRef = new Map(origA); withRef.set(items[0].id, "no_position"); assert.equal(ctx.itemAgreement(withRef, invA).n, items.length - 1);
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

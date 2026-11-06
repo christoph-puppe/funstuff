@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.5.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.6.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -31,8 +31,9 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 | 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
 | 7 | **Language shift** | distance between a model's point in English and in each other language, per test, against the model's own trial noise |
 | 8 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, language, and what is left for trial noise and interactions |
+| 9 | **Contamination** | whether a model answers the meaning of a statement or its surface: every statement asked again as its inversion, answers flipped, positions compared |
 
-A later milestone adds an item-inversion contamination check. The plan is in `PLAN.md`.
+The plan is in `PLAN.md`.
 
 **Not measured:** whether a position is "right", where it comes from, or whether it shows in writing
 assistance (IssueBench). A dot here is the behaviour of one model on one test in one language under one
@@ -204,6 +205,29 @@ the Chinese "jury nullification" (no settled term; now a descriptive rendering) 
 What a shift between languages measures: the model and the translation together. The back-translations are in
 the data file so a critic can tell the two apart; a review of the German set as a diff on that file is welcome.
 
+### The contamination check (gate 9)
+
+The tests are in the training data. A model that has seen "The freer the market, the freer the people" with
+its usual answer may be completing a memory rather than taking a position. The 2026 error-budget study tested
+this with inverted item banks and found 17 of 18 models shift. The tool does the same: each of the 182 statements
+of the four fixed tests has an **inversion**, the opposite claim at the same strength and scope ("The rich are
+too highly taxed" ↔ "The rich are taxed too little"), written by a Maker sub-agent, judged by a Checker sub-agent
+in a separate context (`inverted`, `partial`, `not_inverted`, `uncertain`; only `inverted` is used), with one
+correction round. The Checker was given three planted bad inversions among the 182 and had to flag them; the
+result is recorded in the data file. Inversions exist in English only.
+
+With **contamination check** ticked in the rail, every enabled rung asks the inverted statements as well
+(English, same models, same trials). Inverted answers are flipped before scoring, so a model that answers the
+meaning lands on the same point twice. The card shows both points per model and test joined on the common axes,
+the distance, and the **item agreement**: the share of statements whose flipped inverted answer equals the
+original answer. A pair is flagged when the distance exceeds the threshold (default 0.25) and the model's own
+trial noise, or when fewer than half the items agree; the second catches a model that lands in the middle twice
+by agreeing with everything. Flagged pairs carry a caveat; the original position is still reported.
+
+What a flag means: the answers depend on the wording in a way the meaning does not explain. Whether that is
+memorisation, acquiescence or a model that does not read carefully, the check cannot say; it says the position
+is not a position on the statement.
+
 ### Trials and option order
 
 **Trials** repeat the same cell. The headline value uses the per-item majority over trials; each trial is also
@@ -244,6 +268,7 @@ The mode is part of the cell key, so results of the two modes never mix.
 | 6 | **Translation verdicts**: items judged wrong or uncertain | not asked in that language; above 10 % the language is translation-limited |
 | 7 | **Language shift vs. noise**: a shift smaller than the model's own trial noise (needs trials ≥ 2) | drawn grey, not reported as a finding |
 | 8 | **PCT scoring** reproduces the website-scored trials | else `scoring: approximate` everywhere |
+| 9 | **Contamination**: original and inverted positions differ beyond threshold and noise, or item agreement below one half | pair flagged with a caveat; original position still reported |
 
 Until the batch check has been run, gate 3 reads "not run" and says so next to any open-rung score.
 
@@ -298,6 +323,8 @@ residual holds interactions only. The card says so when that is the case.
   embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
   again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
   press run: only the gaps are filled.
+- The cell key of an inverted statement carries the variant; keys of original cells are unchanged, so exports of
+  earlier versions still resume.
 - **JSON** — the whole run: tool version and build, instrument and language hashes, the four prompts and their
   versions, settings, models, totals (calls, cost from `usage`), gates, per model × test × rung scores with
   intervals, per-trial values, instability and normalised axes, response style, convergence, the error budget,
@@ -330,6 +357,8 @@ The interpretation caveat travels with both.
 | batch check sample | 60 | answers per language re-extracted one at a time |
 | extract right after the run | on | off to inspect the raw text first |
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
+| contamination check | off | asks the inverted statements as well (English); roughly doubles the English calls |
+| contamination shift ≤ | 0.25 | gate 9, distance on the unit square |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
 | max tokens | 200 | page mode raises it per statement automatically |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
@@ -359,6 +388,8 @@ answers, response style, quadrants, and the variance decomposition on synthetic 
 enter the majority, the batch-check sample is deterministic, and the agreement figure reports its disagreements.
 Since 0.5: the 9Axes draw has the website's shape and the scoring reproduces 50 + 5 × score on a draw, the
 ideology match returns an ideology for its own stats vector, and the import validation refuses changed hashes.
+Since 0.6: flips are involutions and leave refusals alone, a model answering the meaning shows full item
+agreement and zero shift, a yes-man shows neither, and original cell keys are the 0.5 keys.
 
 The skill's generic `core_test.mjs` is Gemini-specific (continuation protocol, thinking levels) and does not
 apply to an OpenRouter-only tool; this harness replaces it.
@@ -396,6 +427,9 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.6.0** — contamination check: checked inversions of the 182 statements (Maker-Checker with planted bad
+  inversions as a torture test), inverted variant asked on demand, answers flipped before scoring, card with
+  joined pairs, distance, item agreement and flags, gate 9, exports and Markdown carry the variant.
 - **0.5.0** — 9Axes (seeded draw like the website or full pool, English only), 8values closest-ideology label,
   resume from an exported run with hash checks, Markdown report, `LICENSES.md` with the tests' licence texts and
   the PCT rights note.
