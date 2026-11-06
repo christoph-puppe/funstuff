@@ -9,7 +9,8 @@ Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdo
 Status: **Plan, noch kein Code.** Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
-Revision 3: 6axes aufgenommen, fünf Sprachen, kuratierte Modellauswahl, keine Websuche.
+Revision 4: PCT vollständig eingebettet (Texte, Scoring, Übersetzungen), Error-Budget-Statistik nach der
+Studie von 2026, Gatter neu nummeriert.
 
 ---
 
@@ -46,6 +47,19 @@ Schreibassistenz-Aufgaben genauso zeigt (IssueBench, Backlog).
   der Vergleich zeigt pro Kohorte, was die PCT-Achse misst.
 - **Feng et al., ACL 2023 (PoliLean)**: Freitext, NLI-Zustimmung, Selenium gegen die PCT-Website.
   → Unser `open`-Pfad, mit LLM-Extraktor statt NLI und lokalem Scoring.
+- **"An error budget for political-bias measurement in LLMs" (2026, Zenodo 10.5281/zenodo.22968158,
+  eingereicht bei *Political Analysis*)**: 19 Modelle, 11 Labs, PCT und 8values je 60-mal, dazu
+  SapplyValues und Pew; alles über OpenRouter. Instrument- und Achsenwahl erklären **52 %** der
+  Varianz eines Scores, Modellidentität **13 %**, Wiederholungsrauschen **35 %**. Wer fragt (Asker-
+  Identität, η² = 0,79), ob Items invertiert sind (17 von 18 Modellen verschieben sich) und das
+  Antwortformat wiegen jeweils schwerer als das Modell. PCT und 8values scheitern am Test auf
+  konvergente Validität (r = −0,26 zwischen den Instrumenten). Die Richtung des Links-Lehnens
+  reproduziert sich, die Beträge sind zwischen Studien nicht vergleichbar. Die Autoren fordern einen
+  Mindeststandard: Instrument nennen, Asker-Bedingung angeben, Wiederholungen und Streuung berichten,
+  Varianzzerlegung liefern, Kontaminationscheck, Item-Ergebnisse. → Das Tool rechnet die
+  **Varianzzerlegung selbst** (Abschnitt 7) und schreibt den Mindeststandard in jeden Export
+  (Abschnitt 13). Die Asker-Identität bleibt neutral und steht im Export; Item-Inversion wandert aus
+  dem Backlog in Meilenstein 0.6, weil die Werkbank dafür schon da ist.
 - **Sprachabhängigkeit:** Vorarbeiten messen fast ausschließlich englisch. Mehrsprachige Studien zu
   Werten in LLMs zeigen, dass Antworten mit der Sprache wandern, ohne dass klar ist, wie viel davon
   Übersetzung und wie viel Modell ist. → Übersetzungen als geprüftes, gehashtes Artefakt
@@ -55,8 +69,8 @@ Schreibassistenz-Aufgaben genauso zeigt (IssueBench, Backlog).
 
 ## 3. Die Instrumente: die bekannten Tests, unverändert
 
-Fünf Tests, vier davon mit Text und Scoring eingebettet, einer nur mit Struktur. Quelldateien aus
-den GitHub-Repositories geprüft am 6. November 2026:
+Fünf Tests, alle mit Text und Scoring eingebettet. Quelldateien aus den GitHub-Repositories
+geprüft am 6. November 2026:
 
 | Test | Items | Achsen | Antwortskala | Lizenz | Im Tool |
 |---|---|---|---|---|---|
@@ -64,13 +78,17 @@ den GitHub-Repositories geprüft am 6. November 2026:
 | **6axes** | 70, davon **64 wortgleich mit 8values** | 6: Economic Aspiration (Equality↔Markets), Economic Control (Labour↔Capital), Nationalism (Civic↔Ethnic), Cosmopolitanism (Open Borders↔Chauvinist), Akraetia (Anarchist↔Totalitarian), Anarche (Revolutionary↔Reactionary) | 5-stufig wie 8values | MIT (8values-Fork, 2019) | eingebettet |
 | **SapplyValues** | 46 | 3: `right` Links↔Rechts, `auth` Lib↔Auth, `prog` Prog↔Kons | 5-stufig plus "don't know", das verworfen wird | MIT | eingebettet |
 | **9Axes** | Pool 216 = 9 Achsen × 8 Intensitäten × 3 | 9 | 5-stufig | MIT | eingebettet, Ziehung deterministisch |
-| **Political Compass Test** | 62 | 2: economic, social | 4-stufig, keine Mitte | Texte © Pace News Ltd, Scoring unveröffentlicht | **Struktur ja, Texte nein**: Loader + rekonstruiertes Scoring |
+| **Political Compass Test** | 62 | 2: economic Left↔Right, social Libertarian↔Authoritarian | 4-stufig, keine Mitte | Texte © Pace News Ltd, Scoring unveröffentlicht | eingebettet; Scoring rekonstruiert (unten) |
 
 **6axes** ist der Sechs-Achsen-Test, nach dem du gefragt hast: ein 8values-Fork mit denselben
 Fragen, neu gewichtet (Gewichte bis 15, die Autoritätsachse mit 45 Items und 11 : 34 unbalanciert).
 Weil 64 Items wortgleich sind, werden sie **einmal gefragt und zweimal gewertet**: Items werden über
-alle Instrumente per normalisiertem Text dedupliziert, eine Antwort fließt in jedes Instrument, das
-den Satz enthält. 6axes kostet so sechs zusätzliche Items, nicht siebzig.
+alle Instrumente per normalisiertem Text dedupliziert (Kleinschreibung, typografische Zeichen,
+`shouldn't` = `should not`), eine Antwort fließt in jedes Instrument, das den Satz enthält. Über
+8values, 6axes, SapplyValues und PCT bleiben so **182 einzigartige Items** von 248. Zwei weitere
+Paare sind fast gleich ("Sex outside marriage is immoral" / "… is usually immoral"; "the freer the
+markets" / "the freer the market") und werden absichtlich getrennt gefragt: der Wortlaut gehört zum
+Instrument, und der Unterschied zwischen beiden Antworten ist eine kostenlose Paraphrasen-Kontrolle.
 
 **Nicht aufgenommen:** PolitiScales (8 Achsen, Original 2020 eingestellt, Quellcode und Lizenz
 unklar, der Fork schreibt neue Fragen); IDRlabs-Tests und Pew Typology, proprietär; Wahl-O-Mat,
@@ -80,13 +98,25 @@ Lizenz je Edition restriktiv bis verboten.
 Gewichten und Versionsstring, sichtbar in der Topbar und in jedem Export. Läufe mit
 unterschiedlichem Hash werden nicht zusammengeführt.
 
-**PCT-Loader.** Die 62 Thesen bleiben aus dem Repo. Der Nutzer fügt sie ein (Paste oder URL,
-`raw.githubusercontent.com` sendet CORS-Header; Röttgers Repo steht unter CC BY 4.0). Das Tool hasht
-den Text gegen den im README veröffentlichten Referenz-Hash; bei Abweichung läuft der Test als
-"unverified text" (Gatter 6). Das Scoring ist eine Rekonstruktion aus der Forschung und wird überall
-so genannt. Der PCT wird **nicht übersetzt ausgeliefert**, eine Übersetzung geschützter Texte wäre
-ein abgeleitetes Werk; die Werkbank (Abschnitt 4) kann ihn zur Laufzeit übersetzen, der Export
-enthält dann die Übersetzung des Nutzers.
+**PCT, vollständig eingebettet.** Die 62 Thesen stammen aus `data/templates/pct_propositions.csv`
+im Repo zu Röttger et al. (CC BY 4.0 für das Repo; die Thesen selbst bleiben © Pace News Ltd). Sie
+sind in sechs Seiten gruppiert, wie auf der Website (your country and the world, economy, personal
+social values, wider society, religion, sex). **Du trägst das urheberrechtliche Risiko der
+Wiedergabe, das README sagt das ausdrücklich** und nennt Pace News als Rechteinhaber.
+
+Das Scoring ist eine Rekonstruktion: `compass_calc.py` aus `h4fide/politicalcompassbot` enthält
+zwei Tabellen 62 × 4 (Gewicht je Item und Antwortoption, Werte zwischen −10 und +8), dazu die
+Konstanten der Website: `ec = Σ/8 + 0,375`, `soc = Σ/19,5 + 47/19,5`, kaufmännisch auf zwei Stellen
+gerundet, auf [−10, +10] geklemmt. Das Repo trägt keine Lizenzdatei; die Tabelle ist gemessenes
+Zahlenmaterial und wird mit Quelle übernommen. **Belegt wird sie nicht durch die Behauptung des
+Autors, sondern durch Golden-Vektoren**: die Error-Budget-Studie hat 1 140 PCT-Durchläufe mit
+Antworten *und* dem Ergebnis der Website-Ergebnisseite veröffentlicht (`data/raw_trials/`). Eine
+Stichprobe davon liegt im Testharness; trifft die Tabelle sie nicht, läuft der PCT als
+`scoring: approximate` und die Topbar sagt es. Die Lizenz des Datensatzes steht bei Zenodo und wird
+vor der Übernahme geprüft (von hier aus nicht erreichbar).
+
+Der PCT wird **wie die anderen übersetzt** (Abschnitt 4). Seine native Skala hat keine Mitte;
+`soft` ergänzt nur `no_position`, `hard` ist exakt die Website.
 
 ---
 
@@ -101,7 +131,7 @@ jede ein eigenes Artefakt mit eigenem Hash und dem Flag `translation: compass-be
 | `de` | Deutsch | Review durch dich |
 | `zh` | Chinesisch (vereinfacht) | |
 | `ja` | Japanisch | |
-| `hi` | Hindi | für "indisch"; siehe Entscheidung 2 |
+| `hi` | Hindi | für "indisch"; siehe Entscheidung 1 |
 
 **Was übersetzt wird:** die Thesen, die Antwortoptionen (Labels der Skala) und die Instruktion der
 Stufe. Ein Lauf in `zh` ist komplett chinesisch; ein englischer Rahmen um eine chinesische These
@@ -118,15 +148,15 @@ auf Code ab.
 3. **Einfrieren**: der geprüfte Satz wird mit Hash eingefroren und als Default in die Datei
    übernommen. Läufe laufen nur auf eingefrorenen Sätzen.
 
-Die ausgelieferte Datei enthält für 8values, 6axes und SapplyValues (122 einzigartige Items) alle
-vier Übersetzungen eingefroren. 9Axes (216) wird erst übersetzt, wenn es aktiviert wird, und der
+Die ausgelieferte Datei enthält für 8values, 6axes, SapplyValues und PCT (182 einzigartige Items)
+alle vier Übersetzungen eingefroren. 9Axes (216) wird erst übersetzt, wenn es aktiviert wird, und der
 Nutzer trägt die Kosten. Ein Nutzer kann jeden Satz neu übersetzen; das ergibt einen neuen Hash,
 und der Lauf ist mit dem Default nicht mehr vergleichbar, was die Topbar sagt.
 
 **Was die Sprachverschiebung misst:** Modell und Übersetzung zusammen. Die Rückübersetzung und die
 Checker-Verdikte liegen im Export, damit sich der Übersetzungsanteil prüfen lässt. Items mit
 Verdikt `wrong` oder `uncertain` sind aus dem Scoring der betreffenden Sprache ausgeschlossen
-(Gatter 7). Mehr Ehrlichkeit gibt es ohne Muttersprachler nicht; für `de` liefert dein Review sie.
+(Gatter 6). Mehr Ehrlichkeit gibt es ohne Muttersprachler nicht; für `de` liefert dein Review sie.
 
 **Extraktor** für Stufe `open`: pro Sprache ein Batch-Check (Gatter 3). `whoami-bench` hat gezeigt,
 dass günstige Extraktoren bei nicht-englischem Text am schwächsten sind; der Check zeigt es, bevor
@@ -186,15 +216,21 @@ PCT               rekonstruierte Lookup-Tabelle, Ausgabe auf der −10…+10-Ska
 
 8values gewichtet mit 2, 5, 10 und lässt 36 von 70 Items auf mehr als eine Achse wirken; 6axes
 gewichtet bis 15. Beides wird übernommen, nicht vereinfacht. Fehlende Antworten (`no_position`,
-`refused`, Gatter 7) werden überall wie SapplyValues' "don't know" behandelt: Item raus aus Σ und
+`refused`, Gatter 6) werden überall wie SapplyValues' "don't know" behandelt: Item raus aus Σ und
 max. Bei 8values, 6axes und PCT ist das eine dokumentierte Abweichung von der Website, die keine
 Lücke zulässt; Gatter 1 begrenzt sie.
 
 9Axes zieht auf der Website 5 von 24 Items je Achse zufällig. Das Tool bietet den vollen Pool oder
 eine Ziehung mit festem Seed im Export. Default: Ziehung, 45 Items wie auf der Website.
 
+**Error Budget, deterministisch:** eine gekreuzte Varianzzerlegung des normierten Scores über die
+Faktoren Instrument × Achse, Modell, Sprache, Stufe, Reihenfolge und Trial (Residuum), nach dem
+Modell der Error-Budget-Studie, als Anteile in Prozent mit Bootstrap-Intervallen. Die Karte sagt dem
+Nutzer, wie viel seines Ergebnisses das Modell ist und wie viel die Apparatur; 13 % Modell bei 52 %
+Instrument ist der Erwartungswert aus der Literatur, der hier pro Lauf nachgerechnet wird.
+
 **Golden-Tests:** pro Test Antwortvektoren im Harness, deren Erwartungswerte mit dem Original-JS
-der Website berechnet wurden. 8values' Ideologie-Label (`ideologies.js`, MIT) als deterministische
+der Website berechnet wurden; für den PCT die Website-Ergebnisse aus der Error-Budget-Studie. 8values' Ideologie-Label (`ideologies.js`, MIT) als deterministische
 Dreingabe. Konfidenzintervall per Bootstrap über Items × Trials (1000 Ziehungen, PRNG mit Run-Seed).
 
 Kohorten wie in `whoami-bench`: Vendor über die Alias-Tabelle, Open-Weights über `hugging_face_id`,
@@ -214,11 +250,12 @@ Haltung und übersetzt in der Werkbank. Alles andere ist JS. Der Split steht im 
    → Tabelle der Abweichungen.
 4. **Konvergenz**: Tests uneinig über den Quadranten → beide Punkte, verbunden, kein Mittelwert.
 5. **Kohortengröße** unter 3 → keine Kohortenmittel.
-6. **PCT-Textprüfung**: Hash ≠ Referenz → "unverified text".
-7. **Übersetzungsgatter**: Items mit Checker-Verdikt `wrong` oder `uncertain` raus aus dem Scoring
+6. **Übersetzungsgatter**: Items mit Checker-Verdikt `wrong` oder `uncertain` raus aus dem Scoring
    der Sprache; über 10 % ausgeschlossene Items → Sprache als `translation-limited` markiert.
-8. **Sprachverschiebung vs. Instabilität**: eine Verschiebung zwischen Sprachen, die kleiner ist als
+7. **Sprachverschiebung vs. Instabilität**: eine Verschiebung zwischen Sprachen, die kleiner ist als
    die Wiederholungsvarianz des Modells, wird als "innerhalb des Rauschens" markiert, nicht als Befund.
+8. **PCT-Scoring**: Golden-Vektoren aus der Website nicht getroffen → `scoring: approximate` in
+   Topbar und Export.
 
 ---
 
@@ -246,8 +283,9 @@ Layout-Shell wie die Geschwister: Glas-Topbar (Brand, `TOOL_VERSION`, Instrument
 Sprach-Hashes, Backend-Pill), linke Rail, Hauptbereich mit Karten, Log-Konsole unten, Splitter.
 
 1. **Cohort** — Abschnitt 9.
-2. **Instruments** — fünf Zeilen mit Checkbox, Itemzahl, Achsen, Lizenz, Hash; PCT mit
-   Paste/URL-Feld und Hash-Status; 9Axes mit Seed/voller Pool; Hinweis auf deduplizierte Items.
+2. **Instruments** — fünf Zeilen mit Checkbox, Itemzahl, Achsen, Lizenz, Hash, beim PCT der
+   Scoring-Status (`validated` / `approximate`); 9Axes mit Seed/voller Pool; Zähler der
+   deduplizierten Items.
 3. **Languages** — fünf Checkboxen, je Hash, Übersetzungsstatus (eingefroren / neu / fehlt für
    aktivierte Instrumente), Link zur Werkbank.
 4. **Translation workbench** — Maker- und Checker-Prompt, Modellwahl für beide, Lauf, Verdikt-Tabelle
@@ -256,15 +294,17 @@ Sprach-Hashes, Backend-Pill), linke Rail, Hauptbereich mit Karten, Log-Konsole u
 6. **Run** — Kostenschätzung *vor* dem Lauf (Aufrufe, Tokens, Preis, Dauer), Start, `■ cancel`,
    Fortschritt, Ist-Kosten danach.
 7. **Validity gates** — Abschnitt 8.
-8. **Compasses** — pro Test die Darstellung der Website: 8values vier Balken plus Projektion;
+8. **Error budget** — Balken der Varianzanteile (Instrument, Modell, Sprache, Stufe, Reihenfolge,
+   Rauschen) mit Intervallen; daneben der Literaturwert als Referenzstrich.
+9. **Compasses** — pro Test die Darstellung der Website: 8values vier Balken plus Projektion;
    6axes sechs Balken plus Projektion Economic Aspiration × Akraetia; SapplyValues Kompass plus
    `prog`-Balken; PCT der klassische Kompass; 9Axes neun Balken. Ein Marker pro Modell, Fehlerbalken,
    Vendor-Farbe, hohl bei insufficient, Umschalter für Stufe und Sprache.
-9. **Language shift** — normierter Kompass mit fünf Markern pro Modell (einer je Sprache), verbunden
-   ab `en`; daneben Heatmap Modell × Sprache mit dem Abstand zu `en`, grau wo Gatter 8 greift.
-10. **Convergence** — normierter Kompass Wirtschaft × Autorität, je Modell ein Marker je Test.
-11. **Ladder** — Position pro Stufe, eine Linie pro Modell, Kohortenmittel gestrichelt.
-12. **Results** — jede Antwort mit Modell, Test(s), Item, Sprache, Stufe, Trial, Reihenfolge, Rohwert.
+10. **Language shift** — normierter Kompass mit fünf Markern pro Modell (einer je Sprache), verbunden
+   ab `en`; daneben Heatmap Modell × Sprache mit dem Abstand zu `en`, grau wo Gatter 7 greift.
+11. **Convergence** — normierter Kompass Wirtschaft × Autorität, je Modell ein Marker je Test.
+12. **Ladder** — Position pro Stufe, eine Linie pro Modell, Kohortenmittel gestrichelt.
+13. **Results** — jede Antwort mit Modell, Test(s), Item, Sprache, Stufe, Trial, Reihenfolge, Rohwert.
 
 SVG/CSS, keine Chart-Bibliothek, kein Emoji, kein Icon-Font. CJK- und Devanagari-Text in den
 Karten braucht einen Font-Fallback (`system-ui` nach Inter), nichts weiter.
@@ -275,10 +315,10 @@ Karten braucht einen Font-Fallback (`system-ui` nach Inter), nichts weiter.
 
 | Einstellung | Default | Hinweis |
 |---|---|---|
-| OpenRouter-Key | leer | nur im Speicher, `type=password` (Entscheidung 4) |
-| Instrumente | 8values, 6axes, SapplyValues | PCT sobald Text geladen; 9Axes opt-in |
+| OpenRouter-Key | leer | nur im Speicher, `type=password` (Entscheidung 3) |
+| Instrumente | 8values, 6axes, SapplyValues, PCT | 9Axes opt-in |
 | Sprachen | en, de, zh, ja, hi | je Checkbox |
-| Stufen | soft, hard | `open` opt-in mit Mehrkosten; Entscheidung 5 |
+| Stufen | soft, hard | `open` opt-in mit Mehrkosten; Entscheidung 4 |
 | Trials / Zelle | 2 | |
 | Optionsreihenfolge randomisieren | an | deterministisch aus Hash |
 | 9Axes-Modus | Seed-Ziehung, 45 Items | oder voller Pool |
@@ -330,25 +370,28 @@ Ein Punkt im Kompass ist das Verhalten eines Modells auf einen bestimmten Test i
 Sprache und Fragestellung an einem bestimmten Tag. Er ist keine Weltanschauung. Vier Dinge, bevor
 jemand ihn zitiert: Test und Hash, Sprache und Übersetzungs-Hash, Stufe der Leiter,
 Verweigerungsrate. Eine Verschiebung zwischen Sprachen enthält die Übersetzung; die Rückübersetzung
-liegt bei. Beim PCT zusätzlich: das Scoring ist eine Rekonstruktion.
+liegt bei. Beim PCT zusätzlich: das Scoring ist eine Rekonstruktion, der Export nennt seinen Validierungsstatus.
+
+Der Export erfüllt den Mindeststandard der Error-Budget-Studie als eigenen Block `reporting_standard`:
+Instrument und Hash, Asker-Bedingung (der Stufen-Prompt im Wortlaut), Wiederholungen und Streuung,
+Varianzzerlegung, Status des Kontaminationschecks (bis Meilenstein 0.6: `not run`), Item-Ergebnisse.
 
 ---
 
 ## 14. Kosten
 
 Aufrufe = Modelle × einzigartige Items × Stufen × Sprachen × Trials, plus Extraktion für `open`.
-Einzigartige Items für 8values + 6axes + SapplyValues: 70 + 6 + 46 = **122**.
+Einzigartige Items für 8values + 6axes + SapplyValues + PCT: 70 + 6 + 46 + 60 = **182**.
 
 | Szenario | Rechnung | Aufrufe | Grobkosten |
 |---|---|---|---|
-| Erster Blick auf die Sprachfrage | 8 Modelle × 122 × `soft` × 5 Sprachen × 2 Trials | 9 760 | wenige Euro |
-| Default | 8 × 122 × 2 Stufen × 5 × 2 | 19 520 | niedrig zweistellig, Flagships dominieren |
-| Mit `open` | + 8 × 122 × 1 × 5 × 2 Antworten (länger) + ~490 Extraktor-Batches | 29 280 + 490 | zweistellig |
-| Mit PCT (nur `en`, Entscheidung 1) | + 8 × 62 × 2 × 1 × 2 | + 1 984 | gering |
-| Übersetzung einmalig | 122 Items × 4 Sprachen × (Maker + Checker) | 976 | unter einem Euro mit guten Modellen |
+| Erster Blick auf die Sprachfrage | 8 Modelle × 182 × `soft` × 5 Sprachen × 2 Trials | 14 560 | wenige Euro |
+| Default | 8 × 182 × 2 Stufen × 5 × 2 | 29 120 | niedrig zweistellig, Flagships dominieren |
+| Mit `open` | + 8 × 182 × 1 × 5 × 2 Antworten (länger) + ~730 Extraktor-Batches | 43 680 + 730 | zweistellig |
+| Übersetzung einmalig | 182 Items × 4 Sprachen × (Maker + Checker) | 1 456 | rund ein Euro mit guten Modellen |
 
 Pro strukturiertem Aufruf etwa 250 Tokens Eingabe, 20 Ausgabe; ein Flagship zu 3/15 $ pro 1M kostet
-im Default-Lauf etwa 2 bis 3 $, ein günstiges Modell Cents. Schätzung vor dem Start neben dem
+im Default-Lauf etwa 3 bis 4 $, ein günstiges Modell Cents. Schätzung vor dem Start neben dem
 Run-Button, Ist-Kosten aus `usage` danach. Faktor 2 Abweichung ist ein Befund.
 
 ---
@@ -357,33 +400,36 @@ Run-Button, Ist-Kosten aus `usage` danach. Faktor 2 Abweichung ist ein Befund.
 
 | Version | Inhalt | Prüfung, die scheitern kann |
 |---|---|---|
-| **0.1** | 8values, 6axes, SapplyValues eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests, Website-Darstellungen, kuratierte Modellauswahl, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte; Dedup findet 64; `core_test.mjs` grün; Live-Lauf mit 2 Modellen |
-| **0.2** | Stufe `hard`, Leiter, Reihenfolge-Randomisierung, Ja-Sage-Quote, Gatter 1, 2, 5 | konstruierte instabile Antworten lösen Gatter 2 aus |
-| **0.3** | Übersetzungs-Werkbank (Maker-Checker), eingefrorene Sätze de/zh/ja/hi, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 7, 8 | Checker flaggt alle Fixture-Fehlübersetzungen; dein `de`-Review; Lauf in fünf Sprachen vergleichbar |
+| **0.1** | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, kuratierte Modellauswahl, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte; Dedup findet 182; `core_test.mjs` grün; Live-Lauf mit 2 Modellen |
+| **0.2** | Stufe `hard`, Leiter, Reihenfolge-Randomisierung, Ja-Sage-Quote, Konvergenz-Kompass, Error-Budget-Karte, Gatter 1, 2, 4, 5, 8 | konstruierte instabile Antworten lösen Gatter 2 aus; Varianzzerlegung auf einem synthetischen Datensatz mit bekannten Anteilen stimmt |
+| **0.3** | Übersetzungs-Werkbank (Maker-Checker), eingefrorene Sätze de/zh/ja/hi, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | Checker flaggt alle Fixture-Fehlübersetzungen; dein `de`-Review; Lauf in fünf Sprachen vergleichbar |
 | **0.4** | Stufe `open`, blinder Extraktor, Batch-Check pro Sprache (Gatter 3) | ≥ 95 % in jeder Sprache, sonst Extraktor wechseln |
-| **0.5** | PCT-Loader (Paste/URL, Hash, rekonstruiertes Scoring), Konvergenz-Kompass, Gatter 4, 6 | Stichprobe gegen die Website stimmt; falscher Text löst Gatter 6 aus |
-| **0.6** | 9Axes (Seed/Pool, Übersetzung on demand), 8values-Ideologielabel, Resume, Markdown, README | Lauf abbrechen, importieren, fortsetzen: keine `ok`-Zelle läuft erneut |
+| **0.5** | 9Axes (Seed/Pool, Übersetzung on demand), 8values-Ideologielabel, Resume, Markdown, README mit Lizenz- und Copyright-Block | Lauf abbrechen, importieren, fortsetzen: keine `ok`-Zelle läuft erneut |
+| **0.6** | Kontaminationscheck: invertierte Items über die Werkbank (Maker invertiert, Checker prüft), Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt Fixture-Fehlinversionen; ein Modell mit konstruiert symmetrischen Antworten zeigt null Verschiebung |
 
-Backlog: Persona-Steuerbarkeit; Negationskontrolle; IssueBench-Stufe; Wahl-O-Mat-Import mit
+Backlog: Persona-Steuerbarkeit (Asker-Identität ist laut Error-Budget-Studie der größte Faktor,
+deshalb gehört sie als eigene Dimension gemessen, nicht nebenbei); IssueBench-Stufe; Wahl-O-Mat-Import mit
 Lizenzhinweis; weitere Sprachen (das Schema trägt beliebig viele); Gemini-direkt.
 
 ---
 
-## 16. Entscheidungen, die bei dir liegen
+## 16. Entscheidungen
 
-1. **PCT-Texte:** (a) Loader mit Hash-Prüfung, nur `en`; (b) die 62 Thesen ins Repo wie
-   Forschungsrepos, mit dem Risiko auf einem öffentlichen Repo unter deinem Namen. *Meine Wahl: (a).*
-2. **"Indisch":** Hindi, meistgesprochene Sprache Indiens und in den Trainingsdaten am besten
-   vertreten. Alternativen Bengali, Tamil, Telugu kosten je 122 Übersetzungen und eine Spalte;
-   das Schema trägt sie. *Meine Wahl: Hindi.*
-3. **Übersetzungs-Review:** `de` durch dich; `zh`, `ja`, `hi` durch den Checker, ohne
-   Muttersprachler, mit Rückübersetzung im Export. Wenn du Muttersprachler kennst, bekommen sie die
-   Verdikt-Tabelle als CSV. *Meine Wahl: so starten, Review nachreichen.*
-4. **Key-Speicherung:** Speicher-only nach `cp-coding-core` statt `localStorage` wie die
+**Entschieden (Rev. 4):** Die 62 PCT-Thesen werden eingebettet und übersetzt; das urheberrechtliche
+Risiko trägst du, das README sagt es.
+
+Offen, jeweils mit meiner Wahl:
+
+1. **"Indisch":** Hindi, meistgesprochene Sprache Indiens und in den Trainingsdaten am besten
+   vertreten. Alternativen Bengali, Tamil, Telugu kosten je 182 Übersetzungen und eine Spalte; das
+   Schema trägt sie. *Meine Wahl: Hindi.*
+2. **Übersetzungs-Review:** `de` durch dich; `zh`, `ja`, `hi` durch den Checker, ohne
+   Muttersprachler, mit Rückübersetzung im Export. *Meine Wahl: so starten, Review nachreichen.*
+3. **Key-Speicherung:** Speicher-only nach `cp-coding-core` statt `localStorage` wie die
    Geschwister. *Meine Wahl: Speicher-only.*
-5. **`open` im Default:** Stufe 1 ist die aussagekräftigste und die teuerste (lange Antworten,
-   Extraktor, fünf Sprachen). *Meine Wahl: opt-in, Default `soft` + `hard`.*
-6. **Kuratierte Labs** (Abschnitt 9): die zehn genannten. Streichen oder ergänzen?
+4. **`open` im Default:** aussagekräftigste und teuerste Stufe. *Meine Wahl: opt-in, Default
+   `soft` + `hard`.*
+5. **Kuratierte Labs** (Abschnitt 9): die zehn genannten. Streichen oder ergänzen?
 
 Ein "go" reicht, dann baue ich 0.1 mit den markierten Wahlen.
 
@@ -399,6 +445,13 @@ Ein "go" reicht, dann baue ich 0.1 mit den markierten Wahlen.
   `quiz.html` (`percentageCalculation`), geprüft 6. Nov. 2026
 - 9Axes, `9axes/9axes.github.io`: `LICENSE` (MIT), `questions.js` (216 Items), `quiz.html`
   (Ziehung 5 je Achse), geprüft 6. Nov. 2026
+- Political Compass Test: Thesen aus `paul-rottger/llm-values-pct`, `data/templates/pct_propositions.csv`
+  (62 Zeilen, 6 Seiten; Repo CC BY 4.0, Thesen © Pace News Ltd); Scoring aus
+  `h4fide/politicalcompassbot`, `compass_calc.py` (Gewichtstabellen 62 × 4, Offsets 3/8 und 47/19,5,
+  Divisoren 8 und 19,5; keine Lizenzdatei), geprüft 6. Nov. 2026
+- *An error budget for political-bias measurement in large language models* (2026), Repo
+  `sletch1/AI-Political-Bias-Research-Paper`, Zenodo 10.5281/zenodo.22968158 (Release v0.4.1);
+  `data/raw_trials/` mit Website-Ergebnissen als Golden-Vektoren, Lizenz bei Zenodo zu prüfen
 - Röttger et al., *Political Compass or Spinning Arrow?*, ACL 2024, arXiv 2402.16786; Repo
   `paul-rottger/llm-values-pct` (CC BY 4.0) mit `notebooks/pct_validation`
 - Feng et al., *From Pretraining Data to Language Models to Downstream Tasks*, ACL 2023; Repo
