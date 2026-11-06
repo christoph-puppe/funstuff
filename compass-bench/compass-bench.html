@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.6</div>
+    <div class="pill" id="pill-version">v0.7.7</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.6";
-const BUILD = "2026-11-06.14";
+const TOOL_VERSION = "0.7.7";
+const BUILD = "2026-11-06.15";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15679,7 +15679,8 @@ const enabledLangs = () => availableLangs().filter(l => $("lang-" + l)?.checked)
 const langKey = l => `${l}@${DATA.languages[l].hash.slice(0, 8)}`;
 
 /* ===================== catalog ===================== */
-const EXCLUDE_RE = /(:free|image|embed|tts|whisper|audio|guard|moderation|ocr|rerank|vision-only)/i;
+// :batch endpoints answer asynchronously (an extractor on one never returns), :online endpoints attach web search
+const EXCLUDE_RE = /(:free|:batch|:online|image|embed|tts|whisper|audio|guard|moderation|ocr|rerank|vision-only)/i;
 const VENDOR_NAMES = { "anthropic": "Anthropic", "openai": "OpenAI", "google": "Google", "x-ai": "xAI", "meta-llama": "Meta", "mistralai": "Mistral",
   "deepseek": "DeepSeek", "qwen": "Alibaba Qwen", "moonshotai": "Moonshot", "z-ai": "Zhipu", "cohere": "Cohere", "amazon": "Amazon", "nvidia": "NVIDIA",
   "microsoft": "Microsoft", "perplexity": "Perplexity", "minimax": "MiniMax", "baidu": "Baidu", "tencent": "Tencent", "ai21": "AI21" };
@@ -16063,7 +16064,8 @@ async function extractOpen(force) {
     }), conc, (d, t) => showProgress("extract repair", d, t));
   }
   const done = todo.filter(c => c.extract).length;
-  l.ok(`extracted ${done}/${todo.length}: ${STANCES.map(st => `${st} ${todo.filter(c => c.extract?.stance === st).length}`).join(" · ")}`);
+  if (done < todo.length) l.err(`extraction: ${todo.length - done} of ${todo.length} open answers still have no stance (extractor ${cfg.model}); the open rung scores nothing until they do — pick another extractor model in the rail and press "extract open answers"`);
+  l[done === todo.length ? "ok" : "warn"](`extracted ${done}/${todo.length}: ${STANCES.map(st => `${st} ${todo.filter(c => c.extract?.stance === st).length}`).join(" · ")}`);
   hideProgress(); setRunning(false);
 }
 // Gate 3: re-extract a deterministic sample per language at batch size 1 and compare with the batched stances.
@@ -16192,7 +16194,8 @@ function computeGates(scores, models, thr, instThr, rungs, langs, contamThr) {
     { id: 1, name: "Answer rate", pass: g1.length === 0, detail: g1.length ? g1.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung} · ${s.lang}: ${Object.entries(s.axes).filter(([a]) => !s.gate1[a]).map(([a, v]) => `${a} ${v.answered}/${v.total}`).join(", ")}`).join("\n") : `every axis of every model answered ≥ ${Math.round(thr * 100)} % of its items`, consequence: "hollow marker, no claim on that axis" },
     { id: 2, name: "Instability across trials", pass: multiTrial ? g2.length === 0 : null, detail: multiTrial ? (g2.length ? g2.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung} · ${s.lang}: worst axis SD ${s.instability.worst.toFixed(2)} > ${instThr}`).join("\n") : `every axis SD across trials ≤ ${instThr} on the unit scale`) : "needs ≥ 2 trials; every marker carries n=1", consequence: "hollow marker with the trial range instead of a point" },
     { id: 3, name: "Extractor batch check", pass: state.batchCheck ? Object.values(state.batchCheck).every(b => b.pct != null && b.pct >= 0.95) : null,
-      detail: state.batchCheck ? Object.entries(state.batchCheck).map(([l, b]) => `${l}: ${b.same}/${b.n} agree${b.pct != null ? ` (${(b.pct * 100).toFixed(1)} %)` : ""}${b.pct != null && b.pct < 0.95 ? " — below 95 %, read the disagreements" : ""}`).join("\n") : (scores.some(s => s.rung === "open") ? "open answers extracted in batches; run the batch check before quoting open-rung scores" : "only for the open rung"), consequence: "below 95 % the open-rung scores carry an extractor caveat" },
+      detail: (() => { const un = Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok" && !c.extract).length; const pre = un ? `${un} open answer(s) have no stance yet — press "extract open answers" (extractor: ${$("extract-model").value || "none selected"})\n` : "";
+      return pre + (state.batchCheck ? Object.entries(state.batchCheck).map(([l, b]) => `${l}: ${b.same}/${b.n} agree${b.pct != null ? ` (${(b.pct * 100).toFixed(1)} %)` : ""}${b.pct != null && b.pct < 0.95 ? " — below 95 %, read the disagreements" : ""}`).join("\n") : (scores.some(s => s.rung === "open") ? "open answers extracted in batches; run the batch check before quoting open-rung scores" : "only for the open rung")); })(), consequence: "below 95 % the open-rung scores carry an extractor caveat" },
     { id: 4, name: "Convergence across instruments", pass: convAny ? conv.length === 0 : null, detail: convAny ? (conv.length ? conv.map(c => `${c.model} · ${c.rung} · ${c.lang}: ${c.quadrants.map(q => `${q.inst} ${q.q}`).join(", ")}`).join("\n") : "every model lands in the same quadrant on every instrument that passed gate 1") : "needs ≥ 2 instruments with a passed answer-rate gate", consequence: "both markers shown and joined, no average" },
     { id: 5, name: "Cohort size", pass: models.length >= 3, detail: `${models.length} model(s) in this run${models.length < 3 ? " — no cohort means are computed or shown" : ""}`, consequence: "no cohort means below 3 models" },
     { id: 6, name: "Translation verdicts", pass: tl.length ? !tl.some(t => t.limited) : null, detail: tl.length ? tl.map(t => `${t.lang}: ${t.ex} of ${t.total} items excluded (wrong / uncertain)${t.limited ? " — translation-limited" : ""}`).join("\n") : "English only in this run", consequence: "excluded items are not asked; a language above 10 % is marked translation-limited" },
@@ -16272,7 +16275,8 @@ function renderCompasses() {
   const sc = all.filter(s => s.rung === sel.value && s.lang === ls.value);
   const insts = INST_ORDER.filter(k => sc.some(s => s.inst === k));
   const nTrials = Math.max(...sc.map(s => s.trials), 1);
-  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · ${sel.value} rung · ${ls.value} · n=${nTrials}`;
+  const unextracted = sel.value === "open" ? Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok" && !c.extract).length : 0;
+  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · ${sel.value} rung · ${ls.value} · n=${nTrials}${unextracted ? ` · ${unextracted} answers not extracted yet` : ""}`;
   $("compass-grid").innerHTML = insts.map(inst => {
     const rows = sc.filter(s => s.inst === inst), meta = INSTRUMENTS[inst];
     const tracks = Object.keys(meta.axes).map(a => `<div class="track"><span class="lo">${escapeHtml(meta.axes[a].lo)}</span>${trackSvg(inst, a, rows)}<span class="hi">${escapeHtml(meta.axes[a].hi)}</span></div>`).join("");

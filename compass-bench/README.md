@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.6 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.7 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -189,7 +189,10 @@ The open rung always asks one statement per call, whatever the items-per-call se
 
 Extraction runs right after the free-text calls (switchable) and can be re-run on existing answers with
 **extract open answers**, for example with a different extractor model. Open-rung scores carry the extractor
-in the export.
+in the export. If extraction leaves answers without a stance, the log says so in red, gate 3 names the count
+and the extractor, and the open-rung compass says "answers not extracted yet"; the open rung scores nothing
+until then. The catalog excludes `:batch` endpoints (asynchronous, they never answer an interactive call; the
+first live run's extractor default was one, so no open answer got a stance) and `:online` endpoints (web search).
 
 ### The batch check (gate 3)
 
@@ -508,6 +511,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.7** — `:batch` and `:online` endpoints excluded from the catalog; a failed extraction is loud and gate 3
+  names the open answers still without a stance.
 - **0.7.6** — import derives the rungs and the inverted variant from the cells (exports before 0.7.3 carry soft
   cells without a setting) and caps a restored concurrency at 16.
 - **0.7.5** — OpenRouter's in-flight credit reservation (402) is retried with a longer backoff instead of
