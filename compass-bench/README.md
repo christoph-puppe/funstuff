@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.5 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.6 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -394,9 +394,11 @@ residual holds interactions only. The card says so when that is the case.
 
 - **Resume.** **import run** takes an exported JSON and restores its cells, settings, models, languages,
   instruments and the 9Axes draw, after checking that every instrument and language hash matches the data
-  embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
-  again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
-  press run: only the gaps are filled.
+  embedded in this file; a mismatch refuses the import and names the hash. The rungs and the inverted variant are
+  taken from the cells themselves, so every gap the export has is in scope of the next run, and a restored
+  concurrency above 16 is lowered with a note. Cells that were `ok` are not asked again by the next run, `error`
+  and `pending` ones are; open answers without a stance are extracted afterwards. Export, close the tab, come
+  back next week, import, press run: only the gaps are filled.
 - **clear results** deletes every answered cell and every derived result of the session after a confirmation,
   and resets the call and cost counters. Nothing is stored outside the page, so an export made before is the
   only copy afterwards. Prompts, settings and the model selection stay.
@@ -506,6 +508,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.6** — import derives the rungs and the inverted variant from the cells (exports before 0.7.3 carry soft
+  cells without a setting) and caps a restored concurrency at 16.
 - **0.7.5** — OpenRouter's in-flight credit reservation (402) is retried with a longer backoff instead of
   failing the cell; one hint names the fix.
 - **0.7.4** — the reasoning setting is recorded per cell and joins the cell key; README on what reasoning

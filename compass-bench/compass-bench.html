@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.5</div>
+    <div class="pill" id="pill-version">v0.7.6</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.5";
-const BUILD = "2026-11-06.13";
+const TOOL_VERSION = "0.7.6";
+const BUILD = "2026-11-06.14";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -16472,6 +16472,12 @@ function importRun(obj) {
   if (obj.languages) for (const [l, v] of Object.entries(obj.languages)) { const el = $("lang-" + l); if (el && !el.disabled) el.checked = !!v.enabled; }
   if (obj.instruments) for (const [k, v] of Object.entries(obj.instruments)) { const el = $("inst-" + k); if (el) el.checked = !!v.enabled; }
   if (obj.nine_axes) { $("nine-mode").value = obj.nine_axes.mode; if (obj.nine_axes.seed) $("nine-seed").value = obj.nine_axes.seed; }
+  // the rungs and the inverted variant come from the cells themselves, so the next run can fill every gap the export has;
+  // exports of versions before 0.7.3 carry soft cells without a rung-soft setting
+  const rungsInCells = new Set(obj.cells.map(c => c.rung)), variants = new Set(obj.cells.map(c => c.variant || "original"));
+  for (const r of ["soft", "hard", "open"]) if (rungsInCells.has(r)) $("rung-" + r).checked = true;
+  if (variants.has("inverted")) $("inverted").checked = true;
+  const conc = parseInt($("concurrency").value) || 4; if (conc > 16) { $("concurrency").value = 16; l.warn(`concurrency ${conc} from the export lowered to 16: OpenRouter reserves each in-flight call's maximum cost, and ${conc} in flight emptied the reservation in that run`); }
   saveCfg(); updateInstMeta(); updateLangMeta(); renderCatalog(); checkPlaceholders();
   l.ok(`resumed ${obj.cells.length} cells from ${obj.version ? "v" + obj.version : "an export"} (${obj.run_at || "no date"}): ${ok} ok, ${err} error, ${pend} pending → ${err + pend} will be asked again by the next run${before ? `; ${before} cells were already in this session` : ""}`);
   state.lastRun = "resumed " + (obj.run_at || "").slice(0, 16).replace("T", " ");
