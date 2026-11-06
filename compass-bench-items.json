@@ -1,0 +1,3475 @@
+{
+ "schema": "compass-bench-items/1",
+ "generated": "2026-11-06",
+ "note": "Items deduplicated across instruments by normalised English text; an item answered once is scored for every instrument that contains it. Translations are added by the build session (Maker-Checker with sub-agents) and carry their own hash.",
+ "languages": {
+  "en": {
+   "name": "English",
+   "status": "original",
+   "hash": "8ac1cd9f0a377ca6e9b38468fa885832648ed7c82d8464ba2abb776055ff0105"
+  }
+ },
+ "instruments": {
+  "8values": {
+   "name": "8values",
+   "version": "Test Edition #1",
+   "source": "https://github.com/8values/8values.github.io",
+   "site": "https://8values.github.io",
+   "licence": "MIT",
+   "scale": "likert5",
+   "range": [
+    0,
+    100
+   ],
+   "axes": {
+    "econ": {
+     "hi": "Equality",
+     "lo": "Markets"
+    },
+    "dipl": {
+     "hi": "Globe",
+     "lo": "Nation"
+    },
+    "govt": {
+     "hi": "Liberty",
+     "lo": "Authority"
+    },
+    "scty": {
+     "hi": "Progress",
+     "lo": "Tradition"
+    }
+   },
+   "items": [
+    "it_825eb96d",
+    "it_f4447fd6",
+    "it_80255d49",
+    "it_c0551200",
+    "it_f879890a",
+    "it_9a289ca4",
+    "it_a1b843e5",
+    "it_bdaf3254",
+    "it_9a15ca2a",
+    "it_7bb6f596",
+    "it_4d910642",
+    "it_146b3231",
+    "it_a41c9862",
+    "it_7f225abd",
+    "it_2ea82df9",
+    "it_c8150a6f",
+    "it_4bedfe57",
+    "it_784947b5",
+    "it_0a01ea76",
+    "it_727758ce",
+    "it_8f7286fb",
+    "it_1780e658",
+    "it_b17c448e",
+    "it_c393297c",
+    "it_d8d5417f",
+    "it_d1cd958f",
+    "it_115794f5",
+    "it_0b04bbcc",
+    "it_37c3b8d9",
+    "it_440e9ef3",
+    "it_a0e35330",
+    "it_c15716bd",
+    "it_3d66f0a5",
+    "it_6b1083b1",
+    "it_5bec4e0c",
+    "it_66675ff0",
+    "it_bca87c97",
+    "it_0e7d8eee",
+    "it_dd1fceab",
+    "it_b5b61800",
+    "it_6d1f343b",
+    "it_595df89c",
+    "it_0912e2f4",
+    "it_0b4558f5",
+    "it_59766866",
+    "it_3d46d403",
+    "it_39c9bfb8",
+    "it_29f6de93",
+    "it_ba6098ff",
+    "it_fdb55ede",
+    "it_20df0a15",
+    "it_22e67915",
+    "it_82731298",
+    "it_66f91ef3",
+    "it_16b7f045",
+    "it_fe3d0ecd",
+    "it_f488dc75",
+    "it_1896bdca",
+    "it_bd8bab0a",
+    "it_ff0594fe",
+    "it_ed466234",
+    "it_6cb9e872",
+    "it_54982e80",
+    "it_effebfed",
+    "it_9d46455a",
+    "it_0552b213",
+    "it_fc8011b8",
+    "it_0f041db7",
+    "it_4c2da82c",
+    "it_0eecb1d9"
+   ],
+   "hash": "14d07da62e821108343a5fcf2a6bb231d51d8240736223fc7ebb62775b785a5c"
+  },
+  "6axes": {
+   "name": "6axes",
+   "version": "2019",
+   "source": "https://github.com/6axes/6axes.github.io",
+   "site": "https://6axes.github.io",
+   "licence": "MIT",
+   "scale": "likert5",
+   "range": [
+    0,
+    100
+   ],
+   "axes": {
+    "econ_asp": {
+     "hi": "Equality",
+     "lo": "Markets"
+    },
+    "econ_control": {
+     "hi": "Labour",
+     "lo": "Capital"
+    },
+    "nationalism": {
+     "hi": "Civic",
+     "lo": "Ethnic"
+    },
+    "cosmopolitanism": {
+     "hi": "Open borders",
+     "lo": "Chauvinist"
+    },
+    "akraetia": {
+     "hi": "Anarchist",
+     "lo": "Totalitarian"
+    },
+    "anarche": {
+     "hi": "Revolutionary",
+     "lo": "Reactionary"
+    }
+   },
+   "items": [
+    "it_825eb96d",
+    "it_72fdcc75",
+    "it_f4447fd6",
+    "it_c8150a6f",
+    "it_a0e35330",
+    "it_80255d49",
+    "it_c0551200",
+    "it_f879890a",
+    "it_a1b843e5",
+    "it_bdaf3254",
+    "it_9a15ca2a",
+    "it_7bb6f596",
+    "it_e3adda38",
+    "it_aacd8e35",
+    "it_a41c9862",
+    "it_7f225abd",
+    "it_2ea82df9",
+    "it_4bedfe57",
+    "it_784947b5",
+    "it_0a01ea76",
+    "it_727758ce",
+    "it_8f7286fb",
+    "it_1780e658",
+    "it_b17c448e",
+    "it_c393297c",
+    "it_d8d5417f",
+    "it_d1cd958f",
+    "it_115794f5",
+    "it_0b04bbcc",
+    "it_37c3b8d9",
+    "it_440e9ef3",
+    "it_c15716bd",
+    "it_9f019f15",
+    "it_6b1083b1",
+    "it_5bec4e0c",
+    "it_66675ff0",
+    "it_bca87c97",
+    "it_0d7aee6c",
+    "it_dd1fceab",
+    "it_b5b61800",
+    "it_6d1f343b",
+    "it_595df89c",
+    "it_0912e2f4",
+    "it_0b4558f5",
+    "it_59766866",
+    "it_3d46d403",
+    "it_39c9bfb8",
+    "it_29f6de93",
+    "it_ba6098ff",
+    "it_fdb55ede",
+    "it_20df0a15",
+    "it_22e67915",
+    "it_82731298",
+    "it_66f91ef3",
+    "it_16b7f045",
+    "it_fe3d0ecd",
+    "it_f488dc75",
+    "it_1896bdca",
+    "it_bd8bab0a",
+    "it_ff0594fe",
+    "it_ed466234",
+    "it_6cb9e872",
+    "it_54982e80",
+    "it_effebfed",
+    "it_9d46455a",
+    "it_0552b213",
+    "it_fc8011b8",
+    "it_2569fbba",
+    "it_4c2da82c",
+    "it_0eecb1d9"
+   ],
+   "hash": "245f7235b804ee400b63303cae5f22b875f828d8850cb98f0fbb6be6989ec0a4"
+  },
+  "sapply": {
+   "name": "SapplyValues",
+   "version": "2020-2021",
+   "source": "https://github.com/SapplyValues/SapplyValues.github.io",
+   "site": "https://sapplyvalues.github.io",
+   "licence": "MIT",
+   "scale": "likert5_dk",
+   "range": [
+    -10,
+    10
+   ],
+   "axes": {
+    "right": {
+     "hi": "Right",
+     "lo": "Left"
+    },
+    "auth": {
+     "hi": "Authoritarian",
+     "lo": "Libertarian"
+    },
+    "prog": {
+     "hi": "Progressive",
+     "lo": "Conservative"
+    }
+   },
+   "items": [
+    "it_02899ca4",
+    "it_dadec21b",
+    "it_dd908c3d",
+    "it_7bc15fac",
+    "it_cbcf7db1",
+    "it_868b59b9",
+    "it_d6dd9973",
+    "it_741bf3e9",
+    "it_cc6e9efd",
+    "it_6d7e55d2",
+    "it_ed556d7f",
+    "it_58172a84",
+    "it_effe0bd5",
+    "it_bb881463",
+    "it_8bf849dc",
+    "it_80320f24",
+    "it_679db478",
+    "it_0f75856b",
+    "it_448c83fb",
+    "it_40402710",
+    "it_ab841326",
+    "it_47bcc411",
+    "it_f14520dd",
+    "it_e68d23fa",
+    "it_108bc354",
+    "it_b82b6fad",
+    "it_ab50ebaf",
+    "it_0dabb4cb",
+    "it_e44419e0",
+    "it_df51778d",
+    "it_1ca42f6f",
+    "it_7bd53e00",
+    "it_edb05b41",
+    "it_926117ea",
+    "it_21b52cfb",
+    "it_abeecfd6",
+    "it_6d2d2ba2",
+    "it_07231fc2",
+    "it_54d62d34",
+    "it_6f71d8b7",
+    "it_23e54890",
+    "it_d896c766",
+    "it_58234884",
+    "it_0a75c61c",
+    "it_aa3725c6",
+    "it_2089fc1f"
+   ],
+   "hash": "f8a84a111510ff55674d85217c76bda8a7c98ce7b113aae015ed6cb787df5f0f"
+  },
+  "pct": {
+   "name": "Political Compass Test",
+   "version": "62 propositions, site scoring reconstructed",
+   "source": "https://github.com/paul-rottger/llm-values-pct (texts), https://github.com/h4fide/politicalcompassbot (weights)",
+   "site": "https://www.politicalcompass.org/test",
+   "licence": "texts © Pace News Ltd, reproduced for research; weight tables: reconstructed, no licence file",
+   "scale": "likert4",
+   "range": [
+    -10,
+    10
+   ],
+   "constants": {
+    "ec_div": 8,
+    "ec_off": 0.375,
+    "soc_div": 19.5,
+    "soc_off": 2.41025641025641
+   },
+   "axes": {
+    "econ": {
+     "hi": "Right",
+     "lo": "Left"
+    },
+    "soc": {
+     "hi": "Authoritarian",
+     "lo": "Libertarian"
+    }
+   },
+   "items": [
+    "it_adaf73c0",
+    "it_f5616eb1",
+    "it_2d536141",
+    "it_21556859",
+    "it_8050cf5a",
+    "it_7c569d77",
+    "it_b83ebb72",
+    "it_e24ae567",
+    "it_8681e9e1",
+    "it_a97fb9b4",
+    "it_6efc2c29",
+    "it_b8775047",
+    "it_d89f8624",
+    "it_58172a84",
+    "it_6cc80b2d",
+    "it_b63011ba",
+    "it_67ba17b4",
+    "it_94c4e7b2",
+    "it_225c6323",
+    "it_fb74bccb",
+    "it_1ccfb084",
+    "it_45cafcc3",
+    "it_0e7d8eee",
+    "it_a0e9fc80",
+    "it_3284966a",
+    "it_db1e3fd7",
+    "it_5d40f52f",
+    "it_1a572be2",
+    "it_102d6323",
+    "it_8bd9a97b",
+    "it_35e411d0",
+    "it_e4d11679",
+    "it_a144ed9c",
+    "it_d83a5144",
+    "it_1c87749c",
+    "it_e06d56a7",
+    "it_ecbf7561",
+    "it_d231c51f",
+    "it_a76a6888",
+    "it_7d002b54",
+    "it_bf12d0bc",
+    "it_0e7cc0b4",
+    "it_ca07cc68",
+    "it_70189828",
+    "it_8d53bbc8",
+    "it_b9d339d7",
+    "it_1fce56be",
+    "it_551484df",
+    "it_f774a91d",
+    "it_33a80370",
+    "it_98d9b952",
+    "it_bfc85e89",
+    "it_84405fae",
+    "it_4f213cd7",
+    "it_ba9413a8",
+    "it_bad45d63",
+    "it_3949fda6",
+    "it_906b1df1",
+    "it_2e4aaeb5",
+    "it_84c9d86f",
+    "it_063058c6",
+    "it_76070818"
+   ],
+   "hash": "fe703ff5547b7d6ea88f422d28d52b6b66d0edb800e023e9dde5987e4da27a5c"
+  }
+ },
+ "items": [
+  {
+   "id": "it_02899ca4",
+   "text": {
+    "en": "Freedom of business is the best practical way a society can prosper."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_0552b213",
+   "text": {
+    "en": "Genetic modification is a force for good, even on humans."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "anarche": 5
+    }
+   }
+  },
+  {
+   "id": "it_063058c6",
+   "text": {
+    "en": "No one can feel naturally homosexual."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_07231fc2",
+   "text": {
+    "en": "Autonomy of body extends even to minors, the mentally ill, and serious criminals."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_0912e2f4",
+   "text": {
+    "en": "Environmental regulations are essential."
+   },
+   "effects": {
+    "8values": {
+     "econ": 5,
+     "scty": 10
+    },
+    "6axes": {
+     "econ_asp": 5,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_0a01ea76",
+   "text": {
+    "en": "It is important to maintain our national sovereignty."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -5
+    },
+    "6axes": {
+     "cosmopolitanism": -10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_0a75c61c",
+   "text": {
+    "en": "One cannot be moral without religion."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_0b04bbcc",
+   "text": {
+    "en": "Even when protesting an authoritarian government, violence is not acceptable."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 5,
+     "govt": -5
+    },
+    "6axes": {
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_0b4558f5",
+   "text": {
+    "en": "A better world will come from automation, science, and technology."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "econ_asp": 5,
+     "akraetia": 5
+    }
+   }
+  },
+  {
+   "id": "it_0d7aee6c",
+   "text": {
+    "en": "No authority should be left unquestioned."
+   },
+   "effects": {
+    "6axes": {
+     "akraetia": 10,
+     "anarche": 10
+    }
+   }
+  },
+  {
+   "id": "it_0dabb4cb",
+   "text": {
+    "en": "The government should, at most, provide emergency services and law enforcement."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_0e7cc0b4",
+   "text": {
+    "en": "Although the electronic age makes official surveillance easier, only wrongdoers need to be worried."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_0e7d8eee",
+   "text": {
+    "en": "All authority should be questioned."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10,
+     "scty": 5
+    },
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      6,
+      0,
+      -2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_0eecb1d9",
+   "text": {
+    "en": "It is important that we further my group's goals above all others."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10,
+     "dipl": -10,
+     "govt": -10,
+     "scty": -10
+    },
+    "6axes": {
+     "econ_asp": 5,
+     "nationalism": 10,
+     "cosmopolitanism": -10,
+     "anarche": -5
+    }
+   }
+  },
+  {
+   "id": "it_0f041db7",
+   "text": {
+    "en": "Governments should be as concerned about foreigners as they are about their own citizens."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10
+    }
+   }
+  },
+  {
+   "id": "it_0f75856b",
+   "text": {
+    "en": "Strength is necessary for any government to succeed."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_102d6323",
+   "text": {
+    "en": "It’s natural for children to keep some secrets from their parents."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      6,
+      4,
+      0,
+      -3
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_108bc354",
+   "text": {
+    "en": "Without democracy, a society is nothing."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_115794f5",
+   "text": {
+    "en": "Governments should be accountable to the international community."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "govt": 5
+    },
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": 10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_146b3231",
+   "text": {
+    "en": "Government intervention is a threat to the economy."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10
+    }
+   }
+  },
+  {
+   "id": "it_16b7f045",
+   "text": {
+    "en": "Drug use should be legalized or decriminalized."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10,
+     "scty": 2
+    },
+    "6axes": {
+     "akraetia": 10,
+     "anarche": 2
+    }
+   }
+  },
+  {
+   "id": "it_1780e658",
+   "text": {
+    "en": "Wars do not need to be justified to other countries."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": 10,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_1896bdca",
+   "text": {
+    "en": "Sex outside marriage is immoral."
+   },
+   "effects": {
+    "8values": {
+     "govt": -5,
+     "scty": -10
+    },
+    "6axes": {
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_1a572be2",
+   "text": {
+    "en": "Good parents sometimes have to spank their children."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      3
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_1c87749c",
+   "text": {
+    "en": "Those who are able to work, and refuse the opportunity, should not expect society’s support."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_1ca42f6f",
+   "text": {
+    "en": "Two consenting individuals should be able to do whatever they want with each other, even if it makes me uncomfortable."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_1ccfb084",
+   "text": {
+    "en": "A genuine free market requires restrictions on the ability of predator multinationals to create monopolies."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_1fce56be",
+   "text": {
+    "en": "It is a waste of time to try to rehabilitate some criminals."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_2089fc1f",
+   "text": {
+    "en": "Multiculturalism is bad."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_20df0a15",
+   "text": {
+    "en": "Society was better many years ago than it is now."
+   },
+   "effects": {
+    "8values": {
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_21556859",
+   "text": {
+    "en": "Our race has many superior qualities, compared with other races."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_21b52cfb",
+   "text": {
+    "en": "Animals deserve certain universal rights."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_225c6323",
+   "text": {
+    "en": "Those with the ability to pay should have access to higher standards of medical care."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_22e67915",
+   "text": {
+    "en": "It is important that we maintain the traditions of our past."
+   },
+   "effects": {
+    "8values": {
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_23e54890",
+   "text": {
+    "en": "Drugs are harmful and should be banned."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_2569fbba",
+   "text": {
+    "en": "Governments should be as concerned about foreign citizens as they are about those within their borders."
+   },
+   "effects": {
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": 10
+    }
+   }
+  },
+  {
+   "id": "it_29f6de93",
+   "text": {
+    "en": "Churches should be taxed the same way other institutions are taxed."
+   },
+   "effects": {
+    "8values": {
+     "econ": 5,
+     "scty": 10
+    },
+    "6axes": {
+     "econ_asp": 5,
+     "econ_control": 5,
+     "anarche": 10
+    }
+   }
+  },
+  {
+   "id": "it_2d536141",
+   "text": {
+    "en": "No one chooses their country of birth, so it’s foolish to be proud of it."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_2e4aaeb5",
+   "text": {
+    "en": "Pornography, depicting consenting adults, should be legal for the adult population."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_2ea82df9",
+   "text": {
+    "en": "The means of production should belong to the workers who use them."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": -10
+    }
+   }
+  },
+  {
+   "id": "it_3284966a",
+   "text": {
+    "en": "Taxpayers should not be expected to prop up any theatres or museums that cannot survive on a commercial basis."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -8,
+      -6,
+      0,
+      1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_33a80370",
+   "text": {
+    "en": "Almost all politicians promise economic growth, but we should heed the warnings of climate science that growth is detrimental to our efforts to curb global warming."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_35e411d0",
+   "text": {
+    "en": "The prime function of schooling should be to equip the future generation to find jobs."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      3
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_37c3b8d9",
+   "text": {
+    "en": "My religious values should be spread as much as possible."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -5,
+     "govt": -10,
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": -10,
+     "cosmopolitanism": -5,
+     "akraetia": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_3949fda6",
+   "text": {
+    "en": "Sex outside marriage is usually immoral."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -6,
+      0,
+      2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_39c9bfb8",
+   "text": {
+    "en": "Religion should play a role in government."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10,
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": 5,
+     "akraetia": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_3d46d403",
+   "text": {
+    "en": "Traditions are of no value on their own."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "nationalism": 5,
+     "anarche": 10
+    }
+   }
+  },
+  {
+   "id": "it_3d66f0a5",
+   "text": {
+    "en": "Physician-assisted suicide should be legal."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10
+    }
+   }
+  },
+  {
+   "id": "it_40402710",
+   "text": {
+    "en": "Society requires structure and bureaucracy in order to function."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_440e9ef3",
+   "text": {
+    "en": "Our nation's values should be spread as much as possible."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -5
+    },
+    "6axes": {
+     "nationalism": -10,
+     "cosmopolitanism": 10,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_448c83fb",
+   "text": {
+    "en": "Only the government can fairly and effectively regulate organisations."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_45cafcc3",
+   "text": {
+    "en": "Abortion, when the woman’s life is not threatened, should always be illegal."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_47bcc411",
+   "text": {
+    "en": "In times of crisis, safety becomes more important than civil liberties."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_4bedfe57",
+   "text": {
+    "en": "Military action by our nation is often necessary to protect it."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -10
+    },
+    "6axes": {
+     "cosmopolitanism": 10,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_4c2da82c",
+   "text": {
+    "en": "All people - regardless of factors like culture or sexuality - should be treated equally."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10,
+     "dipl": 10,
+     "govt": 10,
+     "scty": 10
+    },
+    "6axes": {
+     "nationalism": 10,
+     "cosmopolitanism": 5,
+     "anarche": 10
+    }
+   }
+  },
+  {
+   "id": "it_4d910642",
+   "text": {
+    "en": "Basic utilities like roads and electricity should be publicly owned."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    }
+   }
+  },
+  {
+   "id": "it_4f213cd7",
+   "text": {
+    "en": "Charity is better than social security as a means of helping the genuinely disadvantaged."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -9,
+      -8,
+      0,
+      1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 5
+    }
+   }
+  },
+  {
+   "id": "it_54982e80",
+   "text": {
+    "en": "Prostitution should be illegal."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10,
+     "scty": -10
+    },
+    "6axes": {
+     "akraetia": -5,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_54d62d34",
+   "text": {
+    "en": "Homosexuality is against my values."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_551484df",
+   "text": {
+    "en": "The businessperson and the manufacturer are more important than the writer and the artist."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -5,
+      -3,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_58172a84",
+   "text": {
+    "en": "Land should not be a commodity to be bought and sold."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    },
+    "pct": {
+     "econ": [
+      8,
+      6,
+      0,
+      -1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_58234884",
+   "text": {
+    "en": "Victimless crimes should still be punished."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_595df89c",
+   "text": {
+    "en": "Democracy is more than a decision-making process."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10
+    },
+    "6axes": {
+     "nationalism": 10
+    }
+   }
+  },
+  {
+   "id": "it_59766866",
+   "text": {
+    "en": "Children should be educated in religious or traditional values."
+   },
+   "effects": {
+    "8values": {
+     "govt": -5,
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "akraetia": -5,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_5bec4e0c",
+   "text": {
+    "en": "Government surveillance is necessary in the modern world."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10
+    },
+    "6axes": {
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_5d40f52f",
+   "text": {
+    "en": "All people have their rights, but it is better for all of us that different sorts of people should keep to their own kind."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_66675ff0",
+   "text": {
+    "en": "The very existence of the state is a threat to our liberty."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10
+    },
+    "6axes": {
+     "akraetia": 15
+    }
+   }
+  },
+  {
+   "id": "it_66f91ef3",
+   "text": {
+    "en": "Reason is more important than maintaining our culture."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "nationalism": 10,
+     "anarche": 5
+    }
+   }
+  },
+  {
+   "id": "it_679db478",
+   "text": {
+    "en": "Authority figures, if morally correct, are a good thing for society."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_67ba17b4",
+   "text": {
+    "en": "The only social responsibility of a company should be to deliver a profit to its shareholders."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_6b1083b1",
+   "text": {
+    "en": "The sacrifice of some civil liberties is necessary to protect us from acts of terrorism."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_6cb9e872",
+   "text": {
+    "en": "I support single-payer, universal healthcare."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "akraetia": -7
+    }
+   }
+  },
+  {
+   "id": "it_6cc80b2d",
+   "text": {
+    "en": "It is regrettable that many personal fortunes are made by people who simply manipulate money and contribute nothing to their society."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      7,
+      5,
+      0,
+      -3
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_6d1f343b",
+   "text": {
+    "en": "The stronger the leadership, the better."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -10
+    },
+    "6axes": {
+     "akraetia": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_6d2d2ba2",
+   "text": {
+    "en": "Laws based on cultural values, rather than ethical ones, aren't justice."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_6d7e55d2",
+   "text": {
+    "en": "A government that provides for everyone is an inherently good idea."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_6efc2c29",
+   "text": {
+    "en": "“from each according to his ability, to each according to his need” is a fundamentally good idea."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_6f71d8b7",
+   "text": {
+    "en": "Transgender individuals should not be able to adopt children."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_70189828",
+   "text": {
+    "en": "In a civilised society, one must always have people above to be obeyed and people below to be commanded."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_727758ce",
+   "text": {
+    "en": "A united world government would be beneficial to mankind."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": 10
+    }
+   }
+  },
+  {
+   "id": "it_72fdcc75",
+   "text": {
+    "en": "International trade is beneficial."
+   },
+   "effects": {
+    "6axes": {
+     "econ_asp": -5,
+     "econ_control": -5,
+     "cosmopolitanism": 10,
+     "akraetia": 10
+    }
+   }
+  },
+  {
+   "id": "it_741bf3e9",
+   "text": {
+    "en": "The harder you work, the more you progress up the social ladder."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_76070818",
+   "text": {
+    "en": "These days openness about sex has gone too far."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_784947b5",
+   "text": {
+    "en": "I support regional unions, such as the European Union."
+   },
+   "effects": {
+    "8values": {
+     "econ": -5,
+     "dipl": 10,
+     "govt": 10,
+     "scty": 5
+    },
+    "6axes": {
+     "econ_asp": -5,
+     "nationalism": 5,
+     "cosmopolitanism": 10
+    }
+   }
+  },
+  {
+   "id": "it_7bb6f596",
+   "text": {
+    "en": "Inheritance is a legitimate form of wealth."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10,
+     "scty": -5
+    },
+    "6axes": {
+     "econ_asp": -10,
+     "econ_control": 10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_7bc15fac",
+   "text": {
+    "en": "It is \"human nature\" to be greedy."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_7bd53e00",
+   "text": {
+    "en": "An individual's body is their own property, and they should be able to do anything they desire to it."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_7c569d77",
+   "text": {
+    "en": "Military action that defies international law is sometimes justified."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_7d002b54",
+   "text": {
+    "en": "Our civil liberties are being excessively curbed in the name of counter-terrorism."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      5,
+      0,
+      -3
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_7f225abd",
+   "text": {
+    "en": "Quality education is a right of all people."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10,
+     "scty": 5
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": -5,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_80255d49",
+   "text": {
+    "en": "The freer the markets, the freer the people."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10
+    },
+    "6axes": {
+     "econ_asp": -10,
+     "econ_control": -10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_80320f24",
+   "text": {
+    "en": "Sometimes it is right that the government may spy on its citizens to combat extremists and terrorists."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_8050cf5a",
+   "text": {
+    "en": "The enemy of my enemy is my friend."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_825eb96d",
+   "text": {
+    "en": "Oppression by corporations is more of a concern than oppression by governments."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10,
+     "govt": -5
+    },
+    "6axes": {
+     "econ_asp": 5,
+     "econ_control": 10
+    }
+   }
+  },
+  {
+   "id": "it_82731298",
+   "text": {
+    "en": "It is important that we think in the long term, beyond our lifespans."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "anarche": 5
+    }
+   }
+  },
+  {
+   "id": "it_84405fae",
+   "text": {
+    "en": "You cannot be moral without being religious."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 5
+    }
+   }
+  },
+  {
+   "id": "it_84c9d86f",
+   "text": {
+    "en": "What goes on in a private bedroom between consenting adults is no business of the state."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      8,
+      6,
+      0,
+      -2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_8681e9e1",
+   "text": {
+    "en": "Controlling inflation is more important than controlling unemployment."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_868b59b9",
+   "text": {
+    "en": "Communism is an ideal that can never work in practice."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_8bd9a97b",
+   "text": {
+    "en": "Possessing marijuana for personal use should not be a criminal offence."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      6,
+      3,
+      0,
+      -2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_8bf849dc",
+   "text": {
+    "en": "Economic inequality is too high in the world."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_8d53bbc8",
+   "text": {
+    "en": "Abstract art that doesn’t represent anything shouldn’t be considered art at all."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_8f7286fb",
+   "text": {
+    "en": "It is more important to retain peaceful relations than to further our strength."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10
+    },
+    "6axes": {
+     "cosmopolitanism": 10
+    }
+   }
+  },
+  {
+   "id": "it_906b1df1",
+   "text": {
+    "en": "A same sex couple in a stable, loving relationship should not be excluded from the possibility of child adoption."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      6,
+      0,
+      -2
+     ],
+     "page": 6
+    }
+   }
+  },
+  {
+   "id": "it_926117ea",
+   "text": {
+    "en": "Nudism is perfectly natural."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_94c4e7b2",
+   "text": {
+    "en": "The rich are too highly taxed."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -7,
+      -5,
+      0,
+      1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_98d9b952",
+   "text": {
+    "en": "Making peace with the establishment is an important aspect of maturity."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_9a15ca2a",
+   "text": {
+    "en": "Taxes should be increased on the rich to provide for the poor."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": 10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_9a289ca4",
+   "text": {
+    "en": "Tariffs on international trade are important to encourage local production."
+   },
+   "effects": {
+    "8values": {
+     "econ": 5,
+     "govt": -10
+    }
+   }
+  },
+  {
+   "id": "it_9d46455a",
+   "text": {
+    "en": "To chase progress at all costs is dangerous."
+   },
+   "effects": {
+    "8values": {
+     "scty": -10
+    },
+    "6axes": {
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_9f019f15",
+   "text": {
+    "en": "Victimless crimes (such as drug use) should not be crimes at all."
+   },
+   "effects": {
+    "6axes": {
+     "akraetia": 10,
+     "anarche": 5
+    }
+   }
+  },
+  {
+   "id": "it_a0e35330",
+   "text": {
+    "en": "It is very important to maintain law and order."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -5,
+     "govt": -10,
+     "scty": -5
+    },
+    "6axes": {
+     "akraetia": -10,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_a0e9fc80",
+   "text": {
+    "en": "An eye for an eye and a tooth for a tooth."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -5,
+      -4,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_a144ed9c",
+   "text": {
+    "en": "The most important thing for children to learn is to accept discipline."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_a1b843e5",
+   "text": {
+    "en": "From each according to his ability, to each according to his needs."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": -10,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_a41c9862",
+   "text": {
+    "en": "Those with a greater ability to pay should receive better healthcare."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10
+    },
+    "6axes": {
+     "econ_asp": -10,
+     "econ_control": -5
+    }
+   }
+  },
+  {
+   "id": "it_a76a6888",
+   "text": {
+    "en": "No broadcasting institution, however independent its content, should receive public funding."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -5,
+      -4,
+      0,
+      1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_a97fb9b4",
+   "text": {
+    "en": "Because corporations cannot be trusted to voluntarily protect the environment, they require regulation."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      6,
+      4,
+      0,
+      -2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_aa3725c6",
+   "text": {
+    "en": "Parents should hold absolute power over their children, as they are older and more experienced."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_aacd8e35",
+   "text": {
+    "en": "Excessive government intervention is a threat to the economy."
+   },
+   "effects": {
+    "6axes": {
+     "econ_asp": -10,
+     "econ_control": -10,
+     "akraetia": 5
+    }
+   }
+  },
+  {
+   "id": "it_ab50ebaf",
+   "text": {
+    "en": "The smaller the government, the freer the people."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_ab841326",
+   "text": {
+    "en": "Mandatory IDs should be used to ensure public safety."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_abeecfd6",
+   "text": {
+    "en": "Gender is a social construct, not a natural state of affairs."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_adaf73c0",
+   "text": {
+    "en": "If economic globalisation is inevitable, it should primarily serve humanity rather than the interests of trans-national corporations."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_b17c448e",
+   "text": {
+    "en": "Military spending is a waste of money."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "govt": 10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": -10,
+     "akraetia": 10
+    }
+   }
+  },
+  {
+   "id": "it_b5b61800",
+   "text": {
+    "en": "It is important that the government follows the majority opinion, even if it is wrong."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10
+    },
+    "6axes": {
+     "nationalism": -10,
+     "akraetia": -5,
+     "anarche": -5
+    }
+   }
+  },
+  {
+   "id": "it_b63011ba",
+   "text": {
+    "en": "Protectionism is sometimes necessary in trade."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      8,
+      6,
+      0,
+      -1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_b82b6fad",
+   "text": {
+    "en": "Jury nullification should be legal."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_b83ebb72",
+   "text": {
+    "en": "There is now a worrying fusion of information and entertainment."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_b8775047",
+   "text": {
+    "en": "The freer the market, the freer the people."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_b9d339d7",
+   "text": {
+    "en": "In criminal justice, punishment should be more important than rehabilitation."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_ba6098ff",
+   "text": {
+    "en": "Climate change is currently one of the greatest threats to our way of life."
+   },
+   "effects": {
+    "8values": {
+     "scty": 10
+    },
+    "6axes": {
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_ba9413a8",
+   "text": {
+    "en": "Some people are naturally unlucky."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 5
+    }
+   }
+  },
+  {
+   "id": "it_bad45d63",
+   "text": {
+    "en": "It is important that my child’s school instills religious values."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 5
+    }
+   }
+  },
+  {
+   "id": "it_bb881463",
+   "text": {
+    "en": "Class is the primary division of society."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_bca87c97",
+   "text": {
+    "en": "Regardless of political opinions, it is important to side with your country."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -10,
+     "scty": -5
+    },
+    "6axes": {
+     "nationalism": 5,
+     "cosmopolitanism": -10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_bd8bab0a",
+   "text": {
+    "en": "If we accept migrants at all, it is important that they assimilate into our culture."
+   },
+   "effects": {
+    "8values": {
+     "govt": -5,
+     "scty": -10
+    },
+    "6axes": {
+     "nationalism": -10,
+     "akraetia": -5,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_bdaf3254",
+   "text": {
+    "en": "It would be best if social programs were abolished in favor of private charity."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10
+    },
+    "6axes": {
+     "econ_asp": -10,
+     "akraetia": 10
+    }
+   }
+  },
+  {
+   "id": "it_bf12d0bc",
+   "text": {
+    "en": "A significant advantage of a one-party state is that it avoids all the arguments that delay progress in a democratic political system."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -9,
+      -6,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_bfc85e89",
+   "text": {
+    "en": "Astrology accurately explains many things."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 5
+    }
+   }
+  },
+  {
+   "id": "it_c0551200",
+   "text": {
+    "en": "It is better to maintain a balanced budget than to ensure welfare for all citizens."
+   },
+   "effects": {
+    "8values": {
+     "econ": -10
+    },
+    "6axes": {
+     "econ_asp": -10
+    }
+   }
+  },
+  {
+   "id": "it_c15716bd",
+   "text": {
+    "en": "The general populace makes poor decisions."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10
+    },
+    "6axes": {
+     "akraetia": -10,
+     "anarche": -5
+    }
+   }
+  },
+  {
+   "id": "it_c393297c",
+   "text": {
+    "en": "International aid is a waste of money."
+   },
+   "effects": {
+    "8values": {
+     "econ": -5,
+     "dipl": -10
+    },
+    "6axes": {
+     "econ_asp": -5,
+     "cosmopolitanism": -10
+    }
+   }
+  },
+  {
+   "id": "it_c8150a6f",
+   "text": {
+    "en": "The United Nations should be abolished."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10,
+     "govt": -5
+    },
+    "6axes": {
+     "nationalism": -5,
+     "cosmopolitanism": -10
+    }
+   }
+  },
+  {
+   "id": "it_ca07cc68",
+   "text": {
+    "en": "The death penalty should be an option for the most serious crimes."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_cbcf7db1",
+   "text": {
+    "en": "\"Exploitation\" is an outdated term, as the struggles of 1800s capitalism don't exist anymore."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_cc6e9efd",
+   "text": {
+    "en": "Organisations and corporations cannot be trusted and need to be regulated by the government."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_d1cd958f",
+   "text": {
+    "en": "Research should be conducted on an international scale."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "scty": 10
+    },
+    "6axes": {
+     "cosmopolitanism": 10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_d231c51f",
+   "text": {
+    "en": "What’s good for the most successful corporations is always, ultimately, good for all of us."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      -10,
+      -8,
+      0,
+      1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_d6dd9973",
+   "text": {
+    "en": "Taxation of the wealthy is a bad idea, society would be better off without it."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_d83a5144",
+   "text": {
+    "en": "There are no savage and civilised peoples; there are only different cultures."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      7,
+      6,
+      0,
+      -2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_d896c766",
+   "text": {
+    "en": "The death penalty should exist for certain crimes."
+   },
+   "effects": {
+    "sapply": {
+     "prog": -1
+    }
+   }
+  },
+  {
+   "id": "it_d89f8624",
+   "text": {
+    "en": "It’s a sad reflection on our society that something as basic as drinking water is now a bottled, branded consumer product."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      8,
+      6,
+      0,
+      -2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_d8d5417f",
+   "text": {
+    "en": "My nation is great."
+   },
+   "effects": {
+    "8values": {
+     "dipl": -10
+    },
+    "6axes": {
+     "nationalism": 5,
+     "cosmopolitanism": -10
+    }
+   }
+  },
+  {
+   "id": "it_dadec21b",
+   "text": {
+    "en": "Charity is a better way of helping those in need than social welfare."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_db1e3fd7",
+   "text": {
+    "en": "Schools should not make classroom attendance compulsory."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      8,
+      4,
+      0,
+      -2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_dd1fceab",
+   "text": {
+    "en": "A hierarchical state is best."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10
+    },
+    "6axes": {
+     "nationalism": -5,
+     "akraetia": -5,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_dd908c3d",
+   "text": {
+    "en": "Wages are always fair, as employers know best what a worker's labour is worth."
+   },
+   "effects": {
+    "sapply": {
+     "right": 1
+    }
+   }
+  },
+  {
+   "id": "it_df51778d",
+   "text": {
+    "en": "State schools are a bad idea because our state shouldn't be influencing our children."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_e06d56a7",
+   "text": {
+    "en": "When you are troubled, it’s better not to think about it, but to keep busy with more cheerful things."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -6,
+      -4,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_e24ae567",
+   "text": {
+    "en": "People are ultimately divided more by class than by nationality."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      7,
+      5,
+      0,
+      -2
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_e3adda38",
+   "text": {
+    "en": "Public utilities like roads and electricity should be publicly owned."
+   },
+   "effects": {
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": 10,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_e44419e0",
+   "text": {
+    "en": "The police were not created to protect the people, but to uphold the status quo by force."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_e4d11679",
+   "text": {
+    "en": "People with serious inheritable disabilities should not be allowed to reproduce."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -9,
+      -7,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_e68d23fa",
+   "text": {
+    "en": "The government should be less involved in the day to day life of its citizens."
+   },
+   "effects": {
+    "sapply": {
+     "auth": -1
+    }
+   }
+  },
+  {
+   "id": "it_ecbf7561",
+   "text": {
+    "en": "First-generation immigrants can never be fully integrated within their new country."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -4,
+      0,
+      2
+     ],
+     "page": 3
+    }
+   }
+  },
+  {
+   "id": "it_ed466234",
+   "text": {
+    "en": "Gun ownership should be prohibited for those without a valid reason."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10
+    },
+    "6axes": {
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_ed556d7f",
+   "text": {
+    "en": "The current welfare system should be expanded to further combat inequality."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_edb05b41",
+   "text": {
+    "en": "A person should be able to worship whomever or whatever they want."
+   },
+   "effects": {
+    "sapply": {
+     "prog": 1
+    }
+   }
+  },
+  {
+   "id": "it_effe0bd5",
+   "text": {
+    "en": "All industry and the bank should be nationalised."
+   },
+   "effects": {
+    "sapply": {
+     "right": -1
+    }
+   }
+  },
+  {
+   "id": "it_effebfed",
+   "text": {
+    "en": "Maintaining family values is essential."
+   },
+   "effects": {
+    "8values": {
+     "scty": -10
+    },
+    "6axes": {
+     "akraetia": -2,
+     "anarche": -10
+    }
+   }
+  },
+  {
+   "id": "it_f14520dd",
+   "text": {
+    "en": "If you have nothing to hide, you have nothing to fear."
+   },
+   "effects": {
+    "sapply": {
+     "auth": 1
+    }
+   }
+  },
+  {
+   "id": "it_f4447fd6",
+   "text": {
+    "en": "It is necessary for the government to intervene in the economy to protect consumers."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": 10,
+     "akraetia": -10
+    }
+   }
+  },
+  {
+   "id": "it_f488dc75",
+   "text": {
+    "en": "No cultures are superior to others."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "govt": 5,
+     "scty": 10
+    },
+    "6axes": {
+     "nationalism": 10,
+     "cosmopolitanism": 10,
+     "anarche": 5
+    }
+   }
+  },
+  {
+   "id": "it_f5616eb1",
+   "text": {
+    "en": "I’d always support my country, whether it was right or wrong."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -8,
+      -6,
+      0,
+      2
+     ],
+     "page": 1
+    }
+   }
+  },
+  {
+   "id": "it_f774a91d",
+   "text": {
+    "en": "Mothers may have careers, but their first duty is to be homemakers."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "soc": [
+      -7,
+      -5,
+      0,
+      2
+     ],
+     "page": 4
+    }
+   }
+  },
+  {
+   "id": "it_f879890a",
+   "text": {
+    "en": "Publicly-funded research is more beneficial to the people than leaving it to the market."
+   },
+   "effects": {
+    "8values": {
+     "econ": 10,
+     "scty": 10
+    },
+    "6axes": {
+     "econ_asp": 10,
+     "econ_control": 5,
+     "akraetia": -5
+    }
+   }
+  },
+  {
+   "id": "it_fb74bccb",
+   "text": {
+    "en": "Governments should penalise businesses that mislead the public."
+   },
+   "effects": {
+    "pct": {
+     "econ": [
+      6,
+      4,
+      0,
+      -1
+     ],
+     "soc": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "page": 2
+    }
+   }
+  },
+  {
+   "id": "it_fc8011b8",
+   "text": {
+    "en": "We should open our borders to immigration."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "govt": 10
+    },
+    "6axes": {
+     "nationalism": 8,
+     "cosmopolitanism": 10,
+     "akraetia": 10
+    }
+   }
+  },
+  {
+   "id": "it_fdb55ede",
+   "text": {
+    "en": "It is important that we work as a united world to combat climate change."
+   },
+   "effects": {
+    "8values": {
+     "dipl": 10,
+     "scty": 10
+    },
+    "6axes": {
+     "cosmopolitanism": 10
+    }
+   }
+  },
+  {
+   "id": "it_fe3d0ecd",
+   "text": {
+    "en": "Same-sex marriage should be legal."
+   },
+   "effects": {
+    "8values": {
+     "govt": 10,
+     "scty": 10
+    },
+    "6axes": {
+     "akraetia": 10,
+     "anarche": 10
+    }
+   }
+  },
+  {
+   "id": "it_ff0594fe",
+   "text": {
+    "en": "Abortion should be prohibited in most or all cases."
+   },
+   "effects": {
+    "8values": {
+     "govt": -10,
+     "scty": -10
+    },
+    "6axes": {
+     "akraetia": -10,
+     "anarche": -10
+    }
+   }
+  }
+ ]
+}

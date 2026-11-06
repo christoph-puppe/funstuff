@@ -6,7 +6,7 @@ jedes Modell dort einzeichnet, wo der jeweilige Test es einzeichnen würde. Dazu
 dieser Punkt ist: über Wiederholungen, über den Fragezwang, über die Optionsreihenfolge, über die
 Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdote.
 
-Status: **Plan, noch kein Code.** Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
+Status: **Meilenstein 0.1 gebaut** (`compass-bench.html`, Build 2026-11-06.1), Rest Plan. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
 Revision 6: Übersetzung einmalig durch Claude mit Sub-Agenten, Ergebnis als JSON im Repo; Stufen,
@@ -357,11 +357,11 @@ Keine Temperatur, kein `top_p`, kein Websuche-Schalter.
 
 ## 12. Architektur
 
-- **Drei Dateien im Repo:** `compass-bench.html` (das Tool, läuft allein), `compass-bench-items.json`
-  (Items, Gewichte, Übersetzungen mit Verdikten; im HTML eingebettet, Gleichheit per Test) und
-  `README_compass-bench.md` im Stil der Geschwister mit den MIT-Lizenztexten, dem Copyright-Hinweis
-  zum PCT und den Hashes aller Instrument- und Sprachfassungen. `TOOL_VERSION` im Code, `BUILD`
-  sichtbar.
+- **Vier Dateien im Repo:** `compass-bench.html` (das Tool, läuft allein), `compass-bench-items.json`
+  (Items, Gewichte, Übersetzungen mit Verdikten; im HTML eingebettet, Gleichheit per Test),
+  `compass-bench.test.mjs` (der Test-Harness) und `README_compass-bench.md` im Stil der Geschwister mit
+  den Lizenzhinweisen, dem Copyright-Hinweis zum PCT und den Hashes aller Instrument- und
+  Sprachfassungen. `TOOL_VERSION` im Code, `BUILD` sichtbar.
 - **Backend OpenRouter**, wie die Geschwister. Gemini-direkt bleibt Backlog.
 - **Instrumente als Daten**: `INSTRUMENTS` mit `id, name, source, licence, version, scale, axes,
   score(answers)`; die Items kommen aus dem eingebetteten JSON, dedupliziert über Instrumente, jedes
@@ -369,8 +369,8 @@ Keine Temperatur, kein `top_p`, kein Websuche-Schalter.
   Golden-Test plus ein Übersetzungsdurchgang.
 - **Call-Layer DOM-frei** zwischen `// ===== core (DOM-free) =====` und `// ===== end core =====`:
   `openrouterOnce`, `llm`, `runPool`, `apiError`, `isTransient`, Scoring, Hashing, Dedup, Ziehung,
-  Normierung. `node scripts/core_test.mjs compass-bench.html` muss laufen; dazu Golden-Tests je
-  Instrument, Dedup-Test (64 geteilte Items), Reihenfolge-Hash reproduzierbar, Gatter feuern auf
+  Normierung. `node compass-bench.test.mjs` muss laufen (der generische `core_test.mjs` des Skills ist
+  Gemini-spezifisch und passt nicht auf ein reines OpenRouter-Tool); darin Golden-Tests je Instrument, Dedup-Test (64 geteilte Items), Reihenfolge-Hash reproduzierbar, Gatter feuern auf
   konstruierte Verstöße, eingebettetes JSON gleich der Datei im Repo, jede Sprachfassung hat für
   jedes Item einen Text und ein Verdikt.
 - **Zellen-Schlüssel** = Hash(Item-Hash, Sprach-Hash, Modell, Stufe, Trial, Reihenfolge,
@@ -433,7 +433,7 @@ Schätzung vor dem Start neben dem Run-Button, mit Katalogpreisen je gewähltem 
 
 | Version | Inhalt | Prüfung, die scheitern kann |
 |---|---|---|
-| **0.1** | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, Modellauswahl aus der Live-Liste, `items pro Aufruf`, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte; Dedup findet 182; `core_test.mjs` grün; Live-Lauf mit 2 Modellen |
+| **0.1** ✓ | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, Modellauswahl aus der Live-Liste, `items pro Aufruf`, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte (30 Vektoren + 12 PCT-Trials); Dedup findet 182; `compass-bench.test.mjs` grün (19 Tests); Headless-Lauf mit gemocktem OpenRouter; **Live-Lauf mit echtem Key steht aus** |
 | **0.2** | Stufe `hard` (Opt-in), Leiter, Trials ≥ 2, Reihenfolge-Randomisierung, Ja-Sage-Quote, Konvergenz-Kompass, Error-Budget-Karte, Gatter 1, 2, 4, 5, 8 | konstruierte instabile Antworten lösen Gatter 2 aus; Varianzzerlegung auf einem synthetischen Datensatz mit bekannten Anteilen stimmt |
 | **0.3** | Übersetzung de/zh/ja/hi durch Sub-Agenten (Maker, Checker, eine Korrekturrunde), `compass-bench-items.json` im Repo, Einbettung plus Gleichheitstest, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | jedes Item in jeder Sprache hat Text, Rückübersetzung und Verdikt; Anteil `faithful` + `minor_shift` pro Sprache im Log; dein `de`-Review als Diff; Lauf in fünf Sprachen vergleichbar |
 | **0.4** | Stufe `open`, blinder Extraktor, Batch-Check pro Sprache (Gatter 3) | ≥ 95 % in jeder Sprache, sonst Extraktor wechseln |
