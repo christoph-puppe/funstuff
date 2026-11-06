@@ -6,6 +6,8 @@
 //     with the original quiz.html JavaScript on seeded random answer vectors; the Political Compass Test
 //     against 12 website-scored trials published by the 2026 error-budget study
 //   - cell keys are deterministic and distinct; page grouping follows the websites and asks each item once
+//   - 0.2: option order per cell, majority over trials, the instability measure, response style, quadrants and the
+//     crossed variance decomposition on synthetic data with known shares
 //   - openrouterOnce sends the key as a Bearer header, no sampling params, no plugins, a timeout signal, and
 //     surfaces status + upstream message; llm() retries transient errors only, within the cap, substitutes a
 //     rejected response_format once, and honours state.cancel; runPool bounds concurrency and sweeps on cancel
@@ -29,7 +31,8 @@ const ctx = { console, performance, AbortSignal, Math, Map, Set, Promise, Array,
     const r = queue.shift() ?? { ok: true, body: {} }; return { ok: r.ok, status: r.status ?? 200, json: async () => r.body }; } };
 vm.createContext(ctx);
 try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } catch (e) { console.error(`core block does not evaluate: ${e.message}`); process.exit(2); }
-for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor"])
+for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
+  "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -169,6 +172,65 @@ await test("extractJson: fences and surrounding prose", () => {
   assert.equal(JSON.stringify(ctx.extractJson('```json\n{"a":1}\n```')), '{"a":1}');
   assert.equal(JSON.stringify(ctx.extractJson('Here: {"a":[1,2]} thanks')), '{"a":[1,2]}');
   assert.throws(() => ctx.extractJson("no json here"));
+});
+await test("option order: deterministic per (model, group, trial), roughly balanced, no_position stays last, off = agree-first", () => {
+  const groups = ITEMS.map(it => it.id);
+  const a = groups.map(g => ctx.orderFor("x/y", g, 1, true)), b = groups.map(g => ctx.orderFor("x/y", g, 1, true));
+  assert.equal(JSON.stringify(a), JSON.stringify(b));
+  const share = a.filter(o => o === "disagree-first").length / a.length; assert.ok(share > 0.35 && share < 0.65, `share disagree-first ${share}`);
+  assert.ok(groups.some(g => ctx.orderFor("x/y", g, 1, true) !== ctx.orderFor("x/y", g, 2, true)), "trial changes some orders");
+  assert.ok(groups.every(g => ctx.orderFor("x/y", g, 1, false) === "agree-first"));
+  const codes = ctx.optionsFor(ITEMS[0], "soft");
+  assert.equal(JSON.stringify([...ctx.orderedCodes(codes, "disagree-first")]), JSON.stringify(["strongly_disagree", "disagree", "neutral", "agree", "strongly_agree", "no_position"]));
+  assert.equal(JSON.stringify([...ctx.orderedCodes(codes, "agree-first")]), JSON.stringify([...codes]));
+  assert.ok(!ctx.optionsFor(ITEMS[0], "hard").includes("no_position"), "hard rung has no exit");
+  assert.ok(ctx.buildSinglePrompt("", ITEMS[0], "en", ctx.optionsFor(ITEMS[0], "hard"), "hard").includes("You must choose"), "hard default prompt used when the template is empty");
+});
+await test("majority over trials: ties go to the first answer seen; errors and pending are ignored", () => {
+  const cells = [{ item_id: "a", status: "ok", answer: "agree" }, { item_id: "a", status: "ok", answer: "disagree" }, { item_id: "a", status: "ok", answer: "disagree" },
+    { item_id: "b", status: "ok", answer: "agree" }, { item_id: "b", status: "ok", answer: "neutral" }, { item_id: "c", status: "error", answer: null }];
+  const m = ctx.majorityAnswers(cells);
+  assert.equal(m.get("a"), "disagree"); assert.equal(m.get("b"), "agree"); assert.ok(!m.has("c"));
+});
+await test("instability gate: constructed unstable answers give a large SD across trials, stable ones zero", () => {
+  const items = instItems("sapply");
+  // trial 1 agrees with every item that points to the high pole and disagrees with the rest (every axis at +10),
+  // trial 2 does the opposite (−10): unit values ±1, SD = √2. Uniform answers would cancel on a balanced test.
+  const dir = it => Object.values(it.effects.sapply)[0];
+  const t1 = ctx.scoreInstrument("sapply", items, new Map(items.map(it => [it.id, dir(it) > 0 ? "strongly_agree" : "strongly_disagree"])));
+  const t2 = ctx.scoreInstrument("sapply", items, new Map(items.map(it => [it.id, dir(it) > 0 ? "strongly_disagree" : "strongly_agree"])));
+  const unstable = ctx.trialInstability("sapply", [t1, t2]);
+  assert.ok(Math.abs(unstable.worst - Math.SQRT2) < 1e-9, `worst SD ${unstable.worst}`);
+  const stable = ctx.trialInstability("sapply", [t1, t1]); assert.equal(stable.worst, 0);
+  assert.equal(ctx.toUnit("sapply", 10), 1); assert.equal(ctx.toUnit("8values", 0), -1); assert.equal(ctx.toUnit("8values", 50), 0);
+});
+await test("response style: acquiescence, refusal, order shift and trial disagreement", () => {
+  const mk = (id, answer, order, trial = 1) => ({ item_id: id, status: "ok", answer, order, trial });
+  const cells = [mk("a", "agree", "agree-first"), mk("b", "strongly_agree", "agree-first"), mk("c", "disagree", "agree-first"), mk("d", "no_position", "agree-first"),
+    mk("e", "disagree", "disagree-first"), mk("f", "disagree", "disagree-first"), mk("g", "agree", "disagree-first"), mk("a", "disagree", "agree-first", 2), mk("b", "strongly_agree", "agree-first", 2)];
+  const r = ctx.responseStyle(cells);
+  assert.equal(r.n, 9); assert.equal(r.answered, 8); assert.ok(Math.abs(r.refusal - 1 / 9) < 1e-9);
+  // agree-first answered: a, b, c, a(t2), b(t2) → 3 agree of 5; disagree-first: e, f, g → 1 of 3
+  assert.ok(Math.abs(r.agree - 4 / 8) < 1e-9); assert.ok(Math.abs(r.order_shift - (3 / 5 - 1 / 3)) < 1e-9, `shift ${r.order_shift}`);
+  assert.ok(Math.abs(r.trial_disagreement - 1 / 7) < 1e-9, `trial disagreement ${r.trial_disagreement}`);
+  assert.equal(ctx.responseStyle([mk("a", "agree", "agree-first")]).trial_disagreement, null, "single trial has no disagreement figure");
+});
+await test("quadrants on the common axes", () => {
+  assert.equal(ctx.quadrantOf({ economic: 0.3, authority: -0.2 }), "lib-right"); assert.equal(ctx.quadrantOf({ economic: -0.3, authority: 0.2 }), "auth-left");
+  assert.equal(ctx.quadrantOf({ economic: null, authority: 0.2 }), null);
+});
+await test("variance decomposition: synthetic data with known shares (axis 80 %, model 20 %, no residual), then with trial noise", () => {
+  const obs = [];
+  for (const axis of ["A", "B"]) for (const model of ["m1", "m2"]) for (const trial of [1, 2]) obs.push({ value: (axis === "A" ? 1 : -1) + (model === "m1" ? 0.5 : -0.5), axis, model, rung: "soft", trial });
+  const v = ctx.varianceDecomposition(obs, ["axis", "model", "rung"]);
+  assert.ok(Math.abs(v.shares.axis - 0.8) < 1e-9 && Math.abs(v.shares.model - 0.2) < 1e-9 && Math.abs(v.shares.rung) < 1e-9 && Math.abs(v.shares.residual) < 1e-9, JSON.stringify(v.shares));
+  assert.equal(v.parts.axis_levels, 2); assert.equal(v.n, 8);
+  const noisy = obs.map(o => ({ ...o, value: o.value + (o.trial === 1 ? 0.5 : -0.5) }));   // ±0.5 per trial: SS 8×0.25 = 2 on top of 10
+  const w = ctx.varianceDecomposition(noisy, ["axis", "model", "rung"]);
+  assert.ok(Math.abs(w.shares.residual - 2 / 12) < 1e-9 && Math.abs(w.shares.axis - 8 / 12) < 1e-9, JSON.stringify(w.shares));
+  assert.equal(ctx.varianceDecomposition([{ value: 1, axis: "A", model: "m", rung: "soft" }], ["axis"]), null);
+  const b1 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3), b2 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3);
+  assert.equal(JSON.stringify(b1), JSON.stringify(b2)); assert.ok(b1.axis[0] <= w.shares.axis && b1.axis[1] >= w.shares.axis - 1e-9);
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

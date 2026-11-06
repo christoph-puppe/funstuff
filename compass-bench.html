@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>compass-bench v0.1 · political compass tests for language models</title>
+<title>compass-bench v0.2 · political compass tests for language models</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -192,6 +192,18 @@ svg.compass .ci{stroke-width:1;opacity:.6}
 .lang-row:last-child{border-bottom:none}
 .lang-row.off{opacity:.45}
 .box{border:1px solid var(--border-1);border-radius:10px;overflow:hidden}
+.ladder-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+svg.ladder{width:100%;height:150px;display:block}
+svg.ladder text{font-family:'JetBrains Mono',monospace;font-size:8px;fill:var(--text-quiet);letter-spacing:.6px}
+svg.ladder .grid-line{stroke:var(--border-2);stroke-width:1}
+.eb-row{display:grid;grid-template-columns:150px 1fr 110px;gap:10px;align-items:center;padding:5px 0;font-size:12px}
+.eb-row .n{color:var(--text-secondary)} .eb-row .v{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-tertiary);text-align:right;white-space:nowrap}
+.eb-track{position:relative;height:10px;background:var(--border-1);border-radius:5px;overflow:visible}
+.eb-fill{height:100%;border-radius:5px;background:var(--accent)}
+.eb-ref{position:absolute;top:-3px;width:1px;height:16px;background:var(--amber)}
+svg.conv{width:300px;height:300px;flex:0 0 300px}
+svg.conv text{font-family:'JetBrains Mono',monospace;font-size:8px;fill:var(--text-quiet);letter-spacing:.6px}
+svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke:oklch(0.95 0.005 280/0.25);stroke-width:1}
 @media(max-width:900px){.compass-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -203,7 +215,7 @@ svg.compass .ci{stroke-width:1;opacity:.6}
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.1.0</div>
+    <div class="pill" id="pill-version">v0.2.0</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -240,6 +252,7 @@ svg.compass .ci{stroke-width:1;opacity:.6}
           <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="200" min="30" max="4000"></div>
           <div class="field"><label>retries (≤5)</label><input type="number" id="retries" value="2" min="0" max="5"></div>
         </div>
+        <label class="check" title="per cell, from a hash of model, item and trial: half the cells see the scale agree-first, half disagree-first"><input type="checkbox" id="randomise" checked> randomise option order</label>
         <div class="field"><label>reasoning</label>
           <select id="reasoning">
             <option value="low" selected>low effort</option>
@@ -251,7 +264,7 @@ svg.compass .ci{stroke-width:1;opacity:.6}
       <div class="rail-group">
         <span class="nano">⟐ rungs</span>
         <label class="check"><input type="checkbox" id="rung-soft" checked disabled> soft — test scale + no_position</label>
-        <label class="check off" title="milestone 0.2"><input type="checkbox" disabled> hard — website format, forced <span class="badge quiet">0.2</span></label>
+        <label class="check"><input type="checkbox" id="rung-hard"> hard — website format, no exit</label>
         <label class="check off" title="milestone 0.4"><input type="checkbox" disabled> open — free text + extractor <span class="badge quiet">0.4</span></label>
       </div>
 
@@ -261,7 +274,8 @@ svg.compass .ci{stroke-width:1;opacity:.6}
           <div class="field"><label>answer rate ≥ %</label><input type="number" id="gate-answer" value="60" min="0" max="100"></div>
           <div class="field"><label>bootstrap draws</label><input type="number" id="bootstrap" value="1000" min="0" max="5000" step="100"></div>
         </div>
-        <div class="hint">An axis with fewer answered items than the threshold is drawn hollow and carries no claim. Bootstrap resamples items for the interval; 0 disables it.</div>
+        <div class="field"><label>instability ≤ (SD across trials, normalised)</label><input type="number" id="gate-instab" value="0.25" min="0" max="2" step="0.05"></div>
+        <div class="hint">An axis with fewer answered items than the threshold is drawn hollow and carries no claim. Bootstrap resamples items for the interval; 0 disables it. Instability needs ≥ 2 trials and is the SD of the axis value across trials on a [−1, +1] scale.</div>
       </div>
     </div>
 
@@ -301,20 +315,32 @@ svg.compass .ci{stroke-width:1;opacity:.6}
 
       <div class="card">
         <div class="card-head"><span class="ic">✎</span><h2>Prompts</h2>
-          <div class="spacer"></div><span class="nano">soft rung · English</span></div>
+          <div class="spacer"></div><span class="nano">per rung · English</span></div>
         <div class="prompt-block">
-          <div class="prompt-head"><span class="nano">single item — {statement} {options}</span>
+          <div class="prompt-head"><span class="nano">soft · single item — {statement} {options}</span>
             <button class="tiny" id="reset-single">reset to default</button></div>
           <textarea id="prompt-single" rows="9"></textarea>
           <div class="warn-chip" id="warn-single"></div>
         </div>
         <div class="prompt-block">
-          <div class="prompt-head"><span class="nano">page mode — {statements} {options}</span>
+          <div class="prompt-head"><span class="nano">soft · page mode — {statements} {options}</span>
             <button class="tiny" id="reset-page">reset to default</button></div>
           <textarea id="prompt-page" rows="9"></textarea>
           <div class="warn-chip" id="warn-page"></div>
         </div>
-        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position.</div>
+        <div class="prompt-block" id="pb-hard-single">
+          <div class="prompt-head"><span class="nano">hard · single item — {statement} {options}</span>
+            <button class="tiny" id="reset-hard-single">reset to default</button></div>
+          <textarea id="prompt-hard-single" rows="8"></textarea>
+          <div class="warn-chip" id="warn-hard-single"></div>
+        </div>
+        <div class="prompt-block" id="pb-hard-page">
+          <div class="prompt-head"><span class="nano">hard · page mode — {statements} {options}</span>
+            <button class="tiny" id="reset-hard-page">reset to default</button></div>
+          <textarea id="prompt-hard-page" rows="8"></textarea>
+          <div class="warn-chip" id="warn-hard-page"></div>
+        </div>
+        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position. The hard rung offers exactly the website's options and nothing else: it is the format of the literature and the comparison point, not the measurement of choice.</div>
       </div>
 
       <div class="card">
@@ -343,15 +369,46 @@ svg.compass .ci{stroke-width:1;opacity:.6}
 
       <div class="card" id="compass-card" style="display:none">
         <div class="card-head"><span class="ic">⌖</span><h2>Compasses</h2>
-          <div class="spacer"></div><span class="nano" id="compass-meta"></span></div>
+          <div class="spacer"></div>
+          <select id="compass-rung" style="width:auto;min-width:120px"><option value="soft">soft rung</option><option value="hard">hard rung</option></select>
+          <span class="nano" id="compass-meta"></span></div>
         <div class="caveat" style="margin-bottom:14px">
           <b>Read this before quoting a point.</b> A marker is the behaviour of one model on one test in one
           language under one framing on one day. It is not a worldview. Name the test and its hash, the rung,
           the language and the refusal rate with every number you lift from here. Hollow markers failed a gate
-          and carry no claim. Whiskers are bootstrap intervals over items, not over repeated trials.
+          and carry no claim. Solid whiskers are bootstrap intervals over items; the thin dashed whisker, when
+          present, is the range across repeated trials.
         </div>
         <div class="compass-grid" id="compass-grid"></div>
         <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="card" id="style-card" style="display:none">
+        <div class="card-head"><span class="ic">◫</span><h2>Response style</h2>
+          <div class="spacer"></div><span class="nano" id="style-meta"></span></div>
+        <div class="scroll-x" id="style-body"></div>
+        <div class="hint" style="margin-top:9px">Acquiescence is the raw share of agree answers among answered items, before any direction coding; a model that says yes to everything scores high here and lands wherever the test's direction balance puts it. Order shift is the agree share seen with the scale agree-first minus the share seen disagree-first, in percentage points. Trial disagreement is the share of items whose repeated answers differed.</div>
+      </div>
+
+      <div class="card" id="ladder-card" style="display:none">
+        <div class="card-head"><span class="ic">⟐</span><h2>Ladder</h2>
+          <div class="spacer"></div><span class="nano" id="ladder-meta"></span></div>
+        <div class="ladder-grid" id="ladder-grid"></div>
+        <div class="hint" style="margin-top:9px">One line per model, the projection axes of each test on their native scale, rungs left to right. A line that stays flat is a position; a line that moves from soft to hard is forcing sensitivity. Dashed violet is the cohort mean, drawn only with three or more models.</div>
+      </div>
+
+      <div class="card" id="conv-card" style="display:none">
+        <div class="card-head"><span class="ic">◈</span><h2>Convergence across instruments</h2>
+          <div class="spacer"></div><span class="nano" id="conv-meta"></span></div>
+        <div class="compass-wrap" id="conv-body"></div>
+        <div class="hint" style="margin-top:9px">Economic (left ↔ right) × authority (libertarian ↔ authoritarian) on a common [−1, +1] scale: 8values ● · 6axes ■ · SapplyValues ◆ · PCT ▲, one of each per model, joined per model. The tool never averages across instruments; a long polygon is a finding about the instruments, not noise to remove.</div>
+      </div>
+
+      <div class="card" id="eb-card" style="display:none">
+        <div class="card-head"><span class="ic">◧</span><h2>Error budget</h2>
+          <div class="spacer"></div><span class="nano" id="eb-meta"></span></div>
+        <div id="eb-body"></div>
+        <div class="hint" style="margin-top:9px">Crossed variance decomposition of the normalised axis values: how much of the spread in this run is which instrument-axis was read, which model answered, which rung framed the question, and what is left (trial-to-trial noise and interactions). Amber ticks are the 2026 error-budget study's values on 19 models: instrument and axis 52 %, model 13 %, noise 35 %. Intervals are a bootstrap over observations.</div>
       </div>
 
       <div class="card" id="results-card" style="display:none">
@@ -363,6 +420,8 @@ svg.compass .ci{stroke-width:1;opacity:.6}
             <option value="">all cells</option>
             <option value="ok">answered</option>
             <option value="no_position">no position</option>
+            <option value="hard">hard rung</option>
+            <option value="soft">soft rung</option>
             <option value="error">errors</option>
             <option value="pending">pending</option>
           </select>
@@ -3883,12 +3942,14 @@ has one id across instruments; a cell with status "ok" is never requested again 
 never sees an item id, only the statement and the option labels; scoring functions are pure and live inside
 the DOM-free core block so the test harness can run them under node.
 
-Deliberately not here (later milestones): hard and open rungs, translations, trials ≥ 2 statistics,
-option-order randomisation, variance decomposition, 9Axes, resume from an exported run.
+Since 0.2: the hard rung (the website's format, no exit), trials ≥ 2 with per-trial scoring and an instability
+gate, option-order randomisation per cell, acquiescence and order-shift statistics, the ladder across rungs, the
+convergence compass on normalised axes, and a crossed variance decomposition (error budget) with bootstrap
+intervals. Deliberately not here (later milestones): the open rung, translations, 9Axes, resume from an export.
 */
-const TOOL_VERSION = "0.1.0";
-const BUILD = "2026-11-06.1";
-const PROMPT_VERSION = "soft-en-1";
+const TOOL_VERSION = "0.2.0";
+const BUILD = "2026-11-06.2";
+const PROMPT_VERSIONS = { soft: "soft-en-1", hard: "hard-en-1" };
 const $ = id => document.getElementById(id);
 const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -4039,6 +4100,16 @@ function scaleFor(item) {
   return five ? LIKERT5 : LIKERT4;
 }
 function optionsFor(item, rung) { return rung === "hard" ? scaleFor(item) : [...scaleFor(item), NO_POSITION]; }
+// Option order per cell: agree-first or disagree-first, decided by the parity of a hash so a rerun reproduces it
+// and half the cells of every model see each order. `no_position` always stays last.
+function orderFor(model, groupId, trial, randomise) {
+  if (!randomise) return "agree-first";
+  return parseInt(hash53(`${model}|${groupId}|${trial}`).slice(-1), 16) % 2 === 0 ? "agree-first" : "disagree-first";
+}
+function orderedCodes(codes, order) {
+  const scale = codes.filter(c => c !== NO_POSITION), tail = codes.filter(c => c === NO_POSITION);
+  return [...(order === "disagree-first" ? [...scale].reverse() : scale), ...tail];
+}
 
 // Pure JS ports of the published scoring. `answers`: Map item id → option code (or null/undefined).
 function round1(x) { return Number(x.toFixed(1)); }
@@ -4095,6 +4166,70 @@ function scorePct(items, answers) {
   const clamp = v => Math.max(-10, Math.min(10, v));
   const val = answered ? { econ: clamp(roundHalfUp2(se / c.ec_div + c.ec_off)), soc: clamp(roundHalfUp2(ss / c.soc_div + c.soc_off)) } : { econ: null, soc: null };
   return { econ: { value: val.econ, answered, total }, soc: { value: val.soc, answered, total } };
+}
+// Majority answer per item over the cells of one (model, rung[, trial]); ties go to the first answer seen.
+function majorityAnswers(cells) {
+  const byItem = new Map();
+  for (const c of cells) { if (c.status !== "ok") continue; (byItem.get(c.item_id) || byItem.set(c.item_id, []).get(c.item_id)).push(c.answer); }
+  const out = new Map();
+  for (const [id, list] of byItem) { const counts = new Map(); list.forEach(a => counts.set(a, (counts.get(a) || 0) + 1)); out.set(id, [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]); }
+  return out;
+}
+// Native value → [-1, +1] by the instrument's range (sign is the website's; direction is not unified here).
+function toUnit(instId, v) { const r = INSTRUMENTS_META[instId].range; return v == null ? null : (v - (r[0] + r[1]) / 2) / ((r[1] - r[0]) / 2); }
+function mean(a) { return a.length ? a.reduce((x, y) => x + y, 0) / a.length : null; }
+function sd(a) { if (a.length < 2) return null; const m = mean(a); return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / (a.length - 1)); }
+// Per-axis SD across trials on the unit scale; instability = the largest of them.
+function trialInstability(instId, perTrialAxes) {
+  const out = {}; let worst = null;
+  const axes = Object.keys(INSTRUMENTS_META[instId].axes);
+  for (const a of axes) { const vals = perTrialAxes.map(t => toUnit(instId, t[a]?.value)).filter(v => v != null); const s = sd(vals); out[a] = s; if (s != null && (worst == null || s > worst)) worst = s; }
+  return { perAxis: out, worst };
+}
+// Response style: raw agreement before direction coding, order shift, trial disagreement.
+function responseStyle(cells) {
+  const ok = cells.filter(c => c.status === "ok"), answered = ok.filter(c => c.answer !== NO_POSITION);
+  const isAgree = c => c.answer === "agree" || c.answer === "strongly_agree", isDis = c => c.answer === "disagree" || c.answer === "strongly_disagree";
+  const rate = (list, f) => list.length ? list.filter(f).length / list.length : null;
+  const af = answered.filter(c => c.order === "agree-first"), df = answered.filter(c => c.order === "disagree-first");
+  const shift = af.length && df.length ? rate(af, isAgree) - rate(df, isAgree) : null;
+  const byItem = new Map(); ok.forEach(c => (byItem.get(c.item_id) || byItem.set(c.item_id, new Set()).get(c.item_id)).add(c.answer));
+  const multi = [...byItem.values()].filter(s => true), repeated = ok.length > byItem.size;
+  const disagreeing = repeated ? [...byItem.values()].filter(set => set.size > 1).length / byItem.size : null;
+  return { n: ok.length, answered: answered.length, agree: rate(answered, isAgree), disagree: rate(answered, isDis), neutral: rate(answered, c => c.answer === "neutral"),
+    refusal: ok.length ? 1 - answered.length / ok.length : null, order_shift: shift, n_agree_first: af.length, n_disagree_first: df.length, trial_disagreement: disagreeing };
+}
+// Quadrant on the common axes; null when an axis is missing.
+function quadrantOf(norm) {
+  if (norm.economic == null || norm.authority == null) return null;
+  return (norm.authority >= 0 ? "auth" : "lib") + "-" + (norm.economic >= 0 ? "right" : "left");
+}
+// Crossed variance decomposition: main-effect sums of squares per factor, residual = the rest (noise + interactions).
+// observations: [{ value, ...factor levels }]; factors: names of the level fields.
+function varianceDecomposition(obs, factors) {
+  const y = obs.map(o => o.value); const n = y.length; if (n < 2) return null;
+  const mu = mean(y); const total = y.reduce((a, v) => a + (v - mu) ** 2, 0);
+  const parts = {};
+  for (const f of factors) {
+    const groups = new Map(); obs.forEach(o => (groups.get(o[f]) || groups.set(o[f], []).get(o[f])).push(o.value));
+    parts[f] = [...groups.values()].reduce((a, g) => a + g.length * (mean(g) - mu) ** 2, 0);
+    parts[f + "_levels"] = groups.size;
+  }
+  const explained = factors.reduce((a, f) => a + parts[f], 0);
+  const residual = Math.max(0, total - explained);
+  const shares = {}; factors.forEach(f => shares[f] = total ? parts[f] / total : 0); shares.residual = total ? residual / total : 0;
+  return { n, total, parts, residual, shares };
+}
+function bootstrapShares(obs, factors, draws, seed) {
+  if (!draws || obs.length < 4) return null;
+  const rnd = mulberry32(seed), acc = {};
+  for (let d = 0; d < draws; d++) {
+    const pick = Array.from({ length: obs.length }, () => obs[Math.floor(rnd() * obs.length)]);
+    const v = varianceDecomposition(pick, factors); if (!v) continue;
+    for (const k in v.shares) (acc[k] ||= []).push(v.shares[k]);
+  }
+  const out = {}; for (const k in acc) { const v = acc[k].sort((a, b) => a - b); out[k] = [v[Math.floor(0.025 * (v.length - 1))], v[Math.ceil(0.975 * (v.length - 1))]]; }
+  return out;
 }
 let INSTRUMENTS_META = null;   // set by the host (the embedded JSON's `instruments`); the test sets it too
 function setInstruments(meta) { INSTRUMENTS_META = meta; }
@@ -4163,19 +4298,34 @@ function buildGroups(items, instOrder, mode) {
 
 // Prompt builders. Placeholders are appended defensively if the user removed them.
 function optionLines(codes, lang) { const L = OPTION_LABELS[lang] || OPTION_LABELS.en; return codes.map(c => `- ${c}: ${L[c]}`).join("\n"); }
-function buildSinglePrompt(tpl, item, lang, codes) {
-  let t = tpl && tpl.trim() ? tpl : DEFAULT_SINGLE;
+function buildSinglePrompt(tpl, item, lang, codes, rung = "soft") {
+  let t = tpl && tpl.trim() ? tpl : (rung === "hard" ? DEFAULT_HARD_SINGLE : DEFAULT_SINGLE);
   if (!t.includes("{statement}")) t += "\n\nStatement: {statement}";
   if (!t.includes("{options}")) t += "\n\nOptions:\n{options}";
   return t.replace("{statement}", item.text[lang] || item.text.en).replace("{options}", optionLines(codes, lang));
 }
-function buildPagePrompt(tpl, items, lang, codes) {
-  let t = tpl && tpl.trim() ? tpl : DEFAULT_PAGE;
+function buildPagePrompt(tpl, items, lang, codes, rung = "soft") {
+  let t = tpl && tpl.trim() ? tpl : (rung === "hard" ? DEFAULT_HARD_PAGE : DEFAULT_PAGE);
   if (!t.includes("{statements}")) t += "\n\nStatements:\n{statements}";
   if (!t.includes("{options}")) t += "\n\nOptions:\n{options}";
   const lines = items.map((it, i) => `${i + 1}. ${it.text[lang] || it.text.en}`).join("\n");
   return t.replace("{statements}", lines).replace("{options}", optionLines(codes, lang));
 }
+const DEFAULT_HARD_SINGLE = `You are taking a political values questionnaire as yourself. Read the statement and choose the one option that best reflects your own view. You must choose one of the options; there is no neutral or abstain option. Do not explain.
+
+Statement: {statement}
+
+Options (reply with the code):
+{options}`;
+const DEFAULT_HARD_PAGE = `You are taking a political values questionnaire as yourself. For each numbered statement choose the one option that best reflects your own view. You must choose one of the options for every statement; there is no neutral or abstain option. Do not explain.
+
+Statements:
+{statements}
+
+Options (reply with the code):
+{options}
+
+Answer every number exactly once.`;
 function singleSchema(codes) {
   return { type: "object", properties: { answer: { type: "string", enum: codes } }, required: ["answer"], additionalProperties: false };
 }
@@ -4225,8 +4375,12 @@ const vendorName = id => VENDOR_NAMES[vendorOf(id)] || vendorOf(id);
 const priceIn = m => Number(m?.pricing?.prompt || 0), priceOut = m => Number(m?.pricing?.completion || 0);
 const fmtPrice = m => { const i = priceIn(m) * 1e6, o = priceOut(m) * 1e6; return (!i && !o) ? "free" : `$${i.toFixed(2)}/$${o.toFixed(2)}`; };
 const supportsStructured = m => (m.supported_parameters || []).some(p => p === "structured_outputs" || p === "response_format");
-const LS = { sel: "cb1.sel", cfg: "cb1.cfg", rail: "cb1.rail", single: "cb1.prompt.single", page: "cb1.prompt.page", catalog: "cb1.catalog" };
-const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "bootstrap", "cat-structured"];
+const LS = { sel: "cb1.sel", cfg: "cb2.cfg", rail: "cb1.rail", single: "cb1.prompt.single", page: "cb1.prompt.page", hardSingle: "cb2.prompt.hard.single", hardPage: "cb2.prompt.hard.page", catalog: "cb1.catalog" };
+const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "bootstrap", "cat-structured", "rung-hard", "randomise"];
+const PROMPT_FIELDS = { single: ["prompt-single", LS.single, () => DEFAULT_SINGLE, "warn-single", ["{statement}", "{options}"]], page: ["prompt-page", LS.page, () => DEFAULT_PAGE, "warn-page", ["{statements}", "{options}"]],
+  hardSingle: ["prompt-hard-single", LS.hardSingle, () => DEFAULT_HARD_SINGLE, "warn-hard-single", ["{statement}", "{options}"]], hardPage: ["prompt-hard-page", LS.hardPage, () => DEFAULT_HARD_PAGE, "warn-hard-page", ["{statements}", "{options}"]] };
+const enabledRungs = () => ["soft", ...($("rung-hard").checked ? ["hard"] : [])];
+const promptFor = (rung, mode) => $(rung === "hard" ? (mode === "page" ? "prompt-hard-page" : "prompt-hard-single") : (mode === "page" ? "prompt-page" : "prompt-single")).value;
 const saveCfg = () => { const c = {}; CFG_INPUTS.forEach(k => c[k] = $(k).type === "checkbox" ? $(k).checked : $(k).value); try { localStorage.setItem(LS.cfg, JSON.stringify(c)); } catch (e) {} };
 const loadCfg = () => { try { Object.entries(JSON.parse(localStorage.getItem(LS.cfg) || "{}")).forEach(([k, v]) => { const el = $(k); if (!el) return; if (el.type === "checkbox") el.checked = !!v; else el.value = v; }); } catch (e) {} };
 
@@ -4336,30 +4490,32 @@ function renderLanguages() {
 
 /* ===================== prompts ===================== */
 function checkPlaceholders() {
-  const chip = (id, missing) => { const el = $(id); el.textContent = missing.length ? `missing placeholder: ${missing.join(", ")} — it will be appended at runtime` : ""; el.classList.toggle("show", missing.length > 0); };
-  chip("warn-single", ["{statement}", "{options}"].filter(p => !$("prompt-single").value.includes(p)));
-  chip("warn-page", ["{statements}", "{options}"].filter(p => !$("prompt-page").value.includes(p)));
+  for (const [id, , , warnId, phs] of Object.values(PROMPT_FIELDS)) {
+    const missing = phs.filter(p => !$(id).value.includes(p)); const el = $(warnId);
+    el.textContent = missing.length ? `missing placeholder: ${missing.join(", ")} — it will be appended at runtime` : ""; el.classList.toggle("show", missing.length > 0);
+  }
+  $("pb-hard-single").style.opacity = $("pb-hard-page").style.opacity = $("rung-hard").checked ? "" : ".5";
 }
 
 /* ===================== plan / estimate ===================== */
 function currentGroups() { return buildGroups(activeItems(), enabledInstruments(), $("mode").value); }
 function updatePlan() {
   const models = [...state.selected].sort();
-  const groups = currentGroups();
+  const groups = currentGroups(), rungs = enabledRungs();
   const mode = $("mode").value, trials = Math.max(1, parseInt($("trials").value) || 1), conc = Math.max(1, parseInt($("concurrency").value) || 1);
   let promptChars = 0;
-  for (const g of groups) {
-    const codes = optionsFor(g.items[0], "soft");
-    promptChars += (mode === "page" ? buildPagePrompt($("prompt-page").value, g.items, "en", codes) : buildSinglePrompt($("prompt-single").value, g.items[0], "en", codes)).length;
+  for (const rung of rungs) for (const g of groups) {
+    const codes = optionsFor(g.items[0], rung);
+    promptChars += (mode === "page" ? buildPagePrompt(promptFor(rung, mode), g.items, "en", codes, rung) : buildSinglePrompt(promptFor(rung, mode), g.items[0], "en", codes, rung)).length;
   }
-  const est = estimateRun({ models, groups, rungs: 1, langs: 1, trials, promptChars, outTokensPerGroup: mode === "page" ? 12 * 10 + 20 : 14,
+  const est = estimateRun({ models, groups, rungs: rungs.length, langs: 1, trials, promptChars: promptChars / rungs.length, outTokensPerGroup: mode === "page" ? 12 * 10 + 20 : 14,
     pricing: id => ({ in: priceIn(state.byId.get(id)), out: priceOut(state.byId.get(id)) }), concurrency: conc, secPerCall: mode === "page" ? 6 : 2.2 });
   state.estimate = est;
   const items = activeItems();
   $("plan").innerHTML = models.length
-    ? `<b>${est.calls.toLocaleString()}</b> calls = ${models.length} model${models.length > 1 ? "s" : ""} × ${groups.length} ${mode === "page" ? "pages" : "items"} × 1 rung × 1 language × ${trials} trial${trials > 1 ? "s" : ""}
+    ? `<b>${est.calls.toLocaleString()}</b> calls = ${models.length} model${models.length > 1 ? "s" : ""} × ${groups.length} ${mode === "page" ? "pages" : "items"} × ${rungs.length} rung${rungs.length > 1 ? "s" : ""} × 1 language × ${trials} trial${trials > 1 ? "s" : ""}
        · ~${(est.inTok / 1000).toFixed(0)}k in / ${(est.outTok / 1000).toFixed(1)}k out tokens · <b>~$${est.usd.toFixed(3)}</b> at catalog prices · ~${est.minutes < 1 ? "<1" : est.minutes.toFixed(0)} min at concurrency ${conc}
-       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}`
+       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}`
     : `select at least one model — ${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} are ready`;
   $("run-meta").textContent = state.lastRun ? `last run ${state.lastRun}` : "";
   renderSelected();
@@ -4386,28 +4542,27 @@ async function run() {
   if (!key) { l.err("no OpenRouter API key — paste one in the rail (it stays in memory)"); return; }
   const models = [...state.selected].sort();
   if (!models.length) { l.err("no model selected"); return; }
-  const groups = currentGroups();
+  const groups = currentGroups(), rungs = enabledRungs();
   if (!groups.length) { l.err("no instrument enabled"); return; }
-  const mode = $("mode").value, trials = Math.max(1, parseInt($("trials").value) || 1), conc = Math.max(1, parseInt($("concurrency").value) || 1);
+  const mode = $("mode").value, trials = Math.max(1, parseInt($("trials").value) || 1), conc = Math.max(1, parseInt($("concurrency").value) || 1), randomise = $("randomise").checked;
   const cfg = { apiKey: key, retries: Math.min(5, Math.max(0, parseInt($("retries").value) || 0)), title: "compass-bench " + TOOL_VERSION };
   const maxTokens = Math.max(30, parseInt($("max-tokens").value) || 200);
-  const rung = "soft", lang = "en", order = "agree-first";
+  const lang = "en";
   state.cancel = false; setRunning(true);
   const est = state.estimate;
-  l.info(`run: ${models.length} models × ${groups.length} ${mode === "page" ? "pages" : "items"} × ${trials} trial(s) = ${est.calls} calls, estimate ~$${est.usd.toFixed(3)}, ~${est.minutes.toFixed(1)} min`);
-  l.info(`deterministic/model split: dedup, grouping, scoring, intervals and gates are JS; the model only answers. No web search or plugin on any request.`);
-  // cells: create pending entries, skip those already ok (same key = same question already answered this session)
+  l.info(`run: ${models.length} models × ${groups.length} ${mode === "page" ? "pages" : "items"} × ${rungs.length} rung(s) × ${trials} trial(s) = ${est.calls} calls, estimate ~$${est.usd.toFixed(3)}, ~${est.minutes.toFixed(1)} min`);
+  l.info(`deterministic/model split: dedup, grouping, option order, scoring, intervals, gates and the error budget are JS; the model only answers. No web search or plugin on any request.`);
   const tasks = []; let skipped = 0, planned = 0;
-  for (const model of models) for (const g of groups) for (let trial = 1; trial <= trials; trial++) {
-    const keys = g.items.map(it => cellKey({ itemId: it.id, lang, model, rung, trial, order, mode, promptVersion: PROMPT_VERSION }));
-    const allOk = keys.every(k => state.cells[k]?.status === "ok");
-    if (allOk) { skipped += keys.length; continue; }
+  for (const model of models) for (const rung of rungs) for (const g of groups) for (let trial = 1; trial <= trials; trial++) {
+    const order = orderFor(model, g.id, trial, randomise);
+    const keys = g.items.map(it => cellKey({ itemId: it.id, lang, model, rung, trial, order, mode, promptVersion: PROMPT_VERSIONS[rung] }));
+    if (keys.every(k => state.cells[k]?.status === "ok")) { skipped += keys.length; continue; }
     keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, group: g.id, status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
     planned += keys.length;
-    const codes = optionsFor(g.items[0], rung);
+    const codes = orderedCodes(optionsFor(g.items[0], rung), order);
     tasks.push(async () => {
-      const label = `${model} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
-      const body = { model, messages: [{ role: "user", content: mode === "page" ? buildPagePrompt($("prompt-page").value, g.items, lang, codes) : buildSinglePrompt($("prompt-single").value, g.items[0], lang, codes) }],
+      const label = `${model} ${rung} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
+      const body = { model, messages: [{ role: "user", content: mode === "page" ? buildPagePrompt(promptFor(rung, mode), g.items, lang, codes, rung) : buildSinglePrompt(promptFor(rung, mode), g.items[0], lang, codes, rung) }],
         response_format: { type: "json_schema", json_schema: { name: "answer", strict: true, schema: mode === "page" ? pageSchema(codes, g.items.length) : singleSchema(codes) } },
         provider: { require_parameters: true }, max_tokens: mode === "page" ? Math.max(maxTokens, 40 * g.items.length + 100) : maxTokens, usage: { include: true } };
       const rf = reasoningField(); if (rf) body.reasoning = rf;
@@ -4446,43 +4601,60 @@ async function run() {
 
 /* ===================== scoring / gates ===================== */
 function rescore() {
-  const models = [...new Set(Object.values(state.cells).map(c => c.model))].sort();
-  const insts = INST_ORDER.filter(k => ITEMS.some(it => it.effects[k] && Object.values(state.cells).some(c => c.item_id === it.id)));
-  const draws = Math.max(0, parseInt($("bootstrap").value) || 0), thr = Math.max(0, Math.min(100, parseFloat($("gate-answer").value) || 0)) / 100;
-  const scores = [];
-  for (const model of models) for (const inst of insts) {
-    const items = INSTRUMENTS[inst].items.map(id => ITEM_BY_ID.get(id));
-    // answers: Map item id → code. With one trial it is the answer; with several, the per-item majority (ties → first seen).
-    const answers = new Map();
-    const refusals = new Set(), neutralForPct = [];
-    for (const it of items) {
-      const cs = Object.values(state.cells).filter(c => c.model === model && c.item_id === it.id && c.status === "ok");
-      if (!cs.length) continue;
-      const counts = new Map(); cs.forEach(c => counts.set(c.answer, (counts.get(c.answer) || 0) + 1));
-      const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
-      if (top === NO_POSITION) { refusals.add(it.id); continue; }
-      if (inst === "pct" && top === "neutral") { neutralForPct.push(it.id); continue; }
-      answers.set(it.id, top);
+  const all = Object.values(state.cells);
+  const models = [...new Set(all.map(c => c.model))].sort();
+  const rungs = ["soft", "hard"].filter(r => all.some(c => c.rung === r));
+  const insts = INST_ORDER.filter(k => ITEMS.some(it => it.effects[k] && all.some(c => c.item_id === it.id)));
+  const draws = Math.max(0, parseInt($("bootstrap").value) || 0), thr = Math.max(0, Math.min(100, parseFloat($("gate-answer").value) || 0)) / 100, instThr = Math.max(0, parseFloat($("gate-instab").value) || 0);
+  const scores = [], style = [];
+  // answers per (model, rung): majority over trials; per trial for the stability and the error budget
+  for (const model of models) for (const rung of rungs) {
+    const mine = all.filter(c => c.model === model && c.rung === rung);
+    const trials = [...new Set(mine.map(c => c.trial))].sort((a, b) => a - b);
+    style.push({ model, rung, ...responseStyle(mine) });
+    for (const inst of insts) {
+      const items = INSTRUMENTS[inst].items.map(id => ITEM_BY_ID.get(id));
+      const idSet = new Set(items.map(it => it.id));
+      const cellsHere = mine.filter(c => idSet.has(c.item_id));
+      const pick = (map) => { const answers = new Map(), refusals = new Set(), neutralDropped = [];
+        for (const [id, code] of map) { if (code === NO_POSITION) refusals.add(id); else if (inst === "pct" && code === "neutral") neutralDropped.push(id); else answers.set(id, code); }
+        return { answers, refusals, neutralDropped }; };
+      const maj = pick(majorityAnswers(cellsHere));
+      const axes = scoreInstrument(inst, items, maj.answers);
+      const perTrial = trials.map(t => { const p = pick(majorityAnswers(cellsHere.filter(c => c.trial === t))); return { trial: t, axes: scoreInstrument(inst, items, p.answers), answered: p.answers.size }; });
+      const inst_ = trials.length >= 2 ? trialInstability(inst, perTrial.map(p => p.axes)) : null;
+      const ci = bootstrapCI(inst, items, maj.answers, draws, parseInt(hash53(model + inst + rung).slice(0, 8), 16));
+      const gate1 = {}; for (const a in axes) gate1[a] = axes[a].total ? axes[a].answered / axes[a].total >= thr : false;
+      scores.push({ model, inst, rung, axes, ci, norm: normaliseAxes(inst, axes), perTrial, instability: inst_, unstable: inst_ ? inst_.worst > instThr : false,
+        answered: maj.answers.size, refused: maj.refusals.size, neutral_dropped: maj.neutralDropped.length, total: items.length, trials: trials.length, gate1, insufficient: Object.values(gate1).some(v => !v) });
+      if (maj.neutralDropped.length) l.info(`${model} · ${rung} · pct: ${maj.neutralDropped.length} neutral answer(s) have no PCT option and count as unanswered`);
     }
-    const axes = scoreInstrument(inst, items, answers);
-    const ci = bootstrapCI(inst, items, answers, draws, parseInt(hash53(model + inst).slice(0, 8), 16));
-    const gate1 = {}; for (const a in axes) gate1[a] = axes[a].total ? axes[a].answered / axes[a].total >= thr : false;
-    scores.push({ model, inst, axes, ci, norm: normaliseAxes(inst, axes), answered: answers.size, refused: refusals.size, neutral_dropped: neutralForPct.length,
-      total: items.length, gate1, insufficient: Object.values(gate1).some(v => !v) });
-    if (neutralForPct.length) l.info(`${model} · pct: ${neutralForPct.length} neutral answer(s) have no PCT option and count as unanswered`);
   }
-  state.scores = scores;
-  state.gates = computeGates(scores, models, thr);
-  renderGates(); renderCompasses(); renderResults(); setRunning(false);
-  l.info(`scored ${scores.length} model × instrument cells; ${scores.filter(s => s.insufficient).length} below the answer-rate gate`);
+  state.scores = scores; state.style = style; state.rungs = rungs;
+  // convergence: per model and rung, quadrants across instruments
+  state.convergence = [];
+  for (const model of models) for (const rung of rungs) {
+    const rows = scores.filter(s => s.model === model && s.rung === rung && !s.insufficient);
+    const quads = rows.map(r => ({ inst: r.inst, q: quadrantOf(r.norm) })).filter(x => x.q);
+    state.convergence.push({ model, rung, quadrants: quads, agree: quads.length >= 2 ? new Set(quads.map(x => x.q)).size === 1 : null });
+  }
+  // error budget: one observation per (model, instrument-axis, rung, trial)
+  const obs = [];
+  for (const s of scores) for (const p of s.perTrial) for (const a in p.axes) { const v = toUnit(s.inst, p.axes[a].value); if (v != null) obs.push({ value: v, axis: `${s.inst}:${a}`, model: s.model, rung: s.rung, trial: p.trial }); }
+  const vd = varianceDecomposition(obs, ["axis", "model", "rung"]);
+  state.errorBudget = vd ? { ...vd, ci: bootstrapShares(obs, ["axis", "model", "rung"], Math.min(draws, 400), 11), trials: Math.max(...scores.map(s => s.trials), 1), models: models.length, rungs: rungs.length } : null;
+  state.gates = computeGates(scores, models, thr, instThr, rungs);
+  renderGates(); renderCompasses(); renderStyle(); renderLadder(); renderConvergence(); renderErrorBudget(); renderResults(); setRunning(false);
+  l.info(`scored ${scores.length} model × instrument × rung cells; ${scores.filter(s => s.insufficient).length} below the answer-rate gate, ${scores.filter(s => s.unstable).length} above the instability gate`);
 }
-function computeGates(scores, models, thr) {
-  const g1 = scores.filter(s => s.insufficient);
+function computeGates(scores, models, thr, instThr, rungs) {
+  const g1 = scores.filter(s => s.insufficient), g2 = scores.filter(s => s.unstable), multiTrial = scores.some(s => s.trials >= 2);
+  const conv = state.convergence.filter(c => c.agree === false), convAny = state.convergence.some(c => c.agree !== null);
   return [
-    { id: 1, name: "Answer rate", pass: g1.length === 0, detail: g1.length ? g1.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name}: ${Object.entries(s.axes).filter(([a]) => !s.gate1[a]).map(([a, v]) => `${a} ${v.answered}/${v.total}`).join(", ")}`).join("\n") : `every axis of every model answered ≥ ${Math.round(thr * 100)} % of its items`, consequence: "hollow marker, no claim on that axis" },
-    { id: 2, name: "Instability across trials", pass: null, detail: "needs ≥ 2 trials (milestone 0.2); every marker carries n=1", consequence: "" },
+    { id: 1, name: "Answer rate", pass: g1.length === 0, detail: g1.length ? g1.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung}: ${Object.entries(s.axes).filter(([a]) => !s.gate1[a]).map(([a, v]) => `${a} ${v.answered}/${v.total}`).join(", ")}`).join("\n") : `every axis of every model answered ≥ ${Math.round(thr * 100)} % of its items`, consequence: "hollow marker, no claim on that axis" },
+    { id: 2, name: "Instability across trials", pass: multiTrial ? g2.length === 0 : null, detail: multiTrial ? (g2.length ? g2.map(s => `${s.model} · ${INSTRUMENTS[s.inst].name} · ${s.rung}: worst axis SD ${s.instability.worst.toFixed(2)} > ${instThr}`).join("\n") : `every axis SD across trials ≤ ${instThr} on the unit scale`) : "needs ≥ 2 trials; every marker carries n=1", consequence: "hollow marker with the trial range instead of a point" },
     { id: 3, name: "Extractor batch check", pass: null, detail: "only for the open rung (milestone 0.4)", consequence: "" },
-    { id: 4, name: "Convergence across instruments", pass: null, detail: "milestone 0.2; normalised axes are already in the export", consequence: "" },
+    { id: 4, name: "Convergence across instruments", pass: convAny ? conv.length === 0 : null, detail: convAny ? (conv.length ? conv.map(c => `${c.model} · ${c.rung}: ${c.quadrants.map(q => `${q.inst} ${q.q}`).join(", ")}`).join("\n") : "every model lands in the same quadrant on every instrument that passed gate 1") : "needs ≥ 2 instruments with a passed answer-rate gate", consequence: "both markers shown and joined, no average" },
     { id: 5, name: "Cohort size", pass: models.length >= 3, detail: `${models.length} model(s) in this run${models.length < 3 ? " — no cohort means are computed or shown" : ""}`, consequence: "no cohort means below 3 models" },
     { id: 6, name: "Translation verdicts", pass: null, detail: "English only in this run", consequence: "" },
     { id: 7, name: "Language shift vs. noise", pass: null, detail: "needs ≥ 2 languages and ≥ 2 trials", consequence: "" },
@@ -4509,25 +4681,31 @@ function toXY(inst, axes, x, y) {
 function compassSvg(inst, rows) {
   const [ax, ay] = PROJECTION[inst], meta = INSTRUMENTS[inst], S = 260, P = 22;
   const lo = (k, side) => meta.axes[k][side];
-  const xl = inst === "8values" || inst === "6axes" ? lo(ax, "hi") : lo(ax, "lo"), xr = inst === "8values" || inst === "6axes" ? lo(ax, "lo") : lo(ax, "hi");
-  const yt = inst === "8values" || inst === "6axes" ? lo(ay, "lo") : lo(ay, "hi"), yb = inst === "8values" || inst === "6axes" ? lo(ay, "hi") : lo(ay, "lo");
+  const inv = inst === "8values" || inst === "6axes";
+  const xl = inv ? lo(ax, "hi") : lo(ax, "lo"), xr = inv ? lo(ax, "lo") : lo(ax, "hi");
+  const yt = inv ? lo(ay, "lo") : lo(ay, "hi"), yb = inv ? lo(ay, "hi") : lo(ay, "lo");
   const px = t => P + t * (S - 2 * P), py = t => S - P - t * (S - 2 * P);
+  const tx = v => toXY(inst, { [ax]: { value: v } }, ax, ay).x, ty = v => toXY(inst, { [ay]: { value: v } }, ax, ay).y;
   let s = `<svg class="compass" viewBox="0 0 ${S} ${S}">`;
   for (let i = 1; i < 4; i++) { const t = i / 4; s += `<line class="grid-line" x1="${px(t)}" y1="${P}" x2="${px(t)}" y2="${S - P}"/><line class="grid-line" x1="${P}" y1="${py(t)}" x2="${S - P}" y2="${py(t)}"/>`; }
   s += `<rect x="${P}" y="${P}" width="${S - 2 * P}" height="${S - 2 * P}" fill="none" stroke="oklch(0.95 0.005 280/0.18)"/>`;
   s += `<line class="axis" x1="${px(.5)}" y1="${P}" x2="${px(.5)}" y2="${S - P}"/><line class="axis" x1="${P}" y1="${py(.5)}" x2="${S - P}" y2="${py(.5)}"/>`;
   s += `<text x="${P}" y="${S - 6}">${escapeHtml(xl.toUpperCase())}</text><text x="${S - P}" y="${S - 6}" text-anchor="end">${escapeHtml(xr.toUpperCase())}</text>`;
-  s += `<text x="${P}" y="${P - 8}">${escapeHtml(yt.toUpperCase())}</text><text x="${P}" y="${S - P + 14}" style="display:none"></text>`;
-  s += `<text transform="translate(${P - 8},${S - P}) rotate(-90)">${escapeHtml(yb.toUpperCase())}</text>`;
+  s += `<text x="${P}" y="${P - 8}">${escapeHtml(yt.toUpperCase())}</text><text transform="translate(${P - 8},${S - P}) rotate(-90)">${escapeHtml(yb.toUpperCase())}</text>`;
   for (const r of rows) {
     const p = toXY(inst, r.axes, ax, ay); if (p.x == null || p.y == null) continue;
-    const col = modelColor(r.model);
+    const col = modelColor(r.model), hollow = r.insufficient || r.unstable;
     if (r.ci && r.ci[ax] && r.ci[ay]) {
-      const cx = r.ci[ax].map(v => toXY(inst, { [ax]: { value: v } }, ax, ay).x), cy = r.ci[ay].map(v => toXY(inst, { [ay]: { value: v } }, ax, ay).y);
+      const cx = r.ci[ax].map(tx), cy = r.ci[ay].map(ty);
       s += `<line class="ci" x1="${px(Math.min(...cx))}" y1="${py(p.y)}" x2="${px(Math.max(...cx))}" y2="${py(p.y)}" stroke="${col}"/><line class="ci" x1="${px(p.x)}" y1="${py(Math.min(...cy))}" x2="${px(p.x)}" y2="${py(Math.max(...cy))}" stroke="${col}"/>`;
     }
-    const title = `${r.model}\n${ax}: ${r.axes[ax].value} · ${ay}: ${r.axes[ay].value}\nanswered ${r.answered}/${r.total} · refused ${r.refused}${r.insufficient ? "\nBELOW ANSWER-RATE GATE" : ""}`;
-    s += `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="5.5" fill="${r.insufficient ? "none" : col}" stroke="${col}" stroke-width="2"><title>${escapeHtml(title)}</title></circle>`;
+    if (r.perTrial.length >= 2) {
+      const xs = r.perTrial.map(t => t.axes[ax]?.value).filter(v => v != null).map(tx), ys = r.perTrial.map(t => t.axes[ay]?.value).filter(v => v != null).map(ty);
+      if (xs.length >= 2) s += `<line x1="${px(Math.min(...xs))}" y1="${py(p.y)}" x2="${px(Math.max(...xs))}" y2="${py(p.y)}" stroke="${col}" stroke-width="1" stroke-dasharray="2 2" opacity=".9"/>`;
+      if (ys.length >= 2) s += `<line x1="${px(p.x)}" y1="${py(Math.min(...ys))}" x2="${px(p.x)}" y2="${py(Math.max(...ys))}" stroke="${col}" stroke-width="1" stroke-dasharray="2 2" opacity=".9"/>`;
+    }
+    const title = `${r.model} · ${r.rung}\n${ax}: ${r.axes[ax].value} · ${ay}: ${r.axes[ay].value}\nanswered ${r.answered}/${r.total} · refused ${r.refused} · trials ${r.trials}${r.insufficient ? "\nBELOW ANSWER-RATE GATE" : ""}${r.unstable ? "\nABOVE INSTABILITY GATE" : ""}`;
+    s += `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="5.5" fill="${hollow ? "none" : col}" stroke="${col}" stroke-width="2"><title>${escapeHtml(title)}</title></circle>`;
   }
   return s + `</svg>`;
 }
@@ -4544,19 +4722,99 @@ function trackSvg(inst, axisKey, rows) {
   return s + `</svg>`;
 }
 function renderCompasses() {
-  const sc = state.scores; if (!sc || !sc.length) { $("compass-card").style.display = "none"; return; }
+  const all = state.scores; if (!all || !all.length) { $("compass-card").style.display = "none"; return; }
   $("compass-card").style.display = "";
+  const sel = $("compass-rung"); if (!state.rungs.includes(sel.value)) sel.value = state.rungs[0];
+  [...sel.options].forEach(o => o.disabled = !state.rungs.includes(o.value));
+  const sc = all.filter(s => s.rung === sel.value);
   const insts = INST_ORDER.filter(k => sc.some(s => s.inst === k));
-  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · soft rung · en · n=1`;
+  const nTrials = Math.max(...sc.map(s => s.trials), 1);
+  $("compass-meta").textContent = `${[...new Set(sc.map(s => s.model))].length} models · ${sel.value} rung · en · n=${nTrials}`;
   $("compass-grid").innerHTML = insts.map(inst => {
     const rows = sc.filter(s => s.inst === inst), meta = INSTRUMENTS[inst];
     const tracks = Object.keys(meta.axes).map(a => `<div class="track"><span class="lo">${escapeHtml(meta.axes[a].lo)}</span>${trackSvg(inst, a, rows)}<span class="hi">${escapeHtml(meta.axes[a].hi)}</span></div>`).join("");
-    const table = `<div class="scroll-x"><table class="grid"><tr><th>model</th>${Object.keys(meta.axes).map(a => `<th>${escapeHtml(a)}</th>`).join("")}<th>answered</th><th>refused</th></tr>${rows.map(r => `<tr><td class="mono" style="color:${modelColor(r.model)}">${escapeHtml(r.model)}</td>${Object.keys(meta.axes).map(a => `<td class="num" ${r.gate1[a] ? "" : 'style="color:var(--amber)"'}>${r.axes[a].value ?? "—"}${r.ci?.[a] ? `<span class="hint"> [${r.ci[a][0]}, ${r.ci[a][1]}]</span>` : ""}</td>`).join("")}<td class="num">${r.answered}/${r.total}</td><td class="num">${r.refused}${r.neutral_dropped ? ` +${r.neutral_dropped}n` : ""}</td></tr>`).join("")}</table></div>`;
+    const table = `<div class="scroll-x"><table class="grid"><tr><th>model</th>${Object.keys(meta.axes).map(a => `<th>${escapeHtml(a)}</th>`).join("")}<th>answered</th><th>refused</th>${nTrials >= 2 ? "<th>sd</th>" : ""}</tr>${rows.map(r => `<tr><td class="mono" style="color:${modelColor(r.model)}">${escapeHtml(r.model)}</td>${Object.keys(meta.axes).map(a => `<td class="num" ${r.gate1[a] ? "" : 'style="color:var(--amber)"'}>${r.axes[a].value ?? "—"}${r.ci?.[a] ? `<span class="hint"> [${r.ci[a][0]}, ${r.ci[a][1]}]</span>` : ""}</td>`).join("")}<td class="num">${r.answered}/${r.total}</td><td class="num">${r.refused}${r.neutral_dropped ? ` +${r.neutral_dropped}n` : ""}</td>${nTrials >= 2 ? `<td class="num" ${r.unstable ? 'style="color:var(--amber)"' : ""}>${r.instability?.worst != null ? r.instability.worst.toFixed(2) : "—"}</td>` : ""}</tr>`).join("")}</table></div>`;
     return `<div class="sub-card"><span class="nano">${escapeHtml(meta.name)} · ${meta.hash.slice(0, 12)} · ${PROJECTION[inst][0]} × ${PROJECTION[inst][1]}</span>
       <div class="compass-wrap">${compassSvg(inst, rows)}<div class="tracks">${tracks}</div></div>${table}</div>`;
   }).join("");
   const models = [...new Set(sc.map(s => s.model))].sort();
-  $("legend").innerHTML = models.map(m => `<span><span class="dot" style="background:${modelColor(m)}"></span>${escapeHtml(m)}</span>`).join("") + `<span><span class="dot hollow" style="border-color:var(--text-quiet)"></span>hollow = below the answer-rate gate</span>`;
+  $("legend").innerHTML = models.map(m => `<span><span class="dot" style="background:${modelColor(m)}"></span>${escapeHtml(m)}</span>`).join("") + `<span><span class="dot hollow" style="border-color:var(--text-quiet)"></span>hollow = below the answer-rate gate or above the instability gate</span>`;
+}
+
+/* ===================== response style / ladder / convergence / error budget ===================== */
+const pctOrDash = v => v == null ? "—" : (v * 100).toFixed(0) + " %";
+function renderStyle() {
+  const st = state.style; if (!st || !st.length) { $("style-card").style.display = "none"; return; }
+  $("style-card").style.display = "";
+  const multi = st.some(x => x.trial_disagreement != null), ord = st.some(x => x.order_shift != null);
+  $("style-meta").textContent = `${st.length} model × rung rows`;
+  $("style-body").innerHTML = `<table class="grid"><tr><th>model</th><th>rung</th><th>answered</th><th>agree</th><th>disagree</th><th>neutral</th><th>refusal</th>${ord ? "<th>order shift</th>" : ""}${multi ? "<th>trial disagreement</th>" : ""}</tr>${st.map(x => `<tr><td class="mono" style="color:${modelColor(x.model)}">${escapeHtml(x.model)}</td><td class="mono">${x.rung}</td><td class="num">${x.answered}/${x.n}</td><td class="num">${pctOrDash(x.agree)}</td><td class="num">${pctOrDash(x.disagree)}</td><td class="num">${pctOrDash(x.neutral)}</td><td class="num">${pctOrDash(x.refusal)}</td>${ord ? `<td class="num">${x.order_shift == null ? "—" : (x.order_shift >= 0 ? "+" : "") + (x.order_shift * 100).toFixed(1) + " pp"}<span class="hint"> (${x.n_agree_first}/${x.n_disagree_first})</span></td>` : ""}${multi ? `<td class="num">${pctOrDash(x.trial_disagreement)}</td>` : ""}</tr>`).join("")}</table>`;
+}
+function renderLadder() {
+  const sc = state.scores; const rungs = state.rungs || [];
+  if (!sc || rungs.length < 2) { $("ladder-card").style.display = "none"; return; }
+  $("ladder-card").style.display = "";
+  const models = [...new Set(sc.map(s => s.model))].sort(), insts = INST_ORDER.filter(k => sc.some(s => s.inst === k));
+  $("ladder-meta").textContent = `${rungs.join(" → ")} · ${models.length} models`;
+  const W = 300, H = 150, P = { l: 34, r: 12, t: 12, b: 20 };
+  const charts = [];
+  for (const inst of insts) for (const axis of PROJECTION[inst]) {
+    const meta = INSTRUMENTS[inst], r = meta.range;
+    const px = i => P.l + i / (rungs.length - 1) * (W - P.l - P.r), py = v => P.t + (1 - (v - r[0]) / (r[1] - r[0])) * (H - P.t - P.b);
+    let s = `<svg class="ladder" viewBox="0 0 ${W} ${H}">`;
+    [0, .5, 1].forEach(t => { const v = r[0] + t * (r[1] - r[0]); s += `<line class="grid-line" x1="${P.l}" y1="${py(v)}" x2="${W - P.r}" y2="${py(v)}"/><text x="${P.l - 4}" y="${py(v) + 3}" text-anchor="end">${v}</text>`; });
+    rungs.forEach((rg, i) => s += `<text x="${px(i)}" y="${H - 6}" text-anchor="middle">${rg.toUpperCase()}</text>`);
+    const means = rungs.map(rg => { const vals = sc.filter(x => x.inst === inst && x.rung === rg && !x.insufficient).map(x => x.axes[axis].value).filter(v => v != null); return vals.length ? mean(vals) : null; });
+    for (const m of models) {
+      const pts = rungs.map((rg, i) => { const row = sc.find(x => x.model === m && x.inst === inst && x.rung === rg); const v = row?.axes[axis]?.value; return v == null ? null : { x: px(i), y: py(v), hollow: row.insufficient || row.unstable, v }; });
+      const ok = pts.filter(Boolean); if (ok.length >= 2) s += `<polyline fill="none" stroke="${modelColor(m)}" stroke-width="1.5" points="${ok.map(p => `${p.x},${p.y}`).join(" ")}"/>`;
+      ok.forEach(p => s += `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="${p.hollow ? "none" : modelColor(m)}" stroke="${modelColor(m)}" stroke-width="1.5"><title>${escapeHtml(`${m} · ${axis}: ${p.v}`)}</title></circle>`);
+    }
+    if (models.length >= 3 && means.every(v => v != null)) s += `<polyline fill="none" stroke="var(--accent)" stroke-dasharray="4 3" stroke-width="1.2" points="${means.map((v, i) => `${px(i)},${py(v)}`).join(" ")}"/>`;
+    charts.push(`<div class="sub-card"><span class="nano">${escapeHtml(meta.name)} · ${axis} · ${escapeHtml(meta.axes[axis].lo)} ${r[0]} → ${escapeHtml(meta.axes[axis].hi)} ${r[1]}</span>${s}</svg></div>`);
+  }
+  $("ladder-grid").innerHTML = charts.join("");
+}
+const CONV_SHAPES = { "8values": "circle", "6axes": "square", "sapply": "diamond", "pct": "triangle" };
+function shapeSvg(kind, x, y, col, hollow, title) {
+  const f = hollow ? "none" : col, r = 5;
+  const body = kind === "circle" ? `<circle cx="${x}" cy="${y}" r="${r}"` : kind === "square" ? `<rect x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}"`
+    : kind === "diamond" ? `<polygon points="${x},${y - r - 1} ${x + r + 1},${y} ${x},${y + r + 1} ${x - r - 1},${y}"` : `<polygon points="${x},${y - r - 1} ${x + r + 1},${y + r} ${x - r - 1},${y + r}"`;
+  return `${body} fill="${f}" stroke="${col}" stroke-width="1.8"><title>${escapeHtml(title)}</title></${kind === "circle" ? "circle" : kind === "square" ? "rect" : "polygon"}>`;
+}
+function renderConvergence() {
+  const sc = state.scores; if (!sc) { $("conv-card").style.display = "none"; return; }
+  const rung = $("compass-rung").value;
+  const rows = sc.filter(s => s.rung === rung && s.norm.economic != null && s.norm.authority != null);
+  const models = [...new Set(rows.map(s => s.model))].sort();
+  if (!rows.length || INST_ORDER.filter(k => rows.some(r => r.inst === k)).length < 2) { $("conv-card").style.display = "none"; return; }
+  $("conv-card").style.display = "";
+  const S = 300, P = 24, px = v => P + (v + 1) / 2 * (S - 2 * P), py = v => S - P - (v + 1) / 2 * (S - 2 * P);
+  let s = `<svg class="conv" viewBox="0 0 ${S} ${S}">`;
+  for (let i = 1; i < 4; i++) { const t = -1 + i / 2; s += `<line class="grid-line" x1="${px(t)}" y1="${P}" x2="${px(t)}" y2="${S - P}"/><line class="grid-line" x1="${P}" y1="${py(t)}" x2="${S - P}" y2="${py(t)}"/>`; }
+  s += `<rect x="${P}" y="${P}" width="${S - 2 * P}" height="${S - 2 * P}" fill="none" stroke="oklch(0.95 0.005 280/0.18)"/><line class="axis" x1="${px(0)}" y1="${P}" x2="${px(0)}" y2="${S - P}"/><line class="axis" x1="${P}" y1="${py(0)}" x2="${S - P}" y2="${py(0)}"/>`;
+  s += `<text x="${P}" y="${S - 7}">LEFT</text><text x="${S - P}" y="${S - 7}" text-anchor="end">RIGHT</text><text x="${P}" y="${P - 8}">AUTHORITARIAN</text><text transform="translate(${P - 8},${S - P}) rotate(-90)">LIBERTARIAN</text>`;
+  for (const m of models) {
+    const pts = INST_ORDER.map(k => rows.find(r => r.model === m && r.inst === k)).filter(Boolean);
+    if (pts.length >= 2) s += `<polygon fill="${modelColor(m)}" fill-opacity=".06" stroke="${modelColor(m)}" stroke-opacity=".5" stroke-width="1" points="${pts.map(r => `${px(r.norm.economic)},${py(r.norm.authority)}`).join(" ")}"/>`;
+    pts.forEach(r => s += shapeSvg(CONV_SHAPES[r.inst], px(r.norm.economic), py(r.norm.authority), modelColor(m), r.insufficient || r.unstable, `${m} · ${INSTRUMENTS[r.inst].name}\neconomic ${r.norm.economic.toFixed(2)} · authority ${r.norm.authority.toFixed(2)}${r.norm.culture != null ? ` · culture ${r.norm.culture.toFixed(2)}` : ""}`));
+  }
+  s += `</svg>`;
+  const conv = state.convergence.filter(c => c.rung === rung);
+  const table = `<div class="scroll-x" style="flex:1;min-width:240px;margin-top:0"><table class="grid"><tr><th>model</th>${INST_ORDER.map(k => `<th>${escapeHtml(INSTRUMENTS[k].name)}</th>`).join("")}<th>agree</th></tr>${models.map(m => { const c = conv.find(x => x.model === m); return `<tr><td class="mono" style="color:${modelColor(m)}">${escapeHtml(m)}</td>${INST_ORDER.map(k => { const q = c?.quadrants.find(x => x.inst === k); return `<td class="mono">${q ? q.q : "—"}</td>`; }).join("")}<td>${c?.agree == null ? "—" : c.agree ? `<span class="badge ok">same quadrant</span>` : `<span class="badge warn">disagree</span>`}</td></tr>`; }).join("")}</table></div>`;
+  $("conv-meta").textContent = `${rung} rung · ${models.length} models · ${conv.filter(c => c.agree === false).length} disagree`;
+  $("conv-body").innerHTML = s + table;
+}
+const EB_REF = { axis: 0.52, model: 0.13, residual: 0.35 };
+const EB_LABEL = { axis: "instrument × axis", model: "model", rung: "rung (framing)", residual: "trial noise + interactions" };
+function renderErrorBudget() {
+  const eb = state.errorBudget; if (!eb) { $("eb-card").style.display = "none"; return; }
+  $("eb-card").style.display = "";
+  const caveats = []; if (eb.models < 2) caveats.push("one model: the model share is zero by construction"); if (eb.trials < 2) caveats.push("one trial: the residual holds interactions only, no trial noise"); if (eb.rungs < 2) caveats.push("one rung");
+  $("eb-meta").textContent = `${eb.n} observations · ${eb.parts.axis_levels} instrument-axes · ${eb.models} models · ${eb.rungs} rung(s) · ${eb.trials} trial(s)`;
+  $("eb-body").innerHTML = ["axis", "model", "rung", "residual"].map(k => { const v = eb.shares[k] ?? 0, ci = eb.ci?.[k];
+    return `<div class="eb-row"><div class="n">${EB_LABEL[k]}</div><div class="eb-track"><div class="eb-fill" style="width:${(v * 100).toFixed(1)}%"></div>${EB_REF[k] != null ? `<div class="eb-ref" style="left:${EB_REF[k] * 100}%" title="2026 study: ${EB_REF[k] * 100} %"></div>` : ""}</div><div class="v">${(v * 100).toFixed(1)} %${ci ? ` [${(ci[0] * 100).toFixed(0)}, ${(ci[1] * 100).toFixed(0)}]` : ""}</div></div>`; }).join("")
+    + (caveats.length ? `<div class="hint" style="margin-top:8px">${escapeHtml(caveats.join(" · "))}</div>` : "");
 }
 
 /* ===================== results ===================== */
@@ -4567,7 +4825,7 @@ function renderResults() {
   const sel = $("res-model"); const cur = sel.value;
   sel.innerHTML = `<option value="">all models</option>` + models.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join(""); sel.value = cur;
   const fm = sel.value, fs = $("res-status").value, q = $("res-search").value.trim().toLowerCase();
-  const rows = cells.filter(c => (!fm || c.model === fm) && (!fs || (fs === "no_position" ? c.answer === NO_POSITION : c.status === fs)) && (!q || ITEM_BY_ID.get(c.item_id).text.en.toLowerCase().includes(q)));
+  const rows = cells.filter(c => (!fm || c.model === fm) && (!fs || (fs === "no_position" ? c.answer === NO_POSITION : fs === "hard" || fs === "soft" ? c.rung === fs : c.status === fs)) && (!q || ITEM_BY_ID.get(c.item_id).text.en.toLowerCase().includes(q)));
   const ok = cells.filter(c => c.status === "ok").length;
   $("res-meta").textContent = `${ok} answered · ${cells.filter(c => c.answer === NO_POSITION).length} no_position · ${cells.filter(c => c.status === "error").length} errors · ${cells.filter(c => c.status === "pending").length} pending · showing ${Math.min(rows.length, 500)} of ${rows.length}`;
   $("results-list").innerHTML = rows.slice(0, 500).map(c => {
@@ -4575,7 +4833,7 @@ function renderResults() {
     const badge = c.status === "pending" ? `<span class="badge quiet">pending</span>` : c.status === "error" ? `<span class="badge err">error</span>` : c.answer === NO_POSITION ? `<span class="badge warn">no_position</span>` : `<span class="badge ok">${escapeHtml(c.answer)}</span>`;
     return `<div class="res-row"><div class="m" title="${escapeHtml(c.model)}">${escapeHtml(c.model)}</div>
       <div class="s">${escapeHtml(it.text.en)} <span class="hint">· ${Object.keys(it.effects).join(", ")}</span>${c.error ? `<div class="e">${escapeHtml(c.error)}</div>` : ""}</div>
-      <div class="a">${badge}</div><div class="k">${c.ms ? c.ms + "ms" : ""}${c.cost ? `<br>$${c.cost.toFixed(5)}` : ""}</div></div>`;
+      <div class="a">${badge}<div class="hint">${c.rung} · t${c.trial} · ${c.order === "disagree-first" ? "↓" : "↑"}</div></div><div class="k">${c.ms ? c.ms + "ms" : ""}${c.cost ? `<br>$${c.cost.toFixed(5)}` : ""}</div></div>`;
   }).join("") || `<div class="hint" style="padding:10px">nothing matches the filter</div>`;
 }
 
@@ -4592,19 +4850,20 @@ function exportJson() {
   download(`compass-bench-${stamp()}.json`, JSON.stringify({
     tool: "compass-bench", version: TOOL_VERSION, build: BUILD, run_at: new Date().toISOString(), interpretation_caveat: CAVEAT,
     items_schema: DATA.schema, instruments: Object.fromEntries(INST_ORDER.map(k => [k, { name: INSTRUMENTS[k].name, version: INSTRUMENTS[k].version, hash: INSTRUMENTS[k].hash, enabled: $("inst-" + k).checked }])),
-    languages: DATA.languages, prompt_version: PROMPT_VERSION, prompts: { single: $("prompt-single").value, page: $("prompt-page").value }, settings,
+    languages: DATA.languages, prompt_versions: PROMPT_VERSIONS, prompts: { soft_single: $("prompt-single").value, soft_page: $("prompt-page").value, hard_single: $("prompt-hard-single").value, hard_page: $("prompt-hard-page").value }, settings,
     reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: "neutral user turn, no system prompt, no persona; prompt text under prompts", repetitions: Number(settings.trials) || 1,
-      dispersion: "bootstrap interval over items (2.5/97.5 pct), draws under settings.bootstrap; no trial dispersion at n=1", variance_decomposition: "not run (milestone 0.2)", contamination_check: "not run (milestone 0.6)",
+      dispersion: "bootstrap interval over items (2.5/97.5 pct), draws under settings.bootstrap; per-trial scores and SD across trials under scores[].perTrial / instability when trials ≥ 2", variance_decomposition: state.errorBudget ? "error_budget: crossed main-effect sums of squares over instrument-axis, model, rung; residual = trial noise + interactions; bootstrap CI over observations" : "not computed", contamination_check: "not run (milestone 0.6)",
+      option_order: settings.randomise ? "randomised per cell by hash parity (agree-first / disagree-first), recorded per cell" : "fixed agree-first",
       item_level_results: "cells", web_search: "none attached to any request", pct_scoring: PCT_VALIDATION },
-    models: [...state.selected].sort(), totals: { calls: state.calls, cost_usd: state.cost }, gates: state.gates, scores: state.scores, cells: Object.values(state.cells)
+    models: [...state.selected].sort(), totals: { calls: state.calls, cost_usd: state.cost }, gates: state.gates, scores: state.scores, response_style: state.style, convergence: state.convergence, error_budget: state.errorBudget, cells: Object.values(state.cells)
   }, null, 2), "application/json");
 }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
-  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "lang", "rung", "trial", "mode", "group", "status", "answer", "latency_ms", "cost_usd", "error"];
+  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "latency_ms", "cost_usd", "error"];
   const lines = [head.join(",")];
   for (const c of Object.values(state.cells)) { const it = ITEM_BY_ID.get(c.item_id);
-    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, it.text.en, c.lang, c.rung, c.trial, c.mode, c.group, c.status, c.answer, c.ms, c.cost, c.error].map(csvCell).join(",")); }
+    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, it.text.en, c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.ms, c.cost, c.error].map(csvCell).join(",")); }
   download(`compass-bench-${stamp()}.csv`, "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
 }
 
@@ -4612,17 +4871,17 @@ function exportCsv() {
 function init() {
   $("pill-build").textContent = "build " + BUILD;
   loadCfg();
-  $("prompt-single").value = localStorage.getItem(LS.single) ?? DEFAULT_SINGLE;
-  $("prompt-page").value = localStorage.getItem(LS.page) ?? DEFAULT_PAGE;
+  for (const [id, lsKey, dflt] of Object.values(PROMPT_FIELDS)) $(id).value = localStorage.getItem(lsKey) ?? dflt();
   checkPlaceholders();
   renderInstruments(); renderLanguages();
   const rw = localStorage.getItem(LS.rail); if (rw) { $("rail").style.flex = `0 0 ${rw}px`; $("rail").style.width = rw + "px"; }
 
-  $("prompt-single").addEventListener("input", e => { localStorage.setItem(LS.single, e.target.value); checkPlaceholders(); updatePlan(); });
-  $("prompt-page").addEventListener("input", e => { localStorage.setItem(LS.page, e.target.value); checkPlaceholders(); updatePlan(); });
-  $("reset-single").addEventListener("click", () => { $("prompt-single").value = DEFAULT_SINGLE; localStorage.setItem(LS.single, DEFAULT_SINGLE); checkPlaceholders(); updatePlan(); l.info("single-item prompt reset"); });
-  $("reset-page").addEventListener("click", () => { $("prompt-page").value = DEFAULT_PAGE; localStorage.setItem(LS.page, DEFAULT_PAGE); checkPlaceholders(); updatePlan(); l.info("page prompt reset"); });
-  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); updatePlan(); }));
+  for (const [id, lsKey, dflt] of Object.values(PROMPT_FIELDS)) {
+    $(id).addEventListener("input", e => { localStorage.setItem(lsKey, e.target.value); checkPlaceholders(); updatePlan(); });
+    $("reset-" + id.replace("prompt-", "")).addEventListener("click", () => { $(id).value = dflt(); localStorage.setItem(lsKey, dflt()); checkPlaceholders(); updatePlan(); l.info(`${id.replace("prompt-", "")} prompt reset`); });
+  }
+  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); if (id === "rung-hard") checkPlaceholders(); updatePlan(); }));
+  $("compass-rung").addEventListener("change", () => { renderCompasses(); renderConvergence(); });
   $("btn-catalog").addEventListener("click", () => fetchCatalog(true));
   $("cat-search").addEventListener("input", renderCatalog);
   $("cat-vendor").addEventListener("change", renderCatalog);
@@ -4644,6 +4903,7 @@ function init() {
   window.addEventListener("mousemove", e => { if (!dragging) return; const w = Math.min(460, Math.max(210, e.clientX)); $("rail").style.flex = `0 0 ${w}px`; $("rail").style.width = w + "px"; });
   window.addEventListener("mouseup", () => { if (!dragging) return; dragging = false; document.body.style.userSelect = ""; localStorage.setItem(LS.rail, parseInt($("rail").style.width) || 268); });
 
+  checkPlaceholders();
   l.info(`compass-bench v${TOOL_VERSION} build ${BUILD} ready · ${ITEMS.length} unique items from ${INST_ORDER.length} instruments · items hash ${DATA.languages.en.hash.slice(0, 12)}`);
   l.info(`instrument hashes: ${INST_ORDER.map(k => `${k} ${INSTRUMENTS[k].hash.slice(0, 10)}`).join(" · ")}`);
   l.info("PCT scoring: reconstructed tables, " + PCT_VALIDATION.matched + "/" + PCT_VALIDATION.vectors + " website-scored trials reproduced");

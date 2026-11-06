@@ -5,7 +5,7 @@ answers with each test's own published algorithm, and draws every model where th
 draw it. It also measures what a single dot cannot show: how many statements the model refused, and how
 wide the interval around the dot is.
 
-Version 0.1.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.2.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 Files: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the statements,
 weights and hashes; embedded in the HTML, byte-identical), `compass-bench.test.mjs` (the test harness).
@@ -20,13 +20,16 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 
 | # | measure | meaning |
 |---|---|---|
-| 1 | **Position per test** | axis values in the test's native scale (8values and 6axes 0–100, SapplyValues and PCT −10…+10), with a bootstrap interval over items |
+| 1 | **Position per test** | axis values in the test's native scale (8values and 6axes 0–100, SapplyValues and PCT −10…+10), with a bootstrap interval over items and, with trials ≥ 2, the range across trials |
 | 2 | **Refusal rate** | share of `no_position` answers per test and axis; a model that refuses most of a test has a gap, not a position |
-| 3 | **Validity gates** | an axis with too few answered items is drawn hollow and carries no claim |
+| 3 | **Forcing sensitivity** | how far the point moves between the soft rung (test scale plus an exit) and the hard rung (the website's format, no exit) |
+| 4 | **Stability** | SD of each axis across repeated trials on a [−1, +1] scale; the share of items whose repeated answers differed |
+| 5 | **Response style** | raw agreement before direction coding (acquiescence), and the shift in agreement when the answer scale is shown disagree-first instead of agree-first |
+| 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
+| 7 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, and what is left for trial noise and interactions |
 
-Later milestones add the forcing ladder (hard and open rungs), five languages, repeated trials, option-order
-randomisation, convergence across instruments and a variance decomposition. The plan is in
-`PLAN_compass-bench.md`.
+Later milestones add the open rung, five languages, 9Axes, resume from an export and an item-inversion
+contamination check. The plan is in `PLAN_compass-bench.md`.
 
 **Not measured:** whether a position is "right", where it comes from, or whether it shows in writing
 assistance (IssueBench). A dot here is the behaviour of one model on one test in one language under one
@@ -46,7 +49,8 @@ framing on one day. It is not a worldview.
    you change a gate threshold, with no API calls.
 
 Default run: 182 statements × 1 rung × 1 language × 1 trial = **182 calls per model**, about two minutes at
-concurrency 4, cents for a cheap model and around 20 cents for a flagship.
+concurrency 4, cents for a cheap model and around 20 cents for a flagship. The hard rung doubles that, every
+extra trial multiplies it; the estimate shows the product before you press run.
 
 No web search or plugin is attached to any request. A position a model has to look up is not the model's.
 
@@ -106,13 +110,32 @@ are in the top bar, the Instruments card and every export. Runs with different h
 
 ---
 
-## The soft rung, and why it is the default
+## The rungs: soft by default, hard as the comparison point
 
-The statement is shown with the test's own answer options plus one exit, `no_position`. A model that answers
-is scored exactly as a visitor of the website would be. A model that will not take a stance is counted as a
-refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
-(ACL 2024), who showed that forced-choice answers move with the strength of the forcing. The `hard` rung
-(the website's format, no exit) and the `open` rung (free text with an extractor) are later milestones.
+**Soft.** The statement is shown with the test's own answer options plus one exit, `no_position`. A model that
+answers is scored exactly as a visitor of the website would be. A model that will not take a stance is counted
+as a refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
+(ACL 2024), who showed that forced-choice answers move with the strength of the forcing.
+
+**Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
+of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
+Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
+key. With both rungs on, the **Ladder** card draws each model's projection axes per rung: a flat line is a
+position, a line that moves from soft to hard is forcing sensitivity. The `open` rung (free text with an
+extractor) is a later milestone.
+
+### Trials and option order
+
+**Trials** repeat the same cell. The headline value uses the per-item majority over trials; each trial is also
+scored on its own, and the SD of each axis across trials on the unit scale is the instability (gate 2, default
+threshold 0.25). The compass draws the range across trials as a thin dashed whisker next to the solid bootstrap
+whisker. With one trial there is no stability figure and every marker carries n=1.
+
+**Option order** is randomised per cell by default: the parity of a hash of model, group and trial decides whether
+the scale reads agree-first or disagree-first, so a rerun reproduces it and half the cells of every model see each
+order; `no_position` always stays last. The **Response style** card reports the order shift (agree share seen
+agree-first minus agree-first seen disagree-first) next to acquiescence, neutral and refusal shares, and, with
+trials ≥ 2, the share of items whose answers differed between trials.
 
 Answers come back as structured JSON over the option codes (`strongly_agree` … `no_position`); the model never
 formats anything. If a provider rejects `response_format`, the same request is sent once more without it and
@@ -134,12 +157,13 @@ The mode is part of the cell key, so results of the two modes never mix.
 | # | gate | consequence |
 |---|---|---|
 | 1 | **Answer rate** per model × test × axis below the threshold (default 60 %) | marker hollow, no claim on that axis |
-| 5 | **Cohort size** below 3 | no cohort means |
+| 2 | **Instability** across trials above the threshold (default SD 0.25 on the unit scale); needs trials ≥ 2 | marker hollow with the trial range instead of a point |
+| 4 | **Convergence**: a model lands in different quadrants on different tests | both markers shown and joined, never averaged |
+| 5 | **Cohort size** below 3 | no cohort means, no dashed mean in the ladder |
 | 8 | **PCT scoring** reproduces the website-scored trials | else `scoring: approximate` everywhere |
 
-Gates 2, 3, 4, 6 and 7 (trial instability, extractor batch check, convergence, translation verdicts,
-language shift versus noise) arrive with the milestones that produce their inputs; the card lists them as
-not applicable until then.
+Gates 3, 6 and 7 (extractor batch check, translation verdicts, language shift versus noise) arrive with the
+milestones that produce their inputs; the card lists them as not applicable until then.
 
 ---
 
@@ -150,21 +174,39 @@ SapplyValues right × auth, PCT economic × social) with one marker per model, w
 interval over items, hollow when gate 1 fails; a track per axis with the test's pole labels; a table with
 the native values, intervals, answered and refused counts.
 
-The bootstrap resamples the test's statements with replacement (default 1000 draws, seeded per model and
-test, so it is reproducible) and takes the 2.5 and 97.5 percentiles. It says how much the dot depends on
-which statements the test happens to contain. It says nothing about repeat-to-repeat noise; that needs
-trials ≥ 2 (milestone 0.2).
+The bootstrap resamples the test's statements with replacement (default 1000 draws, seeded per model, test
+and rung, so it is reproducible) and takes the 2.5 and 97.5 percentiles. It says how much the dot depends on
+which statements the test happens to contain. Repeat-to-repeat noise is the dashed whisker and the SD column,
+present only with trials ≥ 2. A selector in the card header switches between the soft and the hard rung.
+
+### Convergence
+
+Economic (left ↔ right) × authority (libertarian ↔ authoritarian) on a common [−1, +1] scale, with the websites'
+own signs: 8values `econ` and `govt`, 6axes economic aspiration and akraetia (both inverted, since the sites count
+equality and liberty upward), SapplyValues `right` and `auth`, PCT economic and social. One marker per test per
+model (circle, square, diamond, triangle), joined into a polygon per model. The tool never averages across
+instruments; the 2026 study found PCT and 8values correlate at r = −0.26 across models, and a long polygon is
+that finding, not noise to remove.
+
+### Error budget
+
+A crossed main-effect decomposition of the normalised axis values over three factors: instrument × axis, model,
+rung; the residual is trial-to-trial noise plus interactions. Shares of the total sum of squares, with a
+bootstrap interval over observations. Amber ticks mark the 2026 study's values on 19 models (instrument and
+axis 52 %, model 13 %, noise 35 %). With one model the model share is zero by construction; with one trial the
+residual holds interactions only. The card says so when that is the case.
 
 ---
 
 ## Exports
 
-- **JSON** — the whole run: tool version and build, instrument and language hashes, prompts and prompt
-  version, settings, models, totals (calls, cost from `usage`), gates, per model × test scores with
-  intervals and normalised axes, every cell with its key, raw answer, latency and cost, and a
-  `reporting_standard` block in the shape the 2026 error-budget study asks for (instrument, asker condition,
-  repetitions, dispersion, variance decomposition status, contamination check status, item-level results).
-- **CSV** — one row per cell, UTF-8 BOM for Excel.
+- **JSON** — the whole run: tool version and build, instrument and language hashes, the four prompts and their
+  versions, settings, models, totals (calls, cost from `usage`), gates, per model × test × rung scores with
+  intervals, per-trial values, instability and normalised axes, response style, convergence, the error budget,
+  every cell with its key, order, raw answer, latency and cost, and a `reporting_standard` block in the shape
+  the 2026 error-budget study asks for (instrument, asker condition, repetitions, dispersion, variance
+  decomposition, option order, contamination check status, item-level results).
+- **CSV** — one row per cell including rung, trial and option order, UTF-8 BOM for Excel.
 
 The interpretation caveat travels with both.
 
@@ -176,13 +218,16 @@ The interpretation caveat travels with both.
 |---|---|---|
 | API key | — | memory only; `type=password`; re-enter after reload |
 | items per call | 1 | `page` for the websites' pages |
-| trials / cell | 1 | repeats of the same question; statistics on them come with 0.2 |
+| trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
+| hard rung | off | the website's format, no exit; doubles the calls |
+| randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
 | max tokens | 200 | page mode raises it per statement automatically |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
 | reasoning | low effort | dropped automatically if the provider rejects it |
 | answer rate ≥ | 60 % | gate 1 |
-| bootstrap draws | 1000 | 0 disables the intervals |
+| bootstrap draws | 1000 | 0 disables the intervals; the error budget uses at most 400 |
+| instability ≤ | 0.25 | gate 2, SD across trials on the unit scale |
 
 No temperature, no `top_p`: the provider default is the thing being measured.
 
@@ -198,7 +243,9 @@ Evaluates the DOM-free core of the tool under node with a mocked `fetch` and che
 the data file; 182 unique items, 66 shared, instrument sizes 70/70/46/62; the four scoring ports against
 their originals (30 vectors) and the 12 website-scored PCT trials; cell keys; page grouping; prompt builders
 and schemas; the estimate; the bootstrap; the OpenRouter call (Bearer header, no sampling parameters, no
-plugins, timeout signal, error surfacing); the retry policy; the pool; the JSON extractor.
+plugins, timeout signal, error surfacing); the retry policy; the pool; the JSON extractor. Since 0.2 also:
+option order per cell, the majority over trials, the instability measure on constructed stable and unstable
+answers, response style, quadrants, and the variance decomposition on synthetic data with known shares.
 
 The skill's generic `core_test.mjs` is Gemini-specific (continuation protocol, thinking levels) and does not
 apply to an OpenRouter-only tool; this harness replaces it.
@@ -207,8 +254,10 @@ apply to an OpenRouter-only tool; this harness replaces it.
 
 ## Known limitations
 
-- **One rung, one language, one trial** in this version. A marker is a point without a repeat-to-repeat
-  interval; read it as a first look, not a finding.
+- **One language** in this version, and one trial unless you raise it. A marker at n=1 is a point without a
+  repeat-to-repeat interval; read it as a first look, not a finding.
+- **The error budget is a main-effects decomposition**, not the study's random-effects model with cluster
+  bootstrap. It answers the same question at the level of one run; it is not comparable number for number.
 - **The PCT weights are a reconstruction.** They reproduce the website on every trial we could check; the
   website could change its scoring without notice, and the badge would not know. Re-validate against fresh
   website results before citing PCT numbers.
@@ -220,6 +269,10 @@ apply to an OpenRouter-only tool; this harness replaces it.
 
 ## Changelog
 
+- **0.2.0** — hard rung with its own prompts; trials ≥ 2 with per-trial scoring, instability (gate 2) and
+  trial-range whiskers; option-order randomisation per cell; response-style card (acquiescence, order shift,
+  trial disagreement); ladder across rungs; convergence compass on normalised axes (gate 4); error-budget card
+  with bootstrap intervals; rung selector on the compasses; exports carry all of it.
 - **0.1.0** — four instruments embedded and deduplicated; soft rung in English; native scoring with golden
   tests; website-style compasses and tracks with bootstrap intervals; gates 1, 5, 8; live catalog with
   multi-select; single and page modes; estimate before and actual cost after the run; JSON and CSV exports.
