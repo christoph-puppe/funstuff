@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.1</div>
+    <div class="pill" id="pill-version">v0.7.2</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -257,7 +257,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="4" min="1" max="16"></div>
         </div>
         <div class="row2">
-          <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="200" min="30" max="4000"></div>
+          <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="1000" min="30" max="16000"></div>
           <div class="field"><label>retries (≤5)</label><input type="number" id="retries" value="2" min="0" max="5"></div>
         </div>
         <label class="check" title="per cell, from a hash of model, item and trial: half the cells see the scale agree-first, half disagree-first"><input type="checkbox" id="randomise" checked> randomise option order</label>
@@ -268,6 +268,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <option value="">provider default</option>
             <option value="off">disabled</option>
           </select></div>
+        <div class="hint">max tokens covers reasoning and answer together. A reasoning model that spends it all thinking returns no answer; the tool then retries once with 4000 and otherwise reports the cut-off with the reasoning token count.</div>
       </div>
 
       <div class="rail-group">
@@ -284,7 +285,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
         <div class="field"><span class="nano" id="extract-price">price —</span></div>
         <div class="row2">
           <div class="field"><label>batch size</label><input type="number" id="batch-size" value="20" min="1" max="50"></div>
-          <div class="field"><label>max tokens (open)</label><input type="number" id="max-tokens-open" value="300" min="60" max="4000"></div>
+          <div class="field"><label>max tokens (open)</label><input type="number" id="max-tokens-open" value="1000" min="60" max="16000"></div>
         </div>
         <div class="field"><label>batch check · answers per language</label><input type="number" id="check-sample" value="60" min="5" max="500"></div>
         <label class="check"><input type="checkbox" id="auto-extract" checked> extract right after the run</label>
@@ -342,6 +343,11 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
         <div class="card-head"><span class="ic">✎</span><h2>Prompts</h2>
           <div class="spacer"></div><span class="nano">per rung and language</span>
           <select id="prompt-lang" style="width:auto;min-width:120px"></select></div>
+        <div class="prompt-block">
+          <div class="prompt-head"><span class="nano">system prompt · optional · same for every language and rung</span>
+            <button class="tiny" id="reset-system">clear</button></div>
+          <textarea id="prompt-system" rows="3" placeholder="empty = no system turn. Anything here is the asker condition: it changes the instrument, is recorded in every export and in the cell key, and runs with and without it never mix."></textarea>
+        </div>
         <div class="prompt-block">
           <div class="prompt-head"><span class="nano">soft · single item — {statement} {options}</span>
             <button class="tiny" id="reset-single">reset to default</button></div>
@@ -15070,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.1";
-const BUILD = "2026-11-06.9";
+const TOOL_VERSION = "0.7.2";
+const BUILD = "2026-11-06.10";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15114,6 +15120,7 @@ const l = {
 const OR_BASE = "https://openrouter.ai/api/v1";
 const HOP_TIMEOUT_MS = 600000;
 const MAX_RETRIES = 5;
+const LENGTH_RETRY_TOKENS = 4000;   // a reasoning model that spent the whole budget thinking gets one more try with this much
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function apiError(status, message) { const e = new Error(String(message).slice(0, 400)); e.status = status; return e; }
@@ -15179,7 +15186,7 @@ async function openrouterOnce(body, cfg) {
   }
   const ch = data.choices?.[0] || {};
   return { text: extractContent(ch.message), reasoning: extractReasoning(ch.message), finish: ch.finish_reason || ch.native_finish_reason || "",
-    usage: data.usage || {}, cost: Number(data.usage?.cost ?? 0), servedBy: data.model || body.model };
+    usage: data.usage || {}, cost: Number(data.usage?.cost ?? 0), reasoningTokens: Number(data.usage?.completion_tokens_details?.reasoning_tokens ?? 0) || 0, servedBy: data.model || body.model };
 }
 
 /* Retry wrapper: transient errors with backoff up to the cap; permanent errors raise at once; a provider that
@@ -15193,15 +15200,21 @@ async function llm(body, cfg, label = "call") {
       const t0 = performance.now();
       const out = await openrouterOnce(b, cfg);
       out.ms = Math.round(performance.now() - t0);
-      out.substituted = b !== body;
       state.calls++; if (out.cost) state.cost += out.cost;
-      l.debug(`${label} ← ${out.text.length}ch ${out.ms}ms${out.cost ? ` $${out.cost.toFixed(6)}` : ""}${out.finish ? ` ${out.finish}` : ""} [${out.servedBy}]`);
+      l.debug(`${label} ← ${out.text.length}ch ${out.ms}ms${out.cost ? ` $${out.cost.toFixed(6)}` : ""}${out.finish ? ` ${out.finish}` : ""}${out.reasoningTokens ? ` · ${out.reasoningTokens} reasoning tok` : ""} [${out.servedBy}]`);
+      // Cut off before any answer: the budget went into reasoning. One retry with a larger budget, then a clear error.
+      if (out.finish === "length" && !out.text.trim()) {
+        if ((b.max_tokens || 0) < LENGTH_RETRY_TOKENS) { l.warn(`${label}: cut off by max_tokens ${b.max_tokens ?? "default"} after ${out.reasoningTokens} reasoning tokens, no answer — retrying with ${LENGTH_RETRY_TOKENS}`); b = { ...b, max_tokens: LENGTH_RETRY_TOKENS }; continue; }
+        throw apiError(0, `answer cut off by max_tokens ${b.max_tokens} (${out.reasoningTokens} reasoning tokens, no content): raise max tokens or set reasoning to disabled`);
+      }
+      out.substituted = b !== body;
       return out;
     } catch (e) {
       const m = String(e.message || e);
       if (e.status && e.status < 500 && e.status !== 429) {
         if (/reasoning/i.test(m) && b.reasoning) { l.warn(`${label}: provider rejects 'reasoning' — retrying without`); b = { ...b }; delete b.reasoning; continue; }
         if (/response_format|json_schema|structured|schema/i.test(m) && b.response_format) { l.warn(`${label}: provider rejects response_format — retrying without; JSON must now come from the prompt`); b = { ...b }; delete b.response_format; delete b.provider; continue; }
+        if (/system/i.test(m) && /role|support|unsupported|allowed/i.test(m) && b.messages?.[0]?.role === "system" && b.messages.length > 1) { l.warn(`${label}: provider rejects the system role — folding the system prompt into the user message`); b = { ...b, messages: [{ role: "user", content: b.messages[0].content + "\n\n" + b.messages[1].content }] }; continue; }
         throw e;
       }
       if (!isTransient(e)) throw e;
@@ -15567,6 +15580,8 @@ function buildGroups(items, instOrder, mode) {
   return groups;
 }
 
+// Messages for one call: an optional system prompt (the asker condition) ahead of the user turn.
+function buildMessages(system, user) { return system && system.trim() ? [{ role: "system", content: system.trim() }, { role: "user", content: user }] : [{ role: "user", content: user }]; }
 // Prompt builders. Placeholders are appended defensively if the user removed them.
 function optionLines(codes, lang) { const L = OPTION_LABELS[lang] || OPTION_LABELS.en; return codes.map(c => `- ${c}: ${L[c]}`).join("\n"); }
 function buildSinglePrompt(tpl, item, lang, codes, rung = "soft") {
@@ -15675,7 +15690,10 @@ const PROMPT_FIELDS = { "prompt-single": ["soft_single", "warn-single", ["{state
   "prompt-hard-single": ["hard_single", "warn-hard-single", ["{statement}", "{options}"]], "prompt-hard-page": ["hard_page", "warn-hard-page", ["{statements}", "{options}"]],
   "prompt-open": ["open_single", "warn-open", ["{statement}"]] };
 const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), "soft", ...($("rung-hard").checked ? ["hard"] : [])];
-const LS_EXTRACT = "cb4.prompt.extract", LS_EXTRACT_MODEL = "cb4.extractModel";
+const LS_EXTRACT = "cb4.prompt.extract", LS_EXTRACT_MODEL = "cb4.extractModel", LS_SYSTEM = "cb7.prompt.system";
+const systemPrompt = () => $("prompt-system").value.trim();
+// prompt version as it enters the cell key: the system prompt, when set, is part of the asker condition
+const promptKey = rung => PROMPT_VERSIONS[rung] + (systemPrompt() ? "+sys:" + hash53(systemPrompt()).slice(0, 8) : "");
 state.prompts = {};   // lang → { soft_single, soft_page, hard_single, hard_page }, user edits persisted as one object
 const promptFor = (rung, mode, lang) => state.prompts[lang]?.[rung === "open" ? "open_single" : `${rung}_${mode}`] ?? defaultPrompt(rung, mode, lang);
 const savePrompts = () => { try { localStorage.setItem(LS.prompts, JSON.stringify(state.prompts)); } catch (e) {} };
@@ -15878,7 +15896,7 @@ function updatePlan() {
   $("plan").innerHTML = models.length && langs.length
     ? `<b>${est.calls.toLocaleString()}</b> calls = ${models.length} model${models.length > 1 ? "s" : ""} × ${Math.round(groupsPerLang)} ${mode === "page" ? "pages" : "items"} × ${structured.length} structured rung${structured.length > 1 ? "s" : ""} × ${langs.length} language${langs.length > 1 ? "s" : ""} × ${trials} trial${trials > 1 ? "s" : ""}${est.open ? ` + open ${est.open.calls.toLocaleString()} free-text calls + ${est.open.extractCalls} extractor batches (~$${(est.open.usd + est.open.extractUsd).toFixed(3)})` : ""}${est.inverted ? ` + contamination ${est.inverted.calls.toLocaleString()} calls on ${est.inverted.items} inverted statements (en)` : ""}
        · ~${(est.inTok / 1000).toFixed(0)}k in / ${(est.outTok / 1000).toFixed(1)}k out tokens · <b>~$${est.usd.toFixed(3)}</b> at catalog prices · ~${est.minutes < 1 ? "<1" : est.minutes.toFixed(0)} min at concurrency ${conc}
-       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}`
+       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}${systemPrompt() ? " · system prompt set: asker condition changed, cells keyed separately" : ""}`
     : `select at least one model and one language — ${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} are ready`;
   $("run-meta").textContent = state.lastRun ? `last run ${state.lastRun}` : "";
   renderSelected();
@@ -15928,29 +15946,29 @@ async function run() {
     if (rung === "open") {
       // free text: one item per call, no options, no schema, no order; the raw text is the result, the stance comes later from the extractor
       const it = g.items[0];
-      const k = cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order: "none", mode: "single", promptVersion: PROMPT_VERSIONS.open, variant });
+      const k = cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order: "none", mode: "single", promptVersion: promptKey("open"), variant });
       if (state.cells[k]?.status === "ok") { skipped++; continue; }
-      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
+      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, prompt: promptKey("open"), status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
       planned++;
       tasks.push(async () => {
         const label = `${model} open ${lang}${variant === "inverted" ? " inv" : ""} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
-        const body = { model, messages: [{ role: "user", content: buildOpenPrompt(promptFor("open", "single", lang), it, lang) }], max_tokens: maxTokensOpen, usage: { include: true } };
+        const body = { model, messages: buildMessages(systemPrompt(), buildOpenPrompt(promptFor("open", "single", lang), it, lang)), max_tokens: maxTokensOpen, usage: { include: true } };
         const rf = reasoningField(); if (rf) body.reasoning = rf;
         const c = state.cells[k];
-        try { const out = await llm(body, cfg, label); Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: out.cost, served_by: out.servedBy, status: out.text.trim() ? "ok" : "error", error: out.text.trim() ? null : "empty answer" }); }
+        try { const out = await llm(body, cfg, label); Object.assign(c, { raw: out.text, reasoning: out.reasoning, reasoning_tokens: out.reasoningTokens, ms: out.ms, cost: out.cost, served_by: out.servedBy, status: out.text.trim() ? "ok" : "error", error: out.text.trim() ? null : `empty answer (finish ${out.finish || "?"}${out.reasoningTokens ? `, ${out.reasoningTokens} reasoning tokens` : ""})` }); }
         catch (e) { c.status = "error"; c.error = String(e.message || e).slice(0, 400); if (!/cancel/.test(String(e.message))) l.err(`${label}: ${String(e.message).slice(0, 200)}`); }
       });
       continue;
     }
     const order = orderFor(model, g.id, trial, randomise);
-    const keys = g.items.map(it => cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order, mode, promptVersion: PROMPT_VERSIONS[rung], variant }));
+    const keys = g.items.map(it => cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order, mode, promptVersion: promptKey(rung), variant }));
     if (keys.every(k => state.cells[k]?.status === "ok")) { skipped += keys.length; continue; }
-    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
+    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, prompt: promptKey(rung), status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
     planned += keys.length;
     const codes = orderedCodes(optionsFor(g.items[0], rung), order);
     tasks.push(async () => {
       const label = `${model} ${rung} ${lang}${variant === "inverted" ? " inv" : ""} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
-      const body = { model, messages: [{ role: "user", content: mode === "page" ? buildPagePrompt(promptFor(rung, "page", lang), g.items, lang, codes, rung) : buildSinglePrompt(promptFor(rung, "single", lang), g.items[0], lang, codes, rung) }],
+      const body = { model, messages: buildMessages(systemPrompt(), mode === "page" ? buildPagePrompt(promptFor(rung, "page", lang), g.items, lang, codes, rung) : buildSinglePrompt(promptFor(rung, "single", lang), g.items[0], lang, codes, rung)),
         response_format: { type: "json_schema", json_schema: { name: "answer", strict: true, schema: mode === "page" ? pageSchema(codes, g.items.length) : singleSchema(codes) } },
         provider: { require_parameters: true }, max_tokens: mode === "page" ? Math.max(maxTokens, 40 * g.items.length + 100) : maxTokens, usage: { include: true } };
       const rf = reasoningField(); if (rf) body.reasoning = rf;
@@ -15958,13 +15976,13 @@ async function run() {
       try {
         const out = await llm(body, cfg, label);
         const share = out.cost / cells.length;
-        let parsed; try { parsed = extractJson(out.text); } catch (e) { throw apiError(0, `unparsable answer: ${out.text.slice(0, 160)}`); }
+        let parsed; try { parsed = extractJson(out.text); } catch (e) { throw apiError(0, out.text.trim() ? `unparsable answer: ${out.text.slice(0, 160)}` : `empty answer (finish ${out.finish || "?"}${out.reasoningTokens ? `, ${out.reasoningTokens} reasoning tokens` : ""})`); }
         if (mode === "page") {
           const byN = new Map((parsed.answers || []).map(a => [Number(a.n), a.answer]));
-          cells.forEach((c, i) => { const a = byN.get(i + 1); Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: share, served_by: out.servedBy });
+          cells.forEach((c, i) => { const a = byN.get(i + 1); Object.assign(c, { raw: out.text, reasoning: out.reasoning, reasoning_tokens: out.reasoningTokens, ms: out.ms, cost: share, served_by: out.servedBy });
             if (codes.includes(a)) { c.status = "ok"; c.answer = a; } else { c.status = "error"; c.error = a === undefined ? "missing in page response" : `unknown option ${a}`; } });
         } else {
-          const c = cells[0]; Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: share, served_by: out.servedBy });
+          const c = cells[0]; Object.assign(c, { raw: out.text, reasoning: out.reasoning, reasoning_tokens: out.reasoningTokens, ms: out.ms, cost: share, served_by: out.servedBy });
           if (codes.includes(parsed.answer)) { c.status = "ok"; c.answer = parsed.answer; } else { c.status = "error"; c.error = `unknown option ${JSON.stringify(parsed.answer)}`; }
         }
       } catch (e) {
@@ -16398,7 +16416,7 @@ function renderResults() {
     const rawBlock = (c.rung === "open" && c.raw ? `<div class="raw">${escapeHtml(c.raw.slice(0, 400))}</div>` : "") + (c.reasoning ? `<details class="reason"><summary>reasoning · ${c.reasoning.length} ch</summary><div class="raw" style="max-height:none">${escapeHtml(c.reasoning.slice(0, 1500))}${c.reasoning.length > 1500 ? " …" : ""}</div></details>` : "");
     return `<div class="res-row"><div class="m" title="${escapeHtml(c.model)}">${escapeHtml(c.model)}</div>
       <div class="s">${c.variant === "inverted" ? `<span class="badge warn" style="margin-right:6px">inverted</span>${escapeHtml(it.inverted?.[c.lang] || "")}<div class="hint">original: ${escapeHtml(it.text.en)}</div>` : `${escapeHtml(it.text[c.lang] || it.text.en)}${c.lang !== "en" ? `<div class="hint">${escapeHtml(it.text.en)}</div>` : ""}`} <span class="hint">· ${Object.keys(it.effects).join(", ")}</span>${rawBlock}${c.error ? `<div class="e">${escapeHtml(c.error)}</div>` : ""}</div>
-      <div class="a">${badge}<div class="hint">${c.rung} · ${c.lang} · t${c.trial}${c.rung === "open" ? (c.extract ? ` · ${c.extract.confidence}` : "") : ` · ${c.order === "disagree-first" ? "↓" : "↑"}`}</div></div><div class="k">${c.ms ? c.ms + "ms" : ""}${c.cost ? `<br>$${c.cost.toFixed(5)}` : ""}</div></div>`;
+      <div class="a">${badge}<div class="hint">${c.rung} · ${c.lang} · t${c.trial}${c.rung === "open" ? (c.extract ? ` · ${c.extract.confidence}` : "") : ` · ${c.order === "disagree-first" ? "↓" : "↑"}`}</div></div><div class="k">${c.ms ? c.ms + "ms" : ""}${c.cost ? `<br>$${c.cost.toFixed(5)}` : ""}${c.reasoning_tokens ? `<br>${c.reasoning_tokens} rt` : ""}</div></div>`;
   }).join("") || `<div class="hint" style="padding:10px">nothing matches the filter</div>`;
 }
 
@@ -16418,9 +16436,9 @@ function buildExport() {
     nine_axes: state.nineAxes || null,
     inversion: DATA.inversion ? { ...DATA.inversion, enabled: $("inverted").checked } : null, contamination: state.contamination || [],
     languages: Object.fromEntries(availableLangs().map(l => [l, { ...DATA.languages[l], enabled: enabledLangs().includes(l), excluded_items: ITEMS.filter(it => it.text[l] && !usableInLang(it, l)).map(it => it.id) }])),
-    prompt_versions: PROMPT_VERSIONS, prompts: Object.fromEntries(enabledLangs().map(l => [l, Object.fromEntries(["soft_single", "soft_page", "hard_single", "hard_page", "open_single"].map(k => [k, promptFor(k.split("_")[0], k.split("_")[1], l)]))])),
+    prompt_versions: PROMPT_VERSIONS, system_prompt: systemPrompt() || null, prompts: Object.fromEntries(enabledLangs().map(l => [l, Object.fromEntries(["soft_single", "soft_page", "hard_single", "hard_page", "open_single"].map(k => [k, promptFor(k.split("_")[0], k.split("_")[1], l)]))])),
     extractor: { prompt: $("prompt-extract").value, version: EXTRACT_VERSION, model: $("extract-model").value, batch_size: $("batch-size").value, batch_check: state.batchCheck || null }, settings,
-    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: "neutral user turn, no system prompt, no persona; prompt text under prompts", repetitions: Number(settings.trials) || 1,
+    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: systemPrompt() ? "system prompt set (see system_prompt) ahead of the user turn; prompt text under prompts" : "neutral user turn, no system prompt, no persona; prompt text under prompts", repetitions: Number(settings.trials) || 1,
       dispersion: "bootstrap interval over items (2.5/97.5 pct), draws under settings.bootstrap; per-trial scores and SD across trials under scores[].perTrial / instability when trials ≥ 2", variance_decomposition: state.errorBudget ? "error_budget: crossed main-effect sums of squares over instrument-axis, model, rung, language; residual = trial noise + interactions; bootstrap CI over observations" : "not computed", contamination_check: (state.contamination || []).length ? `${state.contamination.filter(x => x.flagged && !x.gated).length} of ${state.contamination.length} model × instrument × rung pairs flagged (shift > ${$("gate-contam").value} on the unit square and above trial noise, or item agreement below one half); see contamination` : "not run", extractor_batch_check: state.batchCheck ? Object.fromEntries(Object.entries(state.batchCheck).map(([l, b]) => [l, b.pct])) : "not run",
       option_order: settings.randomise ? "randomised per cell by hash parity (agree-first / disagree-first), recorded per cell" : "fixed agree-first",
       item_level_results: "cells", web_search: "none attached to any request", pct_scoring: PCT_VALIDATION },
@@ -16478,7 +16496,7 @@ function buildMarkdown() {
   if (ex.nine_axes) L.push("", `9Axes: ${ex.nine_axes.mode === "draw" ? `seeded draw ${ex.nine_axes.seed}, ${ex.nine_axes.ids.length} statements` : "full pool"}`);
   L.push("", "| language | status | hash | enabled | excluded |", "|---|---|---|---|---|");
   for (const [k, v] of Object.entries(ex.languages)) L.push(`| ${k} | ${v.status} | \`${v.hash.slice(0, 12)}\` | ${v.enabled ? "yes" : "no"} | ${v.excluded_items.length} |`);
-  L.push("", "## Settings", "", "```", ...Object.entries(ex.settings).map(([k, v]) => `${k} = ${v}`), "```", "", `Models: ${ex.models.join(", ")}`, "");
+  L.push("", "## Settings", "", "```", ...Object.entries(ex.settings).map(([k, v]) => `${k} = ${v}`), "```", "", `Models: ${ex.models.join(", ")}`, "", ex.system_prompt ? `System prompt (asker condition):\n\n> ${ex.system_prompt.replace(/\n/g, "\n> ")}\n` : "No system prompt (neutral user turn).", "");
   L.push("## Gates", "", "| # | gate | result | detail |", "|---|---|---|---|");
   for (const g of ex.gates || []) L.push(`| ${g.id} | ${g.name} | ${g.pass === null ? "n/a" : g.pass ? "pass" : "FAIL"} | ${g.detail.replace(/\n/g, "<br>").replace(/\|/g, "/")} |`);
   L.push("", "## Scores (native scales; [interval] = bootstrap over items)", "");
@@ -16510,10 +16528,10 @@ function buildMarkdown() {
 function exportMd() { download(`compass-bench-${stamp()}.md`, buildMarkdown(), "text/markdown;charset=utf-8"); }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
-  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "latency_ms", "cost_usd", "error"];
+  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "reasoning_tokens", "latency_ms", "cost_usd", "error"];
   const lines = [head.join(",")];
   for (const c of Object.values(state.cells)) { const it = ITEM_BY_ID.get(c.item_id);
-    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
+    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.reasoning_tokens ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
   download(`compass-bench-${stamp()}.csv`, "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
 }
 
@@ -16533,6 +16551,9 @@ function init() {
   }
   $("prompt-lang").addEventListener("change", e => showPromptLang(e.target.value));
   $("prompt-extract").addEventListener("input", e => { localStorage.setItem(LS_EXTRACT, e.target.value); checkPlaceholders(); });
+  $("prompt-system").value = localStorage.getItem(LS_SYSTEM) ?? "";
+  $("prompt-system").addEventListener("input", e => { localStorage.setItem(LS_SYSTEM, e.target.value); updatePlan(); });
+  $("reset-system").addEventListener("click", () => { $("prompt-system").value = ""; localStorage.setItem(LS_SYSTEM, ""); updatePlan(); l.info("system prompt cleared"); });
   $("reset-extract").addEventListener("click", () => { $("prompt-extract").value = DEFAULT_EXTRACT; localStorage.setItem(LS_EXTRACT, DEFAULT_EXTRACT); checkPlaceholders(); l.info("extractor prompt reset"); });
   $("extract-model").addEventListener("change", e => { localStorage.setItem(LS_EXTRACT_MODEL, e.target.value); updateExtractPrice(); updatePlan(); });
   $("btn-extract").addEventListener("click", () => extractOpen(true).then(rescore).catch(e => { l.err("extraction failed: " + e.message); setRunning(false); }));

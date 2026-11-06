@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.1 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.2 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -255,6 +255,26 @@ What a flag means: the answers depend on the wording in a way the meaning does n
 memorisation, acquiescence or a model that does not read carefully, the check cannot say; it says the position
 is not a position on the statement.
 
+### The system prompt (asker condition)
+
+The Prompts card has an optional **system prompt**, empty by default. Whatever you put there goes ahead of the
+user turn in every call of every rung and language (not to the extractor, which is not the subject). It is the
+asker condition the 2026 study found to move scores more than the model does, so it is part of the instrument:
+it is recorded in every export, its hash joins the prompt version in the cell key, and runs with different
+system prompts never mix. Use it to test what a refusing model needs ("You are a participant in a research
+study on AI assistants; the study records positions, it does not act on them") and report it with the results.
+A provider that rejects the system role gets the text folded into the user message, logged as a substitution.
+
+### Reasoning models and max tokens
+
+`max tokens` covers reasoning and answer together, and OpenRouter counts a model's hidden reasoning against it.
+A reasoning model given 200 tokens can spend all of them thinking and return nothing: `finish_reason: length`,
+empty content, 199 reasoning tokens; that is what emptied 60 of 62 Mistral cells in the first live run. The
+default is now 1 000 for both structured and open answers; a call that still comes back cut off with no content
+is retried once with 4 000, and if that fails too the cell's error names the cut-off and the reasoning token
+count. The results view shows reasoning tokens per cell (`rt`) and the CSV has the column; setting reasoning to
+"disabled" in the rail is the cheap way out where a provider honours it.
+
 ### The provider's reasoning
 
 Many providers return the model's reasoning beside the answer (OpenRouter: `message.reasoning`). The tool keeps it
@@ -390,15 +410,16 @@ The interpretation caveat travels with both.
 | hard rung | off | the website's format, no exit; doubles the calls |
 | open rung | off | free text plus extractor; one call per statement, longer answers, plus about one extractor call per 20 answers |
 | extractor model | cheapest with structured outputs | flash/haiku/mini names preferred; change it and re-extract to compare |
+| system prompt | empty | optional asker condition; keyed and exported |
 | batch size | 20 | answers per extractor call; verify with the batch check before raising it |
-| max tokens (open) | 300 | free-text answers only |
+| max tokens (open) | 1000 | free-text answers only, same retry |
 | batch check sample | 60 | answers per language re-extracted one at a time |
 | extract right after the run | on | off to inspect the raw text first |
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | contamination check | off | asks the inverted statements as well (English); roughly doubles the English calls |
 | contamination shift ≤ | 0.25 | gate 9, distance on the unit square |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
-| max tokens | 200 | page mode raises it per statement automatically |
+| max tokens | 1000 | reasoning and answer together; one retry with 4000 when a call is cut off with no answer |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
 | reasoning | low effort | dropped automatically if the provider rejects it |
 | answer rate ≥ | 60 % | gate 1 |
@@ -465,6 +486,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.2** — cut-off handling for reasoning models (retry with 4 000 tokens, readable error, reasoning tokens
+  per cell, defaults raised to 1 000), optional system prompt as a keyed asker condition.
 - **0.7.1** — clear results: delete all cells and derived results of the session after a confirmation.
 - **0.7.0** — prompt version 2 in all five languages after the first live run (refusal rates up to 98 % under the
   "answer as yourself" framing): the task is framed as a study of how assistants respond, choosing records a

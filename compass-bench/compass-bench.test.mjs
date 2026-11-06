@@ -34,7 +34,7 @@ try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } cat
 for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
   "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit",
   "setUi", "defaultPrompt", "usableInLang", "shiftDistance", "buildOpenPrompt", "buildExtractPrompt", "extractSchema", "sampleForCheck", "agreement", "stanceToAnswer",
-  "scoreNineAxes", "drawNineAxes", "ideologyMatch", "validateImport", "flipAnswer", "invertedUsable", "asInverted", "itemAgreement", "extractReasoning"])
+  "scoreNineAxes", "drawNineAxes", "ideologyMatch", "validateImport", "flipAnswer", "invertedUsable", "asInverted", "itemAgreement", "extractReasoning", "buildMessages"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -405,6 +405,25 @@ await test("prompt version 2: study framing, no-endorsement line, conditional ex
   const o = ctx.defaultPrompt("open", "single", "en"); assert.ok(/three sentences/.test(o) && /not an endorsement/.test(o) && !/strongly_agree/.test(o));
   assert.equal(JSON.stringify(ctx.optionsFor(ITEMS[0], "soft")).includes("no_position"), true);
   const lines = ctx.buildSinglePrompt("", ITEMS[0], "en", ctx.optionsFor(ITEMS[0], "soft"), "soft"); assert.ok(/- no_position: No position at all on this statement/.test(lines), "new exit label");
+});
+await test("cut off by max_tokens: one retry with 4000 tokens, then a clear error naming the reasoning tokens; a normal answer passes through", async () => {
+  const cut = { ok: true, body: { model: "m", choices: [{ message: { content: null, reasoning: "thinking…" }, finish_reason: "length" }], usage: { cost: 0.0005, completion_tokens_details: { reasoning_tokens: 199 } } } };
+  const fine = { ok: true, body: { model: "m", choices: [{ message: { content: '{"answer":"agree"}' }, finish_reason: "stop" }], usage: { cost: 0.001 } } };
+  ctx.state.cancel = false; calls.length = 0; queue = [cut, fine];
+  const out = await ctx.llm({ model: "m", messages: [], max_tokens: 200 }, { apiKey: "K", retries: 0 }, "t");
+  assert.equal(out.text, '{"answer":"agree"}'); assert.equal(calls.length, 2); assert.equal(calls[0].body.max_tokens, 200); assert.equal(calls[1].body.max_tokens, 4000);
+  assert.ok(log.some(x => /cut off by max_tokens 200 after 199 reasoning tokens/.test(x)), "the retry is logged with the reasoning count");
+  calls.length = 0; queue = [cut, cut];
+  await assert.rejects(() => ctx.llm({ model: "m", messages: [], max_tokens: 200 }, { apiKey: "K", retries: 0 }, "t"), e => /cut off by max_tokens 4000 \(199 reasoning tokens/.test(e.message) && e.status === 0);
+  assert.equal(calls.length, 2, "exactly one retry");
+  queue = [fine]; const ok = await ctx.llm({ model: "m", messages: [], max_tokens: 200 }, { apiKey: "K", retries: 0 }, "t"); assert.equal(ok.reasoningTokens, 0);
+});
+await test("system prompt: optional system turn ahead of the user turn; a provider that rejects the role gets it folded into the user message", async () => {
+  assert.equal(JSON.stringify(ctx.buildMessages("", "u")), JSON.stringify([{ role: "user", content: "u" }]));
+  assert.equal(JSON.stringify(ctx.buildMessages(" sys ", "u")), JSON.stringify([{ role: "system", content: "sys" }, { role: "user", content: "u" }]));
+  calls.length = 0; queue = [{ ok: false, status: 400, body: { error: { message: "system role is not supported by this model" } } }, { ok: true, body: { choices: [{ message: { content: "ok" } }], usage: {} } }];
+  const out = await ctx.llm({ model: "m", messages: ctx.buildMessages("SYS", "USER") }, { apiKey: "K", retries: 0 }, "t");
+  assert.equal(out.text, "ok"); assert.equal(calls.length, 2); assert.equal(calls[1].body.messages.length, 1); assert.ok(/SYS[\s\S]*USER/.test(calls[1].body.messages[0].content)); assert.ok(out.substituted);
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
