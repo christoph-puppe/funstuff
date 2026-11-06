@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.0</div>
+    <div class="pill" id="pill-version">v0.7.1</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -396,6 +396,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <button class="tiny" id="btn-exp-csv" disabled>⤓ csv</button>
           <button class="tiny" id="btn-exp-md" disabled>⤓ md</button>
           <button class="tiny" id="btn-import">⤒ import run</button>
+          <button class="tiny danger" id="btn-clear" disabled>✕ clear results</button>
           <input type="file" id="import-file" accept="application/json,.json" style="display:none">
         </div>
         <div class="progress-wrap" id="prog">
@@ -15069,8 +15070,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.0";
-const BUILD = "2026-11-06.8";
+const TOOL_VERSION = "0.7.1";
+const BUILD = "2026-11-06.9";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15892,7 +15893,7 @@ function setRunning(on) {
   const openCells = Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok");
   $("btn-extract").disabled = on || !openCells.length; $("btn-check").disabled = on || !openCells.some(c => c.extract && c.extract.batch_size > 1);
   $("btn-exp-json").disabled = $("btn-exp-csv").disabled = $("btn-exp-md").disabled = on || !Object.keys(state.cells).length;
-  $("btn-import").disabled = on;
+  $("btn-import").disabled = on; $("btn-clear").disabled = on || !Object.keys(state.cells).length;
 }
 function showProgress(label, done, total) {
   $("prog").classList.add("show"); $("prog-label").textContent = label; $("prog-count").textContent = `${done} / ${total}`;
@@ -16449,6 +16450,18 @@ function importRun(obj) {
   rescore(); updatePlan(); setRunning(false);
   return true;
 }
+// Delete every result of this session: cells, scores, gates, checks, counters. Exports are the only copy afterwards.
+function clearRun() {
+  const n = Object.keys(state.cells).length;
+  if (!n) return;
+  if (!confirm(`Delete all ${n} answered cells and every derived result from this session? Export first if you want to keep them.`)) { l.info("clear cancelled"); return; }
+  state.cells = {}; state.scores = null; state.style = null; state.convergence = null; state.shift = null; state.contamination = null; state.errorBudget = null; state.batchCheck = null; state.gates = null;
+  state.rungs = []; state.langs = []; state.nineAxes = null; state.calls = 0; state.cost = 0; state.lastRun = null;
+  for (const id of ["gates-card", "compass-card", "style-card", "ladder-card", "conv-card", "shift-card", "contam-card", "eb-card", "bc-card", "results-card"]) $(id).style.display = "none";
+  $("results-list").innerHTML = ""; $("res-meta").textContent = "";
+  updatePills(); setRunning(false); updatePlan();
+  l.warn(`cleared ${n} cells and all derived results; counters reset`);
+}
 function importFile(file) {
   const r = new FileReader();
   r.onload = () => { try { importRun(JSON.parse(r.result)); } catch (e) { l.err("import failed: " + e.message); } };
@@ -16542,6 +16555,7 @@ function init() {
   $("btn-rescore").addEventListener("click", () => { l.info("rescoring locally, no API calls"); rescore(); });
   $("btn-exp-json").addEventListener("click", exportJson); $("btn-exp-csv").addEventListener("click", exportCsv); $("btn-exp-md").addEventListener("click", exportMd);
   $("btn-import").addEventListener("click", () => $("import-file").click());
+  $("btn-clear").addEventListener("click", clearRun);
   $("import-file").addEventListener("change", e => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ""; });
   ["res-model", "res-status"].forEach(id => $(id).addEventListener("change", renderResults)); $("res-search").addEventListener("input", renderResults);
   $("con-clear").addEventListener("click", () => { $("con-lines").innerHTML = ""; logCount = 0; $("con-count").textContent = "0"; });

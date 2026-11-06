@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.1 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -358,6 +358,9 @@ residual holds interactions only. The card says so when that is the case.
   embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
   again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
   press run: only the gaps are filled.
+- **clear results** deletes every answered cell and every derived result of the session after a confirmation,
+  and resets the call and cost counters. Nothing is stored outside the page, so an export made before is the
+  only copy afterwards. Prompts, settings and the model selection stay.
 - The cell key of an inverted statement carries the variant; keys of original cells are unchanged, so exports of
   earlier versions still resume.
 - **JSON** — the whole run: tool version and build, instrument and language hashes, the four prompts and their
@@ -462,6 +465,7 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.1** — clear results: delete all cells and derived results of the session after a confirmation.
 - **0.7.0** — prompt version 2 in all five languages after the first live run (refusal rates up to 98 % under the
   "answer as yourself" framing): the task is framed as a study of how assistants respond, choosing records a
   position and endorses nothing, `no_position` only for no position at all; the provider's reasoning text is kept
