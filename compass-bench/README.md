@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.3 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.4 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -282,6 +282,18 @@ is retried once with 4 000, and if that fails too the cell's error names the cut
 count. The results view shows reasoning tokens per cell (`rt`) and the CSV has the column; setting reasoning to
 "disabled" in the rail is the cheap way out where a provider honours it.
 
+### Reasoning on or off is a condition, not a setting
+
+With reasoning, the answer is the outcome of a deliberation, and on the uncomfortable items that deliberation is
+often a safety judgement (Mistral: "I should firmly reject this", then `strongly_disagree`); refusal and reflex
+shares rise, and so does the spread between trials. Without it, the answer is the immediate completion: cheaper,
+more stable, and closer to the surface of the item, which is what the contamination check is about. Neither is
+the true model. If the question is what a user gets from the deployed assistant, the honest setting is the
+provider default, which sends no reasoning field; "low" and "disabled" are interventions in the apparatus. The
+setting is therefore recorded per cell, joins the cell key (so runs under different settings never mix or resume
+into each other) and is named in the export's reporting block. Whether deliberation moves a model's position is
+itself measurable: the same run under two settings, compared in the export.
+
 ### The provider's reasoning
 
 Many providers return the model's reasoning beside the answer (OpenRouter: `message.reasoning`). The tool keeps it
@@ -429,7 +441,7 @@ The interpretation caveat travels with both.
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
 | max tokens | 1000 | reasoning and answer together; one retry with 4000 when a call is cut off with no answer |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
-| reasoning | low effort | dropped automatically if the provider rejects it |
+| reasoning | low effort | "provider default" sends no field; recorded per cell and keyed; dropped automatically if the provider rejects it |
 | answer rate ≥ | 60 % | gate 1 |
 | bootstrap draws | 1000 | 0 disables the intervals; the error budget uses at most 400 |
 | instability ≤ | 0.25 | gate 2, SD across trials on the unit scale |
@@ -494,6 +506,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.4** — the reasoning setting is recorded per cell and joins the cell key; README on what reasoning
+  changes in the measurement.
 - **0.7.3** — hard rung is the default, soft opt-in: the first live run showed the soft exit swallowing nearly
   every answer of some models, and the open rung measures unforced behaviour better.
 - **0.7.2** — cut-off handling for reasoning models (retry with 4 000 tokens, readable error, reasoning tokens

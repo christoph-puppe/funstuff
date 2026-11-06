@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.3</div>
+    <div class="pill" id="pill-version">v0.7.4</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -268,7 +268,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <option value="">provider default</option>
             <option value="off">disabled</option>
           </select></div>
-        <div class="hint">max tokens covers reasoning and answer together. A reasoning model that spends it all thinking returns no answer; the tool then retries once with 4000 and otherwise reports the cut-off with the reasoning token count.</div>
+        <div class="hint">The reasoning setting is part of the measurement: it is recorded per cell and joins the cell key, so runs under different settings never mix. "provider default" sends no reasoning field and measures the assistant as deployed. max tokens covers reasoning and answer together. A reasoning model that spends it all thinking returns no answer; the tool then retries once with 4000 and otherwise reports the cut-off with the reasoning token count.</div>
       </div>
 
       <div class="rail-group">
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.3";
-const BUILD = "2026-11-06.11";
+const TOOL_VERSION = "0.7.4";
+const BUILD = "2026-11-06.12";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15693,7 +15693,9 @@ const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), ...($("
 const LS_EXTRACT = "cb4.prompt.extract", LS_EXTRACT_MODEL = "cb4.extractModel", LS_SYSTEM = "cb7.prompt.system";
 const systemPrompt = () => $("prompt-system").value.trim();
 // prompt version as it enters the cell key: the system prompt, when set, is part of the asker condition
-const promptKey = rung => PROMPT_VERSIONS[rung] + (systemPrompt() ? "+sys:" + hash53(systemPrompt()).slice(0, 8) : "");
+// reasoning setting as a condition label: "low", "default" (no field sent) or "off"
+const reasoningLabel = () => ({ low: "low", "": "default", off: "off" })[$("reasoning").value] || $("reasoning").value;
+const promptKey = rung => PROMPT_VERSIONS[rung] + (systemPrompt() ? "+sys:" + hash53(systemPrompt()).slice(0, 8) : "") + (reasoningLabel() === "low" ? "" : "+r:" + reasoningLabel());
 state.prompts = {};   // lang → { soft_single, soft_page, hard_single, hard_page }, user edits persisted as one object
 const promptFor = (rung, mode, lang) => state.prompts[lang]?.[rung === "open" ? "open_single" : `${rung}_${mode}`] ?? defaultPrompt(rung, mode, lang);
 const savePrompts = () => { try { localStorage.setItem(LS.prompts, JSON.stringify(state.prompts)); } catch (e) {} };
@@ -15897,7 +15899,7 @@ function updatePlan() {
   $("plan").innerHTML = models.length && langs.length
     ? `<b>${est.calls.toLocaleString()}</b> calls = ${models.length} model${models.length > 1 ? "s" : ""} × ${Math.round(groupsPerLang)} ${mode === "page" ? "pages" : "items"} × ${structured.length} structured rung${structured.length > 1 ? "s" : ""} × ${langs.length} language${langs.length > 1 ? "s" : ""} × ${trials} trial${trials > 1 ? "s" : ""}${est.open ? ` + open ${est.open.calls.toLocaleString()} free-text calls + ${est.open.extractCalls} extractor batches (~$${(est.open.usd + est.open.extractUsd).toFixed(3)})` : ""}${est.inverted ? ` + contamination ${est.inverted.calls.toLocaleString()} calls on ${est.inverted.items} inverted statements (en)` : ""}
        · ~${(est.inTok / 1000).toFixed(0)}k in / ${(est.outTok / 1000).toFixed(1)}k out tokens · <b>~$${est.usd.toFixed(3)}</b> at catalog prices · ~${est.minutes < 1 ? "<1" : est.minutes.toFixed(0)} min at concurrency ${conc}
-       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}${systemPrompt() ? " · system prompt set: asker condition changed, cells keyed separately" : ""}`
+       <br>${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} · rungs ${rungs.join(" + ")} · languages ${langs.join(", ")}${$("randomise").checked ? " · option order randomised per cell" : " · option order fixed agree-first"}${mode === "page" ? " · page mode: a different response format than the literature, kept apart by the cell key" : ""}${trials < 2 ? " · n=1: no stability statistics" : ""}${systemPrompt() ? " · system prompt set: asker condition changed, cells keyed separately" : ""} · reasoning ${reasoningLabel()}${reasoningLabel() !== "low" ? " (keyed separately)" : ""}`
     : `select at least one model and one language — ${items.length} unique items from ${enabledInstruments().join(", ") || "no instrument"} are ready`;
   $("run-meta").textContent = state.lastRun ? `last run ${state.lastRun}` : "";
   renderSelected();
@@ -15950,7 +15952,7 @@ async function run() {
       const it = g.items[0];
       const k = cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order: "none", mode: "single", promptVersion: promptKey("open"), variant });
       if (state.cells[k]?.status === "ok") { skipped++; continue; }
-      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, prompt: promptKey("open"), status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
+      state.cells[k] = { key: k, item_id: it.id, model, lang, rung, trial, order: "none", mode: "single", variant, group: g.id, prompt: promptKey("open"), reasoning_setting: reasoningLabel(), status: "pending", answer: null, raw: null, extract: null, ms: 0, cost: 0, error: null, served_by: null };
       planned++;
       tasks.push(async () => {
         const label = `${model} open ${lang}${variant === "inverted" ? " inv" : ""} ${g.id}${trials > 1 ? ` t${trial}` : ""}`;
@@ -15965,7 +15967,7 @@ async function run() {
     const order = orderFor(model, g.id, trial, randomise);
     const keys = g.items.map(it => cellKey({ itemId: it.id, lang: langKey(lang), model, rung, trial, order, mode, promptVersion: promptKey(rung), variant }));
     if (keys.every(k => state.cells[k]?.status === "ok")) { skipped += keys.length; continue; }
-    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, prompt: promptKey(rung), status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
+    keys.forEach((k, i) => { if (state.cells[k]?.status !== "ok") state.cells[k] = { key: k, item_id: g.items[i].id, model, lang, rung, trial, order, mode, variant, group: g.id, prompt: promptKey(rung), reasoning_setting: reasoningLabel(), status: "pending", answer: null, raw: null, ms: 0, cost: 0, error: null, served_by: null }; });
     planned += keys.length;
     const codes = orderedCodes(optionsFor(g.items[0], rung), order);
     tasks.push(async () => {
@@ -16440,7 +16442,7 @@ function buildExport() {
     languages: Object.fromEntries(availableLangs().map(l => [l, { ...DATA.languages[l], enabled: enabledLangs().includes(l), excluded_items: ITEMS.filter(it => it.text[l] && !usableInLang(it, l)).map(it => it.id) }])),
     prompt_versions: PROMPT_VERSIONS, system_prompt: systemPrompt() || null, prompts: Object.fromEntries(enabledLangs().map(l => [l, Object.fromEntries(["soft_single", "soft_page", "hard_single", "hard_page", "open_single"].map(k => [k, promptFor(k.split("_")[0], k.split("_")[1], l)]))])),
     extractor: { prompt: $("prompt-extract").value, version: EXTRACT_VERSION, model: $("extract-model").value, batch_size: $("batch-size").value, batch_check: state.batchCheck || null }, settings,
-    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: systemPrompt() ? "system prompt set (see system_prompt) ahead of the user turn; prompt text under prompts" : "neutral user turn, no system prompt, no persona; prompt text under prompts", repetitions: Number(settings.trials) || 1,
+    reporting_standard: { instrument: "see instruments (name, version, hash)", asker_condition: systemPrompt() ? "system prompt set (see system_prompt) ahead of the user turn; prompt text under prompts" : "neutral user turn, no system prompt, no persona; prompt text under prompts", reasoning: reasoningLabel() === "default" ? "provider default (no reasoning field sent)" : `reasoning: ${reasoningLabel()}`, repetitions: Number(settings.trials) || 1,
       dispersion: "bootstrap interval over items (2.5/97.5 pct), draws under settings.bootstrap; per-trial scores and SD across trials under scores[].perTrial / instability when trials ≥ 2", variance_decomposition: state.errorBudget ? "error_budget: crossed main-effect sums of squares over instrument-axis, model, rung, language; residual = trial noise + interactions; bootstrap CI over observations" : "not computed", contamination_check: (state.contamination || []).length ? `${state.contamination.filter(x => x.flagged && !x.gated).length} of ${state.contamination.length} model × instrument × rung pairs flagged (shift > ${$("gate-contam").value} on the unit square and above trial noise, or item agreement below one half); see contamination` : "not run", extractor_batch_check: state.batchCheck ? Object.fromEntries(Object.entries(state.batchCheck).map(([l, b]) => [l, b.pct])) : "not run",
       option_order: settings.randomise ? "randomised per cell by hash parity (agree-first / disagree-first), recorded per cell" : "fixed agree-first",
       item_level_results: "cells", web_search: "none attached to any request", pct_scoring: PCT_VALIDATION },
@@ -16530,10 +16532,10 @@ function buildMarkdown() {
 function exportMd() { download(`compass-bench-${stamp()}.md`, buildMarkdown(), "text/markdown;charset=utf-8"); }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
-  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "reasoning_tokens", "latency_ms", "cost_usd", "error"];
+  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "prompt", "reasoning_setting", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "reasoning_tokens", "latency_ms", "cost_usd", "error"];
   const lines = [head.join(",")];
   for (const c of Object.values(state.cells)) { const it = ITEM_BY_ID.get(c.item_id);
-    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.reasoning_tokens ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
+    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.prompt ?? "", c.reasoning_setting ?? "", c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.reasoning_tokens ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
   download(`compass-bench-${stamp()}.csv`, "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
 }
 
