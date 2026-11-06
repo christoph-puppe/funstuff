@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.4.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.4.1 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -128,8 +128,8 @@ Each rung has its own prompt pair (single item, page) in the Prompts card and it
 key. With two or more rungs on, the **Ladder** card draws each model's projection axes per rung, open → soft →
 hard: a flat line is a position, a line that moves along the ladder is forcing sensitivity.
 
-**Open** (opt-in). No options at all: the statement and "what do you think about this statement, answer in two
-or three sentences", in the language of the run. This is the setting Röttger et al. argue for, and the only
+**Open** (opt-in). No options at all: the same 182 statements as the other rungs, each followed by "what do you
+think about this statement, answer in three sentences", in the language of the run. This is the setting Röttger et al. argue for, and the only
 rung with a model in the evaluation. The free text is stored raw. Then a **blind extractor**, a cheap model
 chosen in the rail (cheapest first, flash/haiku/mini names preferred), reads the answers in batches of 20,
 labelled `a1…aN` with the statement and the answer and nothing else, no model name, no language tag, and
@@ -365,6 +365,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md
 
 ## Changelog
 
+- **0.4.1** — open rung asks for three sentences instead of two or three (all five languages, prompt version
+  `open-en-2`, so cells of the earlier wording never mix with new ones).
 - **0.4.0** — open rung: free text in the run language (prompt translated and checked like the others), raw
   text kept, blind batched extractor with a repair pass for dropped items, re-extraction on demand, batch check
   per language with a disagreement list (gate 3), open as the first rung of the ladder, results view with the
