@@ -6,7 +6,7 @@ jedes Modell dort einzeichnet, wo der jeweilige Test es einzeichnen würde. Dazu
 dieser Punkt ist: über Wiederholungen, über den Fragezwang, über die Optionsreihenfolge, über die
 Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdote.
 
-Status: **Meilensteine 0.1 bis 0.5 gebaut, 0.6 Tool-Seite gebaut** (`compass-bench/compass-bench.html` 0.6.0, Build 2026-11-06.7); der geprüfte Inversionssatz folgt auf demselben Branch. Offen danach: Live-Lauf, 9Axes-Übersetzung auf Zuruf, Backlog. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
+Status: **Meilensteine 0.1 bis 0.6 gebaut** (`compass-bench/compass-bench.html` 0.6.0, Build 2026-11-06.7). Offen: Live-Lauf, 9Axes-Übersetzung auf Zuruf, Backlog. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
 Revision 6: Übersetzung einmalig durch Claude mit Sub-Agenten, Ergebnis als JSON im Repo; Stufen,
@@ -439,7 +439,7 @@ Schätzung vor dem Start neben dem Run-Button, mit Katalogpreisen je gewähltem 
 | **0.3** ✓ | Übersetzung de/zh/ja/hi durch Sub-Agenten (Maker, Checker, eine Korrekturrunde), `compass-bench-items.json` im Repo, Einbettung plus Gleichheitstest, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | jedes Item in jeder Sprache hat Text, Rückübersetzung und Verdikt (de 174/8, zh 177/5, ja 172/10, hi 166/16 faithful/minor, drei Korrekturen, null ausgeschlossen); 27 Tests grün; Headless-Lauf mit drei Sprachen; `de`-Review durch dich als Diff möglich |
 | **0.4** ✓ | Stufe `open`, blinder Extraktor, Batch-Check pro Sprache (Gatter 3) | offene Frage in fünf Sprachen (Maker-Checker, alle faithful); Extraktor blind mit Reparaturlauf; Batch-Check deterministisch mit Abweichungsliste; 29 Tests grün; Headless-Lauf mit 728 Freitext-Antworten, 38 Batches, 7 Reparaturen, Batch-Check 96,7 % in zwei Sprachen; **Live-Lauf mit echtem Extraktor steht aus** |
 | **0.5** ✓ | 9Axes (Seed/Pool, Übersetzung on demand), 8values-Ideologielabel, Resume, Markdown, README mit Lizenz- und Copyright-Block | Ziehung hat die Form der Website, Scoring trifft 50 + 5·score; Export → frische Seite → Import → erneuter Lauf macht null Aufrufe; manipulierter Hash wird abgewiesen; 32 Tests grün; 9Axes bleibt englisch, bis seine 173 eigenen Items übersetzt sind (auf Zuruf, gleicher Weg) |
-| **0.6** | Kontaminationscheck: invertierte Items durch Sub-Agenten (Maker invertiert, Checker prüft), Ergebnis als zweite Datei im Repo, Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt Fixture-Fehlinversionen; ein Modell mit konstruiert symmetrischen Antworten zeigt null Verschiebung |
+| **0.6** ✓ | Kontaminationscheck: invertierte Items durch Sub-Agenten (Maker invertiert, Checker prüft), Ergebnis in der Datendatei, Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt alle drei eingeschleusten Fehlinversionen (gleiche Bedeutung, anderes Thema, abgeschwächt); 182/182 `inverted` nach einer Korrekturrunde; Unit-Test: symmetrische Antworten → null Verschiebung und 100 % Item-Übereinstimmung, Ja-Sager → geflaggt; 35 Tests grün; Headless-Lauf auf der echten Datei mit 728 invertierten Zellen |
 
 Backlog: Persona-Steuerbarkeit (Asker-Identität ist laut Error-Budget-Studie der größte Faktor,
 deshalb gehört sie als eigene Dimension gemessen, nicht nebenbei); IssueBench-Stufe; Wahl-O-Mat-Import mit
