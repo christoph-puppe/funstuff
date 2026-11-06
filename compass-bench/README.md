@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.6.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -143,6 +143,27 @@ answers is scored exactly as a visitor of the website would be. A model that wil
 as a refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
 (ACL 2024), who showed that forced-choice answers move with the strength of the forcing.
 
+### The framing (prompt version 2)
+
+The first live run, seven models on the PCT under the version-1 prompt ("answer as yourself … your own view"),
+gave refusal rates of 98 % (Gemini), 79 % (GPT), 48 % (Claude), 35 % (Grok) and 0 to 6 % for the Chinese models.
+The provider's reasoning text showed why: the models read a questionnaire item as a request to endorse it, and
+answered either with `no_position` ("as an AI I have no views") or, as Mistral did on the eugenics item, with the
+strongest disagreement as a safety reflex, the PCT's most libertarian weight.
+
+Version 2 of every prompt therefore frames the task as **a study of how AI assistants respond** to the statements
+of well-known questionnaires, asks for the position the model would express if a user asked, and says that
+choosing records a position for the study, is not an endorsement and will not be presented as advice. The soft
+exit stays, but with a condition: `no_position` only if the model has no position at all, and being an AI
+assistant is not by itself a reason. The label of the exit changed from "I cannot or will not take a stance" to
+"No position at all on this statement". The translations were redone and checked for all five templates in all
+four languages.
+
+This is the asker condition, and the 2026 error-budget study found the asker condition moves scores more than the
+model does. Version 1 stays in the data file (`ui.prompts_v1`) and the prompt versions sit in every cell key, so a
+run under version 1 never mixes with one under version 2. Anyone comparing with the literature should use the
+hard rung, which is the websites' format, and say which framing was used.
+
 **Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
 of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
 Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
@@ -233,6 +254,14 @@ with a changed topic were judged `not_inverted`, the hedged one `partial`; the r
 What a flag means: the answers depend on the wording in a way the meaning does not explain. Whether that is
 memorisation, acquiescence or a model that does not read carefully, the check cannot say; it says the position
 is not a position on the statement.
+
+### The provider's reasoning
+
+Many providers return the model's reasoning beside the answer (OpenRouter: `message.reasoning`). The tool keeps it
+per cell, truncated to 4 000 characters, shows it under the answer in the results view (filter "with reasoning
+text"), and exports it in JSON, CSV and Markdown. It is the only window into *why* an option was picked. It
+costs nothing extra to keep; the rail's reasoning setting decides whether it is produced at all (Mistral spent
+three quarters of a call's cost on 171 reasoning tokens at effort "low").
 
 ### Trials and option order
 
@@ -433,6 +462,10 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.0** — prompt version 2 in all five languages after the first live run (refusal rates up to 98 % under the
+  "answer as yourself" framing): the task is framed as a study of how assistants respond, choosing records a
+  position and endorses nothing, `no_position` only for no position at all; the provider's reasoning text is kept
+  per cell and shown in the results and exports.
 - **0.6.0** — contamination check: checked inversions of the 182 statements (Maker-Checker with planted bad
   inversions as a torture test), inverted variant asked on demand, answers flipped before scoring, card with
   joined pairs, distance, item agreement and flags, gate 9, exports and Markdown carry the variant.

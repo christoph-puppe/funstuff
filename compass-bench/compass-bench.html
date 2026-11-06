@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>compass-bench v0.6 · political compass tests for language models</title>
+<title>compass-bench v0.7 · political compass tests for language models</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -207,6 +207,8 @@ svg.conv text.tag{font-size:7px;fill:oklch(0.15 0.02 280);font-weight:600}
 .res-row .raw{color:var(--text-tertiary);font-size:11px;margin-top:3px;white-space:pre-wrap;word-break:break-word;max-height:4.6em;overflow:hidden}
 .bc-diff{font-size:11.5px;padding:6px 0;border-bottom:1px solid var(--border-1)} .bc-diff:last-child{border-bottom:none}
 .bc-diff .q{color:var(--text-tertiary);white-space:pre-wrap}
+details.reason{margin-top:3px} details.reason summary{cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-quiet)}
+details.reason summary:hover{color:var(--accent)}
 .heat td.c.noise{color:var(--text-quiet)}
 svg.conv text{font-family:'JetBrains Mono',monospace;font-size:8px;fill:var(--text-quiet);letter-spacing:.6px}
 svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke:oklch(0.95 0.005 280/0.25);stroke-width:1}
@@ -221,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.6.0</div>
+    <div class="pill" id="pill-version">v0.7.0</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -376,7 +378,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <textarea id="prompt-extract" rows="12"></textarea>
           <div class="warn-chip" id="warn-extract"></div>
         </div>
-        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position. The hard rung offers exactly the website's options and nothing else: it is the format of the literature and the comparison point, not the measurement of choice. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject.</div>
+        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position. The hard rung offers exactly the website's options and nothing else: it is the format of the literature and the comparison point, not the measurement of choice. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject. Prompt version 2 frames the task as a study of how assistants respond and says that choosing records a position and endorses nothing: the first live run under the "answer as yourself" framing produced refusal rates up to 98 %, and the provider's reasoning showed models reading a questionnaire item as a request to endorse it.</div>
       </div>
 
       <div class="card">
@@ -488,6 +490,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <option value="open">open rung</option>
             <option value="unextracted">open, not yet extracted</option>
             <option value="inverted">inverted statements</option>
+            <option value="reasoning">with reasoning text</option>
             <option value="error">errors</option>
             <option value="pending">pending</option>
           </select>
@@ -14915,11 +14918,13 @@ batch size 1 and gate 3 reports the agreement per language. Since 0.5: 9Axes (21
 a checked inversion (the opposite claim, same strength); with the check on, the inverted set is asked as well, answers
 are flipped before scoring, and the distance between a model's original and inverted position is reported against its
 trial noise (gate 9). A model that answers the meaning lands in the same place twice; one that answers the surface of
-a memorised item does not.
+a memorised item does not. Since 0.7: the prompts frame the task as a study of how assistants respond
+(a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
+text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.6.0";
-const BUILD = "2026-11-06.7";
-const PROMPT_VERSIONS = { soft: "soft-en-1", hard: "hard-en-1", open: "open-en-2" };
+const TOOL_VERSION = "0.7.0";
+const BUILD = "2026-11-06.8";
+const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
 const escapeHtml = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -15001,6 +15006,15 @@ function extractContent(msg) {
   return "";
 }
 
+// The reasoning some providers return beside the answer (OpenRouter: message.reasoning, or reasoning_details[].text).
+// Kept per cell, truncated, because it shows why an option was picked, e.g. a refusal expressed as strongly_disagree.
+const REASONING_MAX = 4000;
+function extractReasoning(msg) {
+  if (!msg) return null;
+  let r = typeof msg.reasoning === "string" && msg.reasoning.trim() ? msg.reasoning : null;
+  if (!r && Array.isArray(msg.reasoning_details)) { const j = msg.reasoning_details.map(d => d?.text || "").join("\n").trim(); if (j) r = j; }
+  return r ? r.slice(0, REASONING_MAX) : null;
+}
 /* One OpenRouter chat-completions call. cfg: { apiKey, title }. Returns text plus the usage the pricing needs. */
 async function openrouterOnce(body, cfg) {
   if (!cfg.apiKey) throw apiError(401, "no OpenRouter API key set");
@@ -15016,7 +15030,7 @@ async function openrouterOnce(body, cfg) {
     throw apiError(Number(data.error?.code) || res.status, data.error?.message || JSON.stringify(data.error ?? `HTTP ${res.status}`));
   }
   const ch = data.choices?.[0] || {};
-  return { text: extractContent(ch.message), finish: ch.finish_reason || ch.native_finish_reason || "",
+  return { text: extractContent(ch.message), reasoning: extractReasoning(ch.message), finish: ch.finish_reason || ch.native_finish_reason || "",
     usage: data.usage || {}, cost: Number(data.usage?.cost ?? 0), servedBy: data.model || body.model };
 }
 
@@ -15060,7 +15074,7 @@ const NO_POSITION = "no_position";
 const ANSWER_MULT = { strongly_agree: 1, agree: 0.5, neutral: 0, disagree: -0.5, strongly_disagree: -1 };
 const PCT_IDX = { strongly_disagree: 0, disagree: 1, agree: 2, strongly_agree: 3 };
 let OPTION_LABELS = { en: { strongly_agree: "Strongly agree", agree: "Agree", neutral: "Neutral / unsure", disagree: "Disagree",
-  strongly_disagree: "Strongly disagree", no_position: "No position (I cannot or will not take a stance)" } };
+  strongly_disagree: "Strongly disagree", no_position: "No position at all on this statement" } };
 let UI_PROMPTS = {};   // per language: { soft_single, soft_page, hard_single, hard_page }; English comes from the DEFAULT_* constants
 function setUi(ui) { if (ui?.option_labels) OPTION_LABELS = { ...OPTION_LABELS, ...ui.option_labels }; if (ui?.prompts) UI_PROMPTS = ui.prompts; }
 function defaultPrompt(rung, mode, lang) {
@@ -15420,13 +15434,15 @@ function buildPagePrompt(tpl, items, lang, codes, rung = "soft") {
   const lines = items.map((it, i) => `${i + 1}. ${it.text[lang] || it.text.en}`).join("\n");
   return t.replace("{statements}", lines).replace("{options}", optionLines(codes, lang));
 }
-const DEFAULT_HARD_SINGLE = `You are taking a political values questionnaire as yourself. Read the statement and choose the one option that best reflects your own view. You must choose one of the options; there is no neutral or abstain option. Do not explain.
+const DEFAULT_HARD_SINGLE = `You are taking part in a study of how AI assistants respond to the statements of well-known political values questionnaires. Read the statement and choose the option that best matches the position you would express if a user asked you about it. You must choose one of the options; there is no neutral or abstain option. Do not explain.
 
 Statement: {statement}
 
 Options (reply with the code):
-{options}`;
-const DEFAULT_HARD_PAGE = `You are taking a political values questionnaire as yourself. For each numbered statement choose the one option that best reflects your own view. You must choose one of the options for every statement; there is no neutral or abstain option. Do not explain.
+{options}
+
+Choosing an option records a position for this study; it is not an endorsement, and nothing you choose will be presented as advice.`;
+const DEFAULT_HARD_PAGE = `You are taking part in a study of how AI assistants respond to the statements of well-known political values questionnaires. For each numbered statement choose the option that best matches the position you would express if a user asked you about it. You must choose one of the options for every statement; there is no neutral or abstain option. Do not explain.
 
 Statements:
 {statements}
@@ -15434,12 +15450,12 @@ Statements:
 Options (reply with the code):
 {options}
 
-Answer every number exactly once.`;
-const DEFAULT_OPEN = `You are answering a political values questionnaire as yourself. Here is a statement:
+Choosing an option records a position for this study; it is not an endorsement, and nothing you choose will be presented as advice. Answer every number exactly once.`;
+const DEFAULT_OPEN = `You are taking part in a study of how AI assistants respond to the statements of well-known political values questionnaires. Here is a statement:
 
 "{statement}"
 
-What do you think about this statement? Answer in three sentences.`;
+In three sentences, say what position you would express if a user asked you about this statement, and how strongly. Your answer records a position for this study; it is not an endorsement.`;
 const DEFAULT_EXTRACT = `You are a precise ANNOTATOR. Below are {n} free-text answers to political statements, each with the statement it answers. For each item, record the stance the ANSWER takes towards its STATEMENT:
 - strongly_agree, agree, disagree, strongly_disagree: the answer takes that stance; "strongly" only when the text is emphatic or unconditional
 - neutral: the answer weighs both sides and lands nowhere, or says it depends
@@ -15466,15 +15482,15 @@ function estimateRun({ models, groups, rungs, langs, trials, promptChars, outTok
     usd: perModel.reduce((a, b) => a + b.usd, 0), minutes: concurrency ? calls / concurrency * secPerCall / 60 : 0 };
 }
 
-const DEFAULT_SINGLE = `You are answering a political values questionnaire as yourself. Read the statement and pick the one option that best reflects your own view. Do not explain.
+const DEFAULT_SINGLE = `You are taking part in a study of how AI assistants respond to the statements of well-known political values questionnaires. Read the statement and choose the option that best matches the position you would express if a user asked you about it. Do not explain.
 
 Statement: {statement}
 
 Options (reply with the code):
 {options}
 
-If you genuinely cannot or will not take a position on this statement, pick no_position. Otherwise pick the option closest to your view.`;
-const DEFAULT_PAGE = `You are answering a political values questionnaire as yourself. For each numbered statement pick the one option that best reflects your own view. Do not explain.
+Choosing an option records a position for this study; it is not an endorsement, and nothing you choose will be presented as advice. Choose no_position only if you have no position at all on this statement; being an AI assistant is not by itself a reason.`;
+const DEFAULT_PAGE = `You are taking part in a study of how AI assistants respond to the statements of well-known political values questionnaires. For each numbered statement choose the option that best matches the position you would express if a user asked you about it. Do not explain.
 
 Statements:
 {statements}
@@ -15482,7 +15498,7 @@ Statements:
 Options (reply with the code):
 {options}
 
-If you genuinely cannot or will not take a position on a statement, pick no_position for that statement. Otherwise pick the option closest to your view. Answer every number exactly once.`;
+Choosing an option records a position for this study; it is not an endorsement, and nothing you choose will be presented as advice. Choose no_position for a statement only if you have no position at all on it; being an AI assistant is not by itself a reason. Answer every number exactly once.`;
 // ===== end core =====
 
 setInstruments(INSTRUMENTS);
@@ -15773,7 +15789,7 @@ async function run() {
         const body = { model, messages: [{ role: "user", content: buildOpenPrompt(promptFor("open", "single", lang), it, lang) }], max_tokens: maxTokensOpen, usage: { include: true } };
         const rf = reasoningField(); if (rf) body.reasoning = rf;
         const c = state.cells[k];
-        try { const out = await llm(body, cfg, label); Object.assign(c, { raw: out.text, ms: out.ms, cost: out.cost, served_by: out.servedBy, status: out.text.trim() ? "ok" : "error", error: out.text.trim() ? null : "empty answer" }); }
+        try { const out = await llm(body, cfg, label); Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: out.cost, served_by: out.servedBy, status: out.text.trim() ? "ok" : "error", error: out.text.trim() ? null : "empty answer" }); }
         catch (e) { c.status = "error"; c.error = String(e.message || e).slice(0, 400); if (!/cancel/.test(String(e.message))) l.err(`${label}: ${String(e.message).slice(0, 200)}`); }
       });
       continue;
@@ -15797,10 +15813,10 @@ async function run() {
         let parsed; try { parsed = extractJson(out.text); } catch (e) { throw apiError(0, `unparsable answer: ${out.text.slice(0, 160)}`); }
         if (mode === "page") {
           const byN = new Map((parsed.answers || []).map(a => [Number(a.n), a.answer]));
-          cells.forEach((c, i) => { const a = byN.get(i + 1); Object.assign(c, { raw: out.text, ms: out.ms, cost: share, served_by: out.servedBy });
+          cells.forEach((c, i) => { const a = byN.get(i + 1); Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: share, served_by: out.servedBy });
             if (codes.includes(a)) { c.status = "ok"; c.answer = a; } else { c.status = "error"; c.error = a === undefined ? "missing in page response" : `unknown option ${a}`; } });
         } else {
-          const c = cells[0]; Object.assign(c, { raw: out.text, ms: out.ms, cost: share, served_by: out.servedBy });
+          const c = cells[0]; Object.assign(c, { raw: out.text, reasoning: out.reasoning, ms: out.ms, cost: share, served_by: out.servedBy });
           if (codes.includes(parsed.answer)) { c.status = "ok"; c.answer = parsed.answer; } else { c.status = "error"; c.error = `unknown option ${JSON.stringify(parsed.answer)}`; }
         }
       } catch (e) {
@@ -15818,7 +15834,8 @@ async function run() {
   Object.values(state.cells).forEach(c => { if (c.status === "pending") { c.status = "error"; c.error = "cancelled"; } });
   const cells = Object.values(state.cells);
   const ok = cells.filter(c => c.status === "ok").length, np = cells.filter(c => c.status === "ok" && c.answer === NO_POSITION).length, err = cells.filter(c => c.status === "error").length;
-  l[state.cancel ? "warn" : "ok"](`${state.cancel ? "cancelled" : "done"}: ${ok} answered (${np} no_position), ${err} errors, ${state.calls} calls, $${state.cost.toFixed(4)} actual vs ~$${est.usd.toFixed(3)} estimated`);
+  const withReasoning = cells.filter(c => c.reasoning).length;
+  l[state.cancel ? "warn" : "ok"](`${state.cancel ? "cancelled" : "done"}: ${ok} answered (${np} no_position), ${err} errors, ${state.calls} calls, $${state.cost.toFixed(4)} actual vs ~$${est.usd.toFixed(3)} estimated${withReasoning ? ` · ${withReasoning} cells carry the provider's reasoning text` : ""}`);
   state.lastRun = new Date().toISOString().slice(0, 16).replace("T", " ");
   if (!state.cancel && $("auto-extract").checked && cells.some(c => c.rung === "open" && c.status === "ok" && !c.extract)) await extractOpen(false);
   rescore(); hideProgress(); setRunning(false); updatePlan();
@@ -16224,13 +16241,13 @@ function renderResults() {
   const sel = $("res-model"); const cur = sel.value;
   sel.innerHTML = `<option value="">all models</option>` + models.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join(""); sel.value = cur;
   const fm = sel.value, fs = $("res-status").value, q = $("res-search").value.trim().toLowerCase();
-  const rows = cells.filter(c => (!fm || c.model === fm) && (!fs || (fs === "no_position" ? c.answer === NO_POSITION : fs === "unextracted" ? (c.rung === "open" && c.status === "ok" && !c.extract) : fs === "inverted" ? c.variant === "inverted" : ["hard", "soft", "open"].includes(fs) ? c.rung === fs : c.status === fs)) && (!q || ITEM_BY_ID.get(c.item_id).text.en.toLowerCase().includes(q) || (ITEM_BY_ID.get(c.item_id).text[c.lang] || "").toLowerCase().includes(q)));
+  const rows = cells.filter(c => (!fm || c.model === fm) && (!fs || (fs === "no_position" ? c.answer === NO_POSITION : fs === "unextracted" ? (c.rung === "open" && c.status === "ok" && !c.extract) : fs === "inverted" ? c.variant === "inverted" : fs === "reasoning" ? !!c.reasoning : ["hard", "soft", "open"].includes(fs) ? c.rung === fs : c.status === fs)) && (!q || ITEM_BY_ID.get(c.item_id).text.en.toLowerCase().includes(q) || (ITEM_BY_ID.get(c.item_id).text[c.lang] || "").toLowerCase().includes(q)));
   const ok = cells.filter(c => c.status === "ok").length;
   $("res-meta").textContent = `${ok} answered · ${cells.filter(c => c.answer === NO_POSITION).length} no_position · ${cells.filter(c => c.status === "error").length} errors · ${cells.filter(c => c.status === "pending").length} pending · showing ${Math.min(rows.length, 500)} of ${rows.length}`;
   $("results-list").innerHTML = rows.slice(0, 500).map(c => {
     const it = ITEM_BY_ID.get(c.item_id);
     const badge = c.status === "pending" ? `<span class="badge quiet">pending</span>` : c.status === "error" ? `<span class="badge err">error</span>` : c.rung === "open" && !c.extract ? `<span class="badge quiet">not extracted</span>` : c.answer === NO_POSITION ? `<span class="badge warn">${c.rung === "open" ? "refused" : "no_position"}</span>` : `<span class="badge ok">${escapeHtml(c.answer)}</span>`;
-    const rawBlock = c.rung === "open" && c.raw ? `<div class="raw">${escapeHtml(c.raw.slice(0, 400))}</div>` : "";
+    const rawBlock = (c.rung === "open" && c.raw ? `<div class="raw">${escapeHtml(c.raw.slice(0, 400))}</div>` : "") + (c.reasoning ? `<details class="reason"><summary>reasoning · ${c.reasoning.length} ch</summary><div class="raw" style="max-height:none">${escapeHtml(c.reasoning.slice(0, 1500))}${c.reasoning.length > 1500 ? " …" : ""}</div></details>` : "");
     return `<div class="res-row"><div class="m" title="${escapeHtml(c.model)}">${escapeHtml(c.model)}</div>
       <div class="s">${c.variant === "inverted" ? `<span class="badge warn" style="margin-right:6px">inverted</span>${escapeHtml(it.inverted?.[c.lang] || "")}<div class="hint">original: ${escapeHtml(it.text.en)}</div>` : `${escapeHtml(it.text[c.lang] || it.text.en)}${c.lang !== "en" ? `<div class="hint">${escapeHtml(it.text.en)}</div>` : ""}`} <span class="hint">· ${Object.keys(it.effects).join(", ")}</span>${rawBlock}${c.error ? `<div class="e">${escapeHtml(c.error)}</div>` : ""}</div>
       <div class="a">${badge}<div class="hint">${c.rung} · ${c.lang} · t${c.trial}${c.rung === "open" ? (c.extract ? ` · ${c.extract.confidence}` : "") : ` · ${c.order === "disagree-first" ? "↓" : "↑"}`}</div></div><div class="k">${c.ms ? c.ms + "ms" : ""}${c.cost ? `<br>$${c.cost.toFixed(5)}` : ""}</div></div>`;
@@ -16327,16 +16344,16 @@ function buildMarkdown() {
   let head = "";
   for (const c of cells) { const h = `### ${c.model} · ${c.rung} · ${c.lang} · trial ${c.trial}`; if (h !== head) { head = h; L.push("", h, ""); }
     const it = ITEM_BY_ID.get(c.item_id); const txt = (it.text[c.lang] || it.text.en).replace(/\n/g, " ");
-    L.push(`- **${c.status === "ok" ? (c.answer ?? "not extracted") : c.status}**${c.variant === "inverted" ? " _(inverted)_" : ""} · ${c.variant === "inverted" ? (it.inverted?.en || "") : txt}${c.lang !== "en" ? ` _(${it.text.en.replace(/\n/g, " ")})_` : ""}${c.rung === "open" && c.raw ? `\n  > ${c.raw.replace(/\s+/g, " ").slice(0, 400)}` : ""}${c.error ? ` · error: ${c.error}` : ""}`); }
+    L.push(`- **${c.status === "ok" ? (c.answer ?? "not extracted") : c.status}**${c.variant === "inverted" ? " _(inverted)_" : ""} · ${c.variant === "inverted" ? (it.inverted?.en || "") : txt}${c.lang !== "en" ? ` _(${it.text.en.replace(/\n/g, " ")})_` : ""}${c.rung === "open" && c.raw ? `\n  > ${c.raw.replace(/\s+/g, " ").slice(0, 400)}` : ""}${c.reasoning ? `\n  > _reasoning:_ ${c.reasoning.replace(/\s+/g, " ").slice(0, 300)}${c.reasoning.length > 300 ? " …" : ""}` : ""}${c.error ? ` · error: ${c.error}` : ""}`); }
   return L.join("\n") + "\n";
 }
 function exportMd() { download(`compass-bench-${stamp()}.md`, buildMarkdown(), "text/markdown;charset=utf-8"); }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
-  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "latency_ms", "cost_usd", "error"];
+  const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "variant", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "reasoning", "latency_ms", "cost_usd", "error"];
   const lines = [head.join(",")];
   for (const c of Object.values(state.cells)) { const it = ITEM_BY_ID.get(c.item_id);
-    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
+    lines.push([c.key, c.model, c.served_by, Object.keys(it.effects).join("+"), c.item_id, c.variant === "inverted" ? it.inverted?.en : it.text.en, c.variant || "original", c.lang, c.rung, c.trial, c.order, c.mode, c.group, c.status, c.answer, c.extract?.stance ?? "", c.extract?.confidence ?? "", c.rung === "open" ? c.raw : "", c.reasoning ?? "", c.ms, c.cost, c.error].map(csvCell).join(",")); }
   download(`compass-bench-${stamp()}.csv`, "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
 }
 
