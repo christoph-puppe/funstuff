@@ -9,8 +9,9 @@ Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdo
 Status: **Plan, noch kein Code.** Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
-Revision 4: PCT vollständig eingebettet (Texte, Scoring, Übersetzungen), Error-Budget-Statistik nach der
-Studie von 2026, Gatter neu nummeriert.
+Revision 5: Übersetzung als einmaliger Job mit JSON im Repo statt Werkbank im Tool; Modellauswahl
+direkt aus der OpenRouter-Liste ohne Vorauswahl; Kosten pro Modell aufgeschlüsselt, `items pro Aufruf`
+als Hebel.
 
 ---
 
@@ -59,7 +60,7 @@ Schreibassistenz-Aufgaben genauso zeigt (IssueBench, Backlog).
   Varianzzerlegung liefern, Kontaminationscheck, Item-Ergebnisse. → Das Tool rechnet die
   **Varianzzerlegung selbst** (Abschnitt 7) und schreibt den Mindeststandard in jeden Export
   (Abschnitt 13). Die Asker-Identität bleibt neutral und steht im Export; Item-Inversion wandert aus
-  dem Backlog in Meilenstein 0.6, weil die Werkbank dafür schon da ist.
+  dem Backlog in Meilenstein 0.6, weil das Übersetzungsskript dafür schon da ist.
 - **Sprachabhängigkeit:** Vorarbeiten messen fast ausschließlich englisch. Mehrsprachige Studien zu
   Werten in LLMs zeigen, dass Antworten mit der Sprache wandern, ohne dass klar ist, wie viel davon
   Übersetzung und wie viel Modell ist. → Übersetzungen als geprüftes, gehashtes Artefakt
@@ -139,24 +140,37 @@ würde die Sprachfrage verwässern. Die Enum-Werte im JSON-Schema bleiben englis
 (`strongly_agree`, `no_position`), damit das Scoring sprachunabhängig ist; der Prompt bildet Label
 auf Code ab.
 
-**Übersetzungs-Werkbank**, eine Karte im Tool, Maker-Checker nach `cp-coding-core`:
+**Übersetzung einmalig, Ergebnis im Repo.** Kein Übersetzen im Tool. Ein kleines Node-Skript
+`compass-bench-translate.mjs` übersetzt die 182 Items plus Antwortlabels und Instruktionen einmal,
+nach Maker-Checker aus `cp-coding-core`:
 
-1. **Maker** übersetzt jedes Item in die Zielsprache (starkes Modell, Prompt editierbar).
+1. **Maker** übersetzt jedes Item in die Zielsprache (starkes Modell, Prompt im Skript als benannte
+   Konstante).
 2. **Checker** (anderer Hersteller) bekommt Original und Übersetzung, übersetzt zurück und urteilt
    fünfstufig: `faithful`, `minor_shift`, `major_shift`, `wrong`, `uncertain`. Der Checker
-   repariert nicht; Maker-Ausgabe und Verdikt stehen nebeneinander im Export.
-3. **Einfrieren**: der geprüfte Satz wird mit Hash eingefroren und als Default in die Datei
-   übernommen. Läufe laufen nur auf eingefrorenen Sätzen.
+   repariert nicht; Übersetzung, Rückübersetzung und Verdikt stehen nebeneinander.
+3. Das Skript schreibt **`compass-bench-items.json`**: alle Items mit `text.{en,de,zh,ja,hi}`,
+   Instrument-Zugehörigkeit und Gewichten, pro Übersetzung Maker-Modell, Checker-Modell, Verdikt,
+   Rückübersetzung, Datum; dazu ein Hash pro Sprachfassung. Diese Datei liegt im Repo, ist
+   diffbar und der Ort für Review-Korrekturen (eine korrigierte Zeile ändert den Hash der Sprache,
+   das Skript protokolliert es).
 
-Die ausgelieferte Datei enthält für 8values, 6axes, SapplyValues und PCT (182 einzigartige Items)
-alle vier Übersetzungen eingefroren. 9Axes (216) wird erst übersetzt, wenn es aktiviert wird, und der
-Nutzer trägt die Kosten. Ein Nutzer kann jeden Satz neu übersetzen; das ergibt einen neuen Hash,
-und der Lauf ist mit dem Default nicht mehr vergleichbar, was die Topbar sagt.
+Das Skript läuft nach den Regeln für lange Läufe: Key aus `OPENROUTER_API_KEY`, Ergebnisse pro Item
+sofort in `.work/translate/` geschrieben, Wiederaufnahme überspringt fertige Items, Kostenschätzung
+vor dem Start, Ist-Kosten danach. Etwa 1 500 Aufrufe, rund ein Euro.
+
+**Die HTML-Datei bettet dieselbe JSON ein** (ein `<script type="application/json">`-Block zwischen
+Markern), damit sie weiter ohne Server von `file://` läuft. Ein Test im Harness prüft, dass der
+eingebettete Block und `compass-bench-items.json` byteidentisch sind; das Skript aktualisiert beide.
+Items mit Verdikt `wrong` oder `uncertain` bleiben in der Datei, sind aber für die betreffende
+Sprache als ausgeschlossen markiert (Gatter 6). 9Axes wird erst übersetzt, wenn es gebraucht wird,
+dann mit demselben Skript.
 
 **Was die Sprachverschiebung misst:** Modell und Übersetzung zusammen. Die Rückübersetzung und die
 Checker-Verdikte liegen im Export, damit sich der Übersetzungsanteil prüfen lässt. Items mit
 Verdikt `wrong` oder `uncertain` sind aus dem Scoring der betreffenden Sprache ausgeschlossen
-(Gatter 6). Mehr Ehrlichkeit gibt es ohne Muttersprachler nicht; für `de` liefert dein Review sie.
+(Gatter 6). Mehr Ehrlichkeit gibt es ohne Muttersprachler nicht; für `de` liefert dein Review sie, als Diff
+auf `compass-bench-items.json`.
 
 **Extraktor** für Stufe `open`: pro Sprache ein Batch-Check (Gatter 3). `whoami-bench` hat gezeigt,
 dass günstige Extraktoren bei nicht-englischem Text am schwächsten sind; der Check zeigt es, bevor
@@ -236,8 +250,9 @@ Dreingabe. Konfidenzintervall per Bootstrap über Items × Trials (1000 Ziehunge
 Kohorten wie in `whoami-bench`: Vendor über die Alias-Tabelle, Open-Weights über `hugging_face_id`,
 Jurisdiktion über die Lab-Liste. Die Tabellen werden übernommen.
 
-**Deterministisch/Modell-Split:** Das Modell liefert die Antworten, extrahiert bei `open` die
-Haltung und übersetzt in der Werkbank. Alles andere ist JS. Der Split steht im Log.
+**Deterministisch/Modell-Split:** Im Tool liefert das Modell die Antworten und extrahiert bei
+`open` die Haltung; die Übersetzung ist einmalig im Skript passiert. Alles andere ist JS. Der Split
+steht im Log.
 
 ---
 
@@ -261,19 +276,20 @@ Haltung und übersetzt in der Werkbank. Alles andere ist JS. Der Split steht im 
 
 ## 9. Modellauswahl für den Nutzer
 
-Drei Ebenen, von einfach nach frei:
+Der Nutzer wählt die Modelle, die getestet werden, **aus der Live-Liste von openrouter.ai**, eines
+oder mehrere. Keine Vorauswahl, keine Presets, kein hart kodierter Slug.
 
-1. **Kuratierte Vorauswahl**, beim Laden vorangekreuzt, damit ein Lauf ohne Katalogstudium startet:
-   das jeweils neueste Modell je Lab aus einer gepflegten Liste (OpenAI, Anthropic, Google, xAI,
-   Meta, Mistral, DeepSeek, Alibaba/Qwen, Moonshot, Zhipu). Die Liste nennt Vendor und Familie, der
-   konkrete Slug wird beim Laden gegen den **Live-Katalog** aufgelöst (neuestes `created`, muss
-   `structured_outputs` können). Ein Lab ohne Treffer wird geloggt und ausgelassen; kein Slug ist
-   hart kodiert.
-2. **Presets** wie in `whoami-bench`: open · China, open · West, closed frontier, flagship.
-3. **Freie Suche** im Live-Katalog mit Preis, Kontext, Open-Weights-Flag; Freitext-Slug.
+- Die Liste kommt bei jedem Laden von `GET /api/v1/models` (ohne Key), gefiltert auf Modelle, die
+  `structured_outputs` können, mit Vendor, Name, Preis pro 1M Tokens (ein/aus), Kontext und
+  Open-Weights-Flag; 24 h in `localStorage` gecacht, ein Knopf lädt neu.
+- Suchfeld über id und Name, Filter nach Vendor; Checkbox pro Modell; Zähler der Auswahl.
+- Ein Freitextfeld für einen Slug, der im Filter nicht auftaucht, mit Prüfung gegen die Liste.
+- Neben jeder Auswahl steht ihr Anteil an der Kostenschätzung (Abschnitt 14), die sich mit jeder
+  Checkbox aktualisiert.
+- Die Auswahl bleibt in `localStorage`, der Key nicht.
 
-Jedes Modell zeigt den Preis pro 1M Tokens und seinen Anteil an der Kostenschätzung. Die Auswahl
-wird in `localStorage` gehalten, der Key nicht.
+Die Kohorten-Logik aus `whoami-bench` (Vendor-Alias-Tabelle, Open-Weights über `hugging_face_id`,
+Jurisdiktion) wird nur für Farbe und Gruppierung in den Charts übernommen, nicht für die Auswahl.
 
 ---
 
@@ -282,29 +298,27 @@ wird in `localStorage` gehalten, der Key nicht.
 Layout-Shell wie die Geschwister: Glas-Topbar (Brand, `TOOL_VERSION`, Instrument- und
 Sprach-Hashes, Backend-Pill), linke Rail, Hauptbereich mit Karten, Log-Konsole unten, Splitter.
 
-1. **Cohort** — Abschnitt 9.
+1. **Models** — Abschnitt 9: Live-Liste, Suche, Checkboxen, Kostenanteil.
 2. **Instruments** — fünf Zeilen mit Checkbox, Itemzahl, Achsen, Lizenz, Hash, beim PCT der
    Scoring-Status (`validated` / `approximate`); 9Axes mit Seed/voller Pool; Zähler der
    deduplizierten Items.
-3. **Languages** — fünf Checkboxen, je Hash, Übersetzungsstatus (eingefroren / neu / fehlt für
-   aktivierte Instrumente), Link zur Werkbank.
-4. **Translation workbench** — Maker- und Checker-Prompt, Modellwahl für beide, Lauf, Verdikt-Tabelle
-   mit Rückübersetzung, Einfrieren. Zugeklappt, solange alle aktivierten Sätze eingefroren sind.
-5. **Prompts** — drei Stufen-Prompts × fünf Sprachen plus Extraktor-Prompt, je Textarea, Reset.
-6. **Run** — Kostenschätzung *vor* dem Lauf (Aufrufe, Tokens, Preis, Dauer), Start, `■ cancel`,
+3. **Languages** — fünf Checkboxen, je Hash der Sprachfassung, Zahl der ausgeschlossenen Items
+   (Gatter 6), Link auf `compass-bench-items.json`.
+4. **Prompts** — drei Stufen-Prompts × fünf Sprachen plus Extraktor-Prompt, je Textarea, Reset.
+5. **Run** — Kostenschätzung *vor* dem Lauf (Aufrufe, Tokens, Preis, Dauer), Start, `■ cancel`,
    Fortschritt, Ist-Kosten danach.
-7. **Validity gates** — Abschnitt 8.
-8. **Error budget** — Balken der Varianzanteile (Instrument, Modell, Sprache, Stufe, Reihenfolge,
+6. **Validity gates** — Abschnitt 8.
+7. **Error budget** — Balken der Varianzanteile (Instrument, Modell, Sprache, Stufe, Reihenfolge,
    Rauschen) mit Intervallen; daneben der Literaturwert als Referenzstrich.
-9. **Compasses** — pro Test die Darstellung der Website: 8values vier Balken plus Projektion;
+8. **Compasses** — pro Test die Darstellung der Website: 8values vier Balken plus Projektion;
    6axes sechs Balken plus Projektion Economic Aspiration × Akraetia; SapplyValues Kompass plus
    `prog`-Balken; PCT der klassische Kompass; 9Axes neun Balken. Ein Marker pro Modell, Fehlerbalken,
    Vendor-Farbe, hohl bei insufficient, Umschalter für Stufe und Sprache.
-10. **Language shift** — normierter Kompass mit fünf Markern pro Modell (einer je Sprache), verbunden
+9. **Language shift** — normierter Kompass mit fünf Markern pro Modell (einer je Sprache), verbunden
    ab `en`; daneben Heatmap Modell × Sprache mit dem Abstand zu `en`, grau wo Gatter 7 greift.
-11. **Convergence** — normierter Kompass Wirtschaft × Autorität, je Modell ein Marker je Test.
-12. **Ladder** — Position pro Stufe, eine Linie pro Modell, Kohortenmittel gestrichelt.
-13. **Results** — jede Antwort mit Modell, Test(s), Item, Sprache, Stufe, Trial, Reihenfolge, Rohwert.
+10. **Convergence** — normierter Kompass Wirtschaft × Autorität, je Modell ein Marker je Test.
+11. **Ladder** — Position pro Stufe, eine Linie pro Modell, Kohortenmittel gestrichelt.
+12. **Results** — jede Antwort mit Modell, Test(s), Item, Sprache, Stufe, Trial, Reihenfolge, Rohwert.
 
 SVG/CSS, keine Chart-Bibliothek, kein Emoji, kein Icon-Font. CJK- und Devanagari-Text in den
 Karten braucht einen Font-Fallback (`system-ui` nach Inter), nichts weiter.
@@ -320,6 +334,7 @@ Karten braucht einen Font-Fallback (`system-ui` nach Inter), nichts weiter.
 | Sprachen | en, de, zh, ja, hi | je Checkbox |
 | Stufen | soft, hard | `open` opt-in mit Mehrkosten; Entscheidung 4 |
 | Trials / Zelle | 2 | |
+| Items pro Aufruf | 1 | 1 = wie die Literatur, eine These pro Prompt. `page` = die Seiten der Website (PCT 5–18, sonst 10). Antwortformat ist laut Error-Budget-Studie ein größerer Faktor als das Modell; der Modus steht im Zellen-Schlüssel, Läufe mit verschiedenen Modi werden nicht gemischt |
 | Optionsreihenfolge randomisieren | an | deterministisch aus Hash |
 | 9Axes-Modus | Seed-Ziehung, 45 Items | oder voller Pool |
 | Concurrency | 4 | bei 429s senken |
@@ -327,7 +342,6 @@ Karten braucht einen Font-Fallback (`system-ui` nach Inter), nichts weiter.
 | Reasoning effort | low | fällt zurück, wenn der Provider es ablehnt |
 | Max Tokens (open) | 600 | |
 | Extraktor-Modell | günstigstes mit `structured_outputs` | pro Sprache Batch-Check |
-| Übersetzer / Checker | zwei Hersteller | nur Werkbank |
 | Antwortquoten-Schwelle | 60 % | Gatter 1 |
 | Instabilitäts-Schwelle | 0,25 | Gatter 2 |
 
@@ -337,21 +351,26 @@ Keine Temperatur, kein `top_p`, kein Websuche-Schalter.
 
 ## 12. Architektur
 
-- **Eine Datei** `compass-bench.html`, `TOOL_VERSION` im Code, `BUILD` sichtbar. Dazu
-  `README_compass-bench.md` im Stil der Geschwister mit den MIT-Lizenztexten der eingebetteten
-  Tests, den Hashes aller Instrument- und Sprachfassungen und dem PCT-Referenz-Hash.
+- **Vier Dateien im Repo:** `compass-bench.html` (das Tool, läuft allein), `compass-bench-items.json`
+  (Items, Gewichte, Übersetzungen mit Verdikten; im HTML eingebettet, Gleichheit per Test),
+  `compass-bench-translate.mjs` (einmaliger Übersetzungsjob, Abschnitt 4) und
+  `README_compass-bench.md` im Stil der Geschwister mit den MIT-Lizenztexten, dem Copyright-Hinweis
+  zum PCT und den Hashes aller Instrument- und Sprachfassungen. `TOOL_VERSION` im Code, `BUILD`
+  sichtbar.
 - **Backend OpenRouter**, wie die Geschwister. Gemini-direkt bleibt Backlog.
 - **Instrumente als Daten**: `INSTRUMENTS` mit `id, name, source, licence, version, scale, axes,
-  items[], score(answers)`; `ITEMS` dedupliziert über Instrumente, jedes Item mit `text.{en,de,zh,ja,hi}`
-  und Übersetzungs-Metadaten (Maker, Checker, Verdikt, Rückübersetzung, Hash). Neue Tests sind ein
-  Eintrag plus Golden-Test.
+  score(answers)`; die Items kommen aus dem eingebetteten JSON, dedupliziert über Instrumente, jedes
+  mit `text.{en,de,zh,ja,hi}` und Übersetzungs-Metadaten. Neue Tests sind ein Eintrag plus
+  Golden-Test plus ein Lauf des Übersetzungsskripts.
 - **Call-Layer DOM-frei** zwischen `// ===== core (DOM-free) =====` und `// ===== end core =====`:
   `openrouterOnce`, `llm`, `runPool`, `apiError`, `isTransient`, Scoring, Hashing, Dedup, Ziehung,
   Normierung. `node scripts/core_test.mjs compass-bench.html` muss laufen; dazu Golden-Tests je
   Instrument, Dedup-Test (64 geteilte Items), Reihenfolge-Hash reproduzierbar, Gatter feuern auf
-  konstruierte Verstöße, Checker flaggt einen Fixture-Satz bekannt schlechter Übersetzungen.
+  konstruierte Verstöße, eingebettetes JSON gleich der Datei im Repo. Das Übersetzungsskript hat
+  seinen eigenen Test: der Checker-Prompt muss einen Fixture-Satz bekannt schlechter Übersetzungen
+  flaggen (Negation gedreht, Zahl geändert, Halbsatz weggelassen), sonst ist er wertlos.
 - **Zellen-Schlüssel** = Hash(Item-Hash, Sprach-Hash, Modell, Stufe, Trial, Reihenfolge,
-  Prompt-Version). Export-JSON ist der Checkpoint; Import setzt fort, `ok` übersprungen,
+  Items-pro-Aufruf, Prompt-Version). Export-JSON ist der Checkpoint; Import setzt fort, `ok` übersprungen,
   `error`/`pending` neu, Split im Log. Ein zweiter Lauf mit gleichem Input tut nichts.
 - **Rohantwort vor Parsing speichern**, pro Zelle.
 - **Extraktor** (nur `open`): blind, Items `a1…aN`, gebatcht (Default 20), Item muss seine `item_id`
@@ -378,21 +397,42 @@ Varianzzerlegung, Status des Kontaminationschecks (bis Meilenstein 0.6: `not run
 
 ---
 
-## 14. Kosten
+## 14. Kosten: warum 29 000, und welche Hebel es gibt
 
-Aufrufe = Modelle × einzigartige Items × Stufen × Sprachen × Trials, plus Extraktion für `open`.
-Einzigartige Items für 8values + 6axes + SapplyValues + PCT: 70 + 6 + 46 + 60 = **182**.
+Die Zahl kommt aus der Multiplikation, nicht aus Verschwendung. **Pro Modell** bei einer These pro
+Aufruf:
 
-| Szenario | Rechnung | Aufrufe | Grobkosten |
-|---|---|---|---|
-| Erster Blick auf die Sprachfrage | 8 Modelle × 182 × `soft` × 5 Sprachen × 2 Trials | 14 560 | wenige Euro |
-| Default | 8 × 182 × 2 Stufen × 5 × 2 | 29 120 | niedrig zweistellig, Flagships dominieren |
-| Mit `open` | + 8 × 182 × 1 × 5 × 2 Antworten (länger) + ~730 Extraktor-Batches | 43 680 + 730 | zweistellig |
-| Übersetzung einmalig | 182 Items × 4 Sprachen × (Maker + Checker) | 1 456 | rund ein Euro mit guten Modellen |
+| Faktor | Default | Grund |
+|---|---|---|
+| Items | 182 | vier Tests, dedupliziert |
+| Stufen | 2 (`soft`, `hard`) | Zwangs-Sensitivität braucht zwei Punkte |
+| Sprachen | 5 | die Frage, die du stellst |
+| Trials | 2 | Einzelschuss ist Rauschen; die Error-Budget-Studie misst 35 % Trial-Varianz |
+| **Aufrufe pro Modell** | **182 × 2 × 5 × 2 = 3 640** | |
 
-Pro strukturiertem Aufruf etwa 250 Tokens Eingabe, 20 Ausgabe; ein Flagship zu 3/15 $ pro 1M kostet
-im Default-Lauf etwa 3 bis 4 $, ein günstiges Modell Cents. Schätzung vor dem Start neben dem
-Run-Button, Ist-Kosten aus `usage` danach. Faktor 2 Abweichung ist ein Befund.
+Acht Modelle waren die Annahme in Revision 4, daher 29 120. Mit deiner Vorgabe wählt der Nutzer die
+Modelle; **ein Modell kostet 3 640 Aufrufe**, drei Modelle 10 920. Pro Aufruf etwa 270 Tokens
+(250 ein, 20 aus): ein Flagship zu 3/15 $ pro 1M liegt bei 3 bis 4 $ pro Modell, ein günstiges bei
+Cents. Geld ist nicht das Problem, **Zeit** ist es: bei Concurrency 4 und 2 s pro Aufruf dauert ein
+Modell rund 30 Minuten.
+
+Die Hebel, alle in der Rail, alle in der Schätzung vor dem Start sichtbar:
+
+| Hebel | Wirkung pro Modell | Preis |
+|---|---|---|
+| Nur `en` statt fünf Sprachen | 3 640 → 728 | keine Sprachfrage |
+| Nur `soft` statt zwei Stufen | 3 640 → 1 820 | keine Zwangs-Sensitivität |
+| 1 Trial statt 2 | 3 640 → 1 820 | keine Instabilität, kein Intervall; nur als Vorschau sinnvoll |
+| `page`-Modus, Website-Seiten statt einzelner Thesen | 3 640 → rund 400 | anderes Antwortformat: Kontext zwischen Items, laut Studie ein größerer Faktor als das Modell. Läufe sind mit dem 1-Item-Modus nicht vergleichbar, der Schlüssel trennt sie |
+| `open` dazu | + 1 820 lange Antworten + Extraktor-Batches | die aussagekräftigste Stufe; teuer, weil Freitext |
+
+Empfehlung: Erster Lauf mit einem Modell, `soft`, fünf Sprachen, 2 Trials (1 820 Aufrufe, Minuten,
+Cents bis ein Euro). Das zeigt die Sprachfrage. Dann Stufen und Modelle dazunehmen.
+
+Die Übersetzung ist davon getrennt: einmalig rund 1 500 Aufrufe, rund ein Euro, Ergebnis im Repo.
+
+Schätzung vor dem Start neben dem Run-Button, Ist-Kosten aus `usage` danach. Faktor 2 Abweichung
+ist ein Befund.
 
 ---
 
@@ -400,12 +440,12 @@ Run-Button, Ist-Kosten aus `usage` danach. Faktor 2 Abweichung ist ein Befund.
 
 | Version | Inhalt | Prüfung, die scheitern kann |
 |---|---|---|
-| **0.1** | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, kuratierte Modellauswahl, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte; Dedup findet 182; `core_test.mjs` grün; Live-Lauf mit 2 Modellen |
+| **0.1** | 8values, 6axes, SapplyValues, PCT eingebettet und dedupliziert, `en`, Stufe `soft`, natives Scoring mit Golden-Tests (PCT gegen Website-Ergebnisse der Error-Budget-Studie), Website-Darstellungen, Modellauswahl aus der Live-Liste, `items pro Aufruf`, Kostenschätzung, JSON/CSV, Core-Fence | Golden-Tests treffen die Website-Werte; Dedup findet 182; `core_test.mjs` grün; Live-Lauf mit 2 Modellen |
 | **0.2** | Stufe `hard`, Leiter, Reihenfolge-Randomisierung, Ja-Sage-Quote, Konvergenz-Kompass, Error-Budget-Karte, Gatter 1, 2, 4, 5, 8 | konstruierte instabile Antworten lösen Gatter 2 aus; Varianzzerlegung auf einem synthetischen Datensatz mit bekannten Anteilen stimmt |
-| **0.3** | Übersetzungs-Werkbank (Maker-Checker), eingefrorene Sätze de/zh/ja/hi, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | Checker flaggt alle Fixture-Fehlübersetzungen; dein `de`-Review; Lauf in fünf Sprachen vergleichbar |
+| **0.3** | Übersetzungsskript (Maker-Checker, resumable), `compass-bench-items.json` mit de/zh/ja/hi im Repo, Einbettung plus Gleichheitstest, Sprachen-Karte, Language-shift-Kompass und Heatmap, Gatter 6, 7 | Checker flaggt alle Fixture-Fehlübersetzungen; Skript abgebrochen und wieder gestartet macht nichts doppelt; dein `de`-Review als Diff; Lauf in fünf Sprachen vergleichbar |
 | **0.4** | Stufe `open`, blinder Extraktor, Batch-Check pro Sprache (Gatter 3) | ≥ 95 % in jeder Sprache, sonst Extraktor wechseln |
 | **0.5** | 9Axes (Seed/Pool, Übersetzung on demand), 8values-Ideologielabel, Resume, Markdown, README mit Lizenz- und Copyright-Block | Lauf abbrechen, importieren, fortsetzen: keine `ok`-Zelle läuft erneut |
-| **0.6** | Kontaminationscheck: invertierte Items über die Werkbank (Maker invertiert, Checker prüft), Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt Fixture-Fehlinversionen; ein Modell mit konstruiert symmetrischen Antworten zeigt null Verschiebung |
+| **0.6** | Kontaminationscheck: invertierte Items über dasselbe Skript (Maker invertiert, Checker prüft), Ergebnis als zweite Datei im Repo, Lauf auf Original und Inversion, Verschiebung pro Modell, `reporting_standard.contamination` gefüllt | Checker flaggt Fixture-Fehlinversionen; ein Modell mit konstruiert symmetrischen Antworten zeigt null Verschiebung |
 
 Backlog: Persona-Steuerbarkeit (Asker-Identität ist laut Error-Budget-Studie der größte Faktor,
 deshalb gehört sie als eigene Dimension gemessen, nicht nebenbei); IssueBench-Stufe; Wahl-O-Mat-Import mit
@@ -415,8 +455,10 @@ Lizenzhinweis; weitere Sprachen (das Schema trägt beliebig viele); Gemini-direk
 
 ## 16. Entscheidungen
 
-**Entschieden (Rev. 4):** Die 62 PCT-Thesen werden eingebettet und übersetzt; das urheberrechtliche
-Risiko trägst du, das README sagt es.
+**Entschieden:** Die 62 PCT-Thesen werden eingebettet und übersetzt, das urheberrechtliche Risiko
+trägst du, das README sagt es (Rev. 4). Übersetzung einmalig per Skript, Ergebnis als JSON im Repo
+(Rev. 5). Modellauswahl durch den Nutzer aus der OpenRouter-Liste, eines oder mehrere, ohne
+Vorauswahl (Rev. 5).
 
 Offen, jeweils mit meiner Wahl:
 
@@ -429,7 +471,6 @@ Offen, jeweils mit meiner Wahl:
    Geschwister. *Meine Wahl: Speicher-only.*
 4. **`open` im Default:** aussagekräftigste und teuerste Stufe. *Meine Wahl: opt-in, Default
    `soft` + `hard`.*
-5. **Kuratierte Labs** (Abschnitt 9): die zehn genannten. Streichen oder ergänzen?
 
 Ein "go" reicht, dann baue ich 0.1 mit den markierten Wahlen.
 
