@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.2 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.3 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -25,7 +25,7 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 |---|---|---|
 | 1 | **Position per test** | axis values in the test's native scale (8values and 6axes 0–100, SapplyValues and PCT −10…+10), with a bootstrap interval over items and, with trials ≥ 2, the range across trials |
 | 2 | **Refusal rate** | share of `no_position` answers per test and axis; a model that refuses most of a test has a gap, not a position |
-| 3 | **Forcing sensitivity** | how far the point moves across the rungs: open (free text, no options), soft (test scale plus an exit), hard (the website's format, no exit) |
+| 3 | **Forcing sensitivity** | how far the point moves across the rungs: open (free text, no options), soft (the test's options plus an exit), hard (the test's options only, the default) |
 | 4 | **Stability** | SD of each axis across repeated trials on a [−1, +1] scale; the share of items whose repeated answers differed |
 | 5 | **Response style** | raw agreement before direction coding (acquiescence), and the shift in agreement when the answer scale is shown disagree-first instead of agree-first |
 | 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
@@ -54,9 +54,9 @@ framing on one day. It is not a worldview.
    **run**. Markers appear per test once the run completes; **rescore** recomputes locally after you change a
    gate threshold, with no API calls.
 
-Default run: 182 statements × 1 rung × 1 language × 1 trial = **182 calls per model**, about two minutes at
-concurrency 4, cents for a cheap model and around 20 cents for a flagship. The hard rung doubles that, every
-extra trial multiplies it; the estimate shows the product before you press run.
+Default run: 182 statements × 1 rung (hard) × 1 language × 1 trial = **182 calls per model**, about two minutes
+at concurrency 4, cents for a cheap model and around 20 cents for a flagship. Each extra rung and every extra
+trial multiplies it; the estimate shows the product before you press run.
 
 No web search or plugin is attached to any request. A position a model has to look up is not the model's.
 
@@ -136,12 +136,21 @@ are in the top bar, the Instruments card and every export. Runs with different h
 
 ---
 
-## The rungs: soft by default, hard as the comparison point
+## The rungs: hard by default, soft and open as opt-ins
 
-**Soft.** The statement is shown with the test's own answer options plus one exit, `no_position`. A model that
-answers is scored exactly as a visitor of the website would be. A model that will not take a stance is counted
-as a refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
-(ACL 2024), who showed that forced-choice answers move with the strength of the forcing.
+**Hard** (default). The statement is shown with exactly the answer options the test's own web page offers a
+human visitor, and nothing else: four grades without a middle on the Political Compass Test, five on 8values,
+6axes and 9Axes, five plus "don't know" on SapplyValues. No `no_position`. This is the format under which the
+human reference values and the twelve earlier LLM studies were produced, so it is the comparison point to the
+literature, and it is the rung that produces points: under the soft rung, the first live run showed some models
+taking the exit on nearly every statement. A refusal under the hard rung can only show as an error, an empty
+answer or, on the five-grade tests, as `neutral`; the response-style card reports the neutral share.
+
+**Soft** (opt-in). The same options plus one exit, `no_position`, which counts as a refusal, never as a position.
+Its remaining value is the coherence check Röttger et al. (ACL 2024) argue for: a model that chooses the same
+position with the exit on offer as without it holds that position; one that takes the exit under soft and lands
+somewhere definite under hard has a default completion under pressure, not a position. The open rung measures
+unforced behaviour better than soft does, since it also keeps the wording.
 
 ### The framing (prompt version 2)
 
@@ -164,8 +173,6 @@ model does. Version 1 stays in the data file (`ui.prompts_v1`) and the prompt ve
 run under version 1 never mixes with one under version 2. Anyone comparing with the literature should use the
 hard rung, which is the websites' format, and say which framing was used.
 
-**Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
-of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
 Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
 key. With two or more rungs on, the **Ladder** card draws each model's projection axes per rung, open → soft →
 hard: a flat line is a position, a line that moves along the ladder is forcing sensitivity.
@@ -407,7 +414,8 @@ The interpretation caveat travels with both.
 | 9Axes | off, draw 45, seed 1 | full pool 216 as the alternative; the seed is recorded |
 | trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
 | languages | en | de, zh, ja, hi opt-in; each multiplies the calls |
-| hard rung | off | the website's format, no exit; doubles the calls |
+| hard rung | on | the test's own options, no exit |
+| soft rung | off | the same plus `no_position`; for the coherence check |
 | open rung | off | free text plus extractor; one call per statement, longer answers, plus about one extractor call per 20 answers |
 | extractor model | cheapest with structured outputs | flash/haiku/mini names preferred; change it and re-extract to compare |
 | system prompt | empty | optional asker condition; keyed and exported |
@@ -486,6 +494,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.3** — hard rung is the default, soft opt-in: the first live run showed the soft exit swallowing nearly
+  every answer of some models, and the open rung measures unforced behaviour better.
 - **0.7.2** — cut-off handling for reasoning models (retry with 4 000 tokens, readable error, reasoning tokens
   per cell, defaults raised to 1 000), optional system prompt as a keyed asker condition.
 - **0.7.1** — clear results: delete all cells and derived results of the session after a confirmation.

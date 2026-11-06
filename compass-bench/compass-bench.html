@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.2</div>
+    <div class="pill" id="pill-version">v0.7.3</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -273,8 +273,8 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 
       <div class="rail-group">
         <span class="nano">⟐ rungs</span>
-        <label class="check"><input type="checkbox" id="rung-soft" checked disabled> soft — test scale + no_position</label>
-        <label class="check"><input type="checkbox" id="rung-hard"> hard — website format, no exit</label>
+        <label class="check"><input type="checkbox" id="rung-hard" checked> hard — the test's own options, no exit (default)</label>
+        <label class="check"><input type="checkbox" id="rung-soft"> soft — the same options plus no_position</label>
         <label class="check"><input type="checkbox" id="rung-open"> open — free text, then a blind extractor</label>
       </div>
 
@@ -348,13 +348,13 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
             <button class="tiny" id="reset-system">clear</button></div>
           <textarea id="prompt-system" rows="3" placeholder="empty = no system turn. Anything here is the asker condition: it changes the instrument, is recorded in every export and in the cell key, and runs with and without it never mix."></textarea>
         </div>
-        <div class="prompt-block">
+        <div class="prompt-block" id="pb-single">
           <div class="prompt-head"><span class="nano">soft · single item — {statement} {options}</span>
             <button class="tiny" id="reset-single">reset to default</button></div>
           <textarea id="prompt-single" rows="9"></textarea>
           <div class="warn-chip" id="warn-single"></div>
         </div>
-        <div class="prompt-block">
+        <div class="prompt-block" id="pb-page">
           <div class="prompt-head"><span class="nano">soft · page mode — {statements} {options}</span>
             <button class="tiny" id="reset-page">reset to default</button></div>
           <textarea id="prompt-page" rows="9"></textarea>
@@ -384,7 +384,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <textarea id="prompt-extract" rows="12"></textarea>
           <div class="warn-chip" id="warn-extract"></div>
         </div>
-        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; <span class="mono">no_position</span> is the soft rung's exit and counts as a refusal, never as a position. The hard rung offers exactly the website's options and nothing else: it is the format of the literature and the comparison point, not the measurement of choice. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject. Prompt version 2 frames the task as a study of how assistants respond and says that choosing records a position and endorses nothing: the first live run under the "answer as yourself" framing produced refusal rates up to 98 %, and the provider's reasoning showed models reading a questionnaire item as a request to endorse it.</div>
+        <div class="hint">The answer itself comes back as structured JSON with the option codes, so the model never has to format anything. Option labels are the test's own; The hard rung (default) offers exactly the test's own options and nothing else, the format under which the human reference values and the earlier LLM studies were produced. The soft rung adds <span class="mono">no_position</span>, which counts as a refusal, never as a position; the first live run showed some models taking that exit on nearly every statement, so it is opt-in and the open rung is the better measure of unforced behaviour. Each language has its own five templates; the selector above switches which set you are editing. Option labels come from the data file per language, the codes stay English. The open rung has no options at all; the extractor prompt is one English template for all languages, because the extractor judges text, it is not the subject. Prompt version 2 frames the task as a study of how assistants respond and says that choosing records a position and endorses nothing: the first live run under the "answer as yourself" framing produced refusal rates up to 98 %, and the provider's reasoning showed models reading a questionnaire item as a request to endorse it.</div>
       </div>
 
       <div class="card">
@@ -420,7 +420,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
       <div class="card" id="compass-card" style="display:none">
         <div class="card-head"><span class="ic">⌖</span><h2>Compasses</h2>
           <div class="spacer"></div>
-          <select id="compass-rung" style="width:auto;min-width:120px"><option value="open">open rung</option><option value="soft">soft rung</option><option value="hard">hard rung</option></select>
+          <select id="compass-rung" style="width:auto;min-width:120px"><option value="open">open rung</option><option value="soft">soft rung</option><option value="hard" selected>hard rung</option></select>
           <select id="compass-lang" style="width:auto;min-width:100px"></select>
           <span class="nano" id="compass-meta"></span></div>
         <div class="caveat" style="margin-bottom:14px">
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.2";
-const BUILD = "2026-11-06.10";
+const TOOL_VERSION = "0.7.3";
+const BUILD = "2026-11-06.11";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15683,13 +15683,13 @@ const priceIn = m => Number(m?.pricing?.prompt || 0), priceOut = m => Number(m?.
 const fmtPrice = m => { const i = priceIn(m) * 1e6, o = priceOut(m) * 1e6; return (!i && !o) ? "free" : `$${i.toFixed(2)}/$${o.toFixed(2)}`; };
 const supportsStructured = m => (m.supported_parameters || []).some(p => p === "structured_outputs" || p === "response_format");
 const LS = { sel: "cb1.sel", cfg: "cb3.cfg", rail: "cb1.rail", prompts: "cb3.prompts", catalog: "cb1.catalog", langs: "cb3.langs" };
-const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "gate-contam", "bootstrap", "cat-structured", "rung-hard", "rung-open", "randomise", "inverted", "batch-size", "max-tokens-open", "check-sample", "auto-extract", "nine-mode", "nine-seed"];
+const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "gate-contam", "bootstrap", "cat-structured", "rung-hard", "rung-soft", "rung-open", "randomise", "inverted", "batch-size", "max-tokens-open", "check-sample", "auto-extract", "nine-mode", "nine-seed"];
 const RUNG_ORDER = ["open", "soft", "hard"];
 // textarea id → [prompt key, warn chip, placeholders]; the texts themselves live in state.prompts[lang][key]
 const PROMPT_FIELDS = { "prompt-single": ["soft_single", "warn-single", ["{statement}", "{options}"]], "prompt-page": ["soft_page", "warn-page", ["{statements}", "{options}"]],
   "prompt-hard-single": ["hard_single", "warn-hard-single", ["{statement}", "{options}"]], "prompt-hard-page": ["hard_page", "warn-hard-page", ["{statements}", "{options}"]],
   "prompt-open": ["open_single", "warn-open", ["{statement}"]] };
-const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), "soft", ...($("rung-hard").checked ? ["hard"] : [])];
+const enabledRungs = () => [...($("rung-open").checked ? ["open"] : []), ...($("rung-soft").checked ? ["soft"] : []), ...($("rung-hard").checked ? ["hard"] : [])];
 const LS_EXTRACT = "cb4.prompt.extract", LS_EXTRACT_MODEL = "cb4.extractModel", LS_SYSTEM = "cb7.prompt.system";
 const systemPrompt = () => $("prompt-system").value.trim();
 // prompt version as it enters the cell key: the system prompt, when set, is part of the asker condition
@@ -15854,6 +15854,7 @@ function checkPlaceholders() {
   const ex = $("warn-extract"); const exMissing = !$("prompt-extract").value.includes("{items}");
   ex.textContent = exMissing ? "missing placeholder: {items} — it will be appended at runtime" : ""; ex.classList.toggle("show", exMissing);
   $("pb-hard-single").style.opacity = $("pb-hard-page").style.opacity = $("rung-hard").checked ? "" : ".5";
+  $("pb-single").style.opacity = $("pb-page").style.opacity = $("rung-soft").checked ? "" : ".5";
   $("pb-open").style.opacity = $("pb-extract").style.opacity = $("rung-open").checked ? "" : ".5";
 }
 
@@ -15927,6 +15928,7 @@ async function run() {
   const models = [...state.selected].sort();
   if (!models.length) { l.err("no model selected"); return; }
   const rungs = enabledRungs(), langs = enabledLangs();
+  if (!rungs.length) { l.err("no rung enabled — tick hard, soft or open in the rail"); return; }
   if (!activeItems().length) { l.err("no instrument enabled"); return; }
   if (!langs.length) { l.err("no language enabled"); return; }
   const mode = $("mode").value, trials = Math.max(1, parseInt($("trials").value) || 1), conc = Math.max(1, parseInt($("concurrency").value) || 1), randomise = $("randomise").checked;
@@ -16558,7 +16560,7 @@ function init() {
   $("extract-model").addEventListener("change", e => { localStorage.setItem(LS_EXTRACT_MODEL, e.target.value); updateExtractPrice(); updatePlan(); });
   $("btn-extract").addEventListener("click", () => extractOpen(true).then(rescore).catch(e => { l.err("extraction failed: " + e.message); setRunning(false); }));
   $("btn-check").addEventListener("click", () => batchCheck().catch(e => { l.err("batch check failed: " + e.message); setRunning(false); }));
-  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); if (id === "rung-hard" || id === "rung-open") checkPlaceholders(); updatePlan(); }));
+  CFG_INPUTS.forEach(id => $(id).addEventListener($(id).type === "checkbox" ? "change" : "input", () => { saveCfg(); if (id === "cat-structured") renderCatalog(); if (id === "rung-hard" || id === "rung-soft" || id === "rung-open") checkPlaceholders(); updatePlan(); }));
   $("compass-rung").addEventListener("change", () => { renderCompasses(); renderConvergence(); renderShift(); renderLadder(); renderContamination(); });
   $("compass-lang").addEventListener("change", () => { renderCompasses(); renderConvergence(); renderLadder(); });
   $("btn-catalog").addEventListener("click", () => fetchCatalog(true));
