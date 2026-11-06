@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.7.4 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.5 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -438,7 +438,7 @@ The interpretation caveat travels with both.
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | contamination check | off | asks the inverted statements as well (English); roughly doubles the English calls |
 | contamination shift ≤ | 0.25 | gate 9, distance on the unit square |
-| concurrency | 4 | lower it on persistent 429s instead of raising retries |
+| concurrency | 4 | lower it on persistent 429s instead of raising retries. OpenRouter reserves each in-flight call's maximum cost (max tokens × price) against the balance; with 50 concurrent calls the reservation runs out while the credits are fine ("would exceed your available credits given your current in-flight requests"). The tool retries that with a 3 s backoff and says so once; 8 is safe for most balances |
 | max tokens | 1000 | reasoning and answer together; one retry with 4000 when a call is cut off with no answer |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
 | reasoning | low effort | "provider default" sends no field; recorded per cell and keyed; dropped automatically if the provider rejects it |
@@ -506,6 +506,8 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.5** — OpenRouter's in-flight credit reservation (402) is retried with a longer backoff instead of
+  failing the cell; one hint names the fix.
 - **0.7.4** — the reasoning setting is recorded per cell and joins the cell key; README on what reasoning
   changes in the measurement.
 - **0.7.3** — hard rung is the default, soft opt-in: the first live run showed the soft exit swallowing nearly

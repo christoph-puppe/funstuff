@@ -223,7 +223,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.7.4</div>
+    <div class="pill" id="pill-version">v0.7.5</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -254,7 +254,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           </select></div>
         <div class="row2">
           <div class="field"><label>trials / cell</label><input type="number" id="trials" value="1" min="1" max="10"></div>
-          <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="4" min="1" max="16"></div>
+          <div class="field"><label>concurrency</label><input type="number" id="concurrency" value="4" min="1" max="64" title="OpenRouter reserves each in-flight call's maximum cost; high values hit the reservation before the balance"></div>
         </div>
         <div class="row2">
           <div class="field"><label>max tokens</label><input type="number" id="max-tokens" value="1000" min="30" max="16000"></div>
@@ -15076,8 +15076,8 @@ a memorised item does not. Since 0.7: the prompts frame the task as a study of h
 (a first live run showed refusal rates up to 98 % under the "answer as yourself" framing), the provider's reasoning
 text, where one is returned, is kept per cell and shown next to the answer.
 */
-const TOOL_VERSION = "0.7.4";
-const BUILD = "2026-11-06.12";
+const TOOL_VERSION = "0.7.5";
+const BUILD = "2026-11-06.13";
 const PROMPT_VERSIONS = { soft: "soft-en-2", hard: "hard-en-2", open: "open-en-3" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -15124,9 +15124,13 @@ const LENGTH_RETRY_TOKENS = 4000;   // a reasoning model that spent the whole bu
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function apiError(status, message) { const e = new Error(String(message).slice(0, 400)); e.status = status; return e; }
-// Worth another attempt: rate limit, server error, network drop, timeout. Everything else raises at once.
+// Worth another attempt: rate limit, server error, network drop, timeout, and OpenRouter's credit reservation
+// (402 "would exceed your available credits given your current in-flight requests"): every in-flight call reserves
+// its possible maximum cost, so a high concurrency can exhaust the reservation while the balance is fine.
+// Everything else raises at once.
+const inflightCredit = e => e.status === 402 && /in-flight/i.test(String(e.message));
 function isTransient(e) {
-  if (typeof e.status === "number") return e.status === 429 || e.status >= 500;
+  if (typeof e.status === "number") return e.status === 429 || e.status >= 500 || inflightCredit(e);
   return e instanceof TypeError || e.name === "TimeoutError";
 }
 
@@ -15220,7 +15224,9 @@ async function llm(body, cfg, label = "call") {
       if (!isTransient(e)) throw e;
       attempt++;
       if (attempt > retries) throw e;
-      const wait = 500 * Math.pow(2, attempt - 1);
+      // credit reservations settle when other calls finish: wait longer than for a plain 429, and say what helps
+      const wait = (inflightCredit(e) ? 3000 : 500) * Math.pow(2, attempt - 1);
+      if (inflightCredit(e) && !state.creditHintShown) { state.creditHintShown = true; l.warn("OpenRouter reserves each in-flight call's maximum cost against your balance; with many concurrent calls the reservation runs out before the credits do. Lower the concurrency (8 is safe for most balances) or the max tokens."); }
       l.warn(`${label} failed (${m.slice(0, 140)}) — retry ${attempt}/${retries} in ${wait}ms`);
       await sleep(wait);
     }

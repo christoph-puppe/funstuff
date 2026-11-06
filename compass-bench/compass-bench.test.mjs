@@ -425,5 +425,16 @@ await test("system prompt: optional system turn ahead of the user turn; a provid
   const out = await ctx.llm({ model: "m", messages: ctx.buildMessages("SYS", "USER") }, { apiKey: "K", retries: 0 }, "t");
   assert.equal(out.text, "ok"); assert.equal(calls.length, 2); assert.equal(calls[1].body.messages.length, 1); assert.ok(/SYS[\s\S]*USER/.test(calls[1].body.messages[0].content)); assert.ok(out.substituted);
 });
+await test("OpenRouter 402 in-flight credit reservation is transient with a longer backoff and a one-time hint; a plain 402 is permanent", async () => {
+  const inflight = { ok: false, status: 402, body: { error: { code: 402, message: "This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits." } } };
+  const fine = { ok: true, body: { choices: [{ message: { content: "ok" } }], usage: {} } };
+  assert.ok(ctx.isTransient(ctx.apiError(402, inflight.body.error.message))); assert.ok(!ctx.isTransient(ctx.apiError(402, "Insufficient credits. Add more credits.")));
+  ctx.state.cancel = false; ctx.state.creditHintShown = false; log.length = 0; queue = [inflight, fine];
+  const t0 = Date.now(); const out = await ctx.llm({ model: "m", messages: [] }, { apiKey: "K", retries: 2 }, "t");
+  assert.equal(out.text, "ok"); assert.ok(Date.now() - t0 >= 2500, "first retry waits ~3 s");
+  assert.ok(log.some(x => /Lower the concurrency/.test(x)), "the hint names the fix");
+  queue = [{ ok: false, status: 402, body: { error: { message: "Insufficient credits" } } }, fine]; calls.length = 0;
+  await assert.rejects(() => ctx.llm({ model: "m", messages: [] }, { apiKey: "K", retries: 2 }, "t"), e => e.status === 402); assert.equal(calls.length, 1, "a real credit shortage is not retried");
+});
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
