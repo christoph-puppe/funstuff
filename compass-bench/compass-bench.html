@@ -15215,7 +15215,7 @@ async function llm(body, cfg, label = "call") {
       return out;
     } catch (e) {
       const m = String(e.message || e);
-      if (e.status && e.status < 500 && e.status !== 429) {
+      if (e.status && e.status < 500 && e.status !== 429 && !inflightCredit(e)) {
         if (/reasoning/i.test(m) && b.reasoning) { l.warn(`${label}: provider rejects 'reasoning' — retrying without`); b = { ...b }; delete b.reasoning; continue; }
         if (/response_format|json_schema|structured|schema/i.test(m) && b.response_format) { l.warn(`${label}: provider rejects response_format — retrying without; JSON must now come from the prompt`); b = { ...b }; delete b.response_format; delete b.provider; continue; }
         if (/system/i.test(m) && /role|support|unsupported|allowed/i.test(m) && b.messages?.[0]?.role === "system" && b.messages.length > 1) { l.warn(`${label}: provider rejects the system role — folding the system prompt into the user message`); b = { ...b, messages: [{ role: "user", content: b.messages[0].content + "\n\n" + b.messages[1].content }] }; continue; }
