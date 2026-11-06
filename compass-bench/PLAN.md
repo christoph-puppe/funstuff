@@ -6,7 +6,7 @@ jedes Modell dort einzeichnet, wo der jeweilige Test es einzeichnen würde. Dazu
 dieser Punkt ist: über Wiederholungen, über den Fragezwang, über die Optionsreihenfolge, über die
 Sprachen und über die Tests hinweg. Ein Punkt ohne diese Zahlen ist eine Anekdote.
 
-Status: **Meilensteine 0.1 bis 0.5 gebaut** (`compass-bench/compass-bench.html` 0.5.0, Build 2026-11-06.6), offen: 0.6. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
+Status: **Meilensteine 0.1 bis 0.6 gebaut** (`compass-bench/compass-bench.html` 0.6.0, Build 2026-11-06.7). Offen: Live-Lauf, 9Axes-Übersetzung auf Zuruf, Backlog. Geschwistertools im Verzeichnis: `whoami-bench`, `phylo-bench`,
 `nihilartikel-bench`. Gleiche Bauweise, gleiches Backend (OpenRouter), gleiches Design-System.
 
 Revision 6: Übersetzung einmalig durch Claude mit Sub-Agenten, Ergebnis als JSON im Repo; Stufen,
