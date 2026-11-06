@@ -6,12 +6,13 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.4.1 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.5.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
-`compass-bench.test.mjs` (the test harness), `PLAN.md`, and `compass-bench.zip` with the tool, its data file
-and this README for download. `TOOL_VERSION` and `BUILD` are in the top bar and in every export.
+`compass-bench.test.mjs` (the test harness), `LICENSES.md` (the tests' licences and the rights note on the
+Political Compass Test), `PLAN.md`, and `compass-bench.zip` with the tool, its data file, this README and
+the licences for download. `TOOL_VERSION` and `BUILD` are in the top bar and in every export.
 
 Sibling tools in this directory: `whoami-bench` (what models claim about themselves), `phylo-bench`
 (functional distance over sampled continuations), `nihilartikel-bench` (agreement on fabricated entities).
@@ -31,8 +32,7 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 | 7 | **Language shift** | distance between a model's point in English and in each other language, per test, against the model's own trial noise |
 | 8 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, language, and what is left for trial noise and interactions |
 
-Later milestones add 9Axes, resume from an export and an item-inversion contamination check. The plan is in
-`PLAN.md`.
+A later milestone adds an item-inversion contamination check. The plan is in `PLAN.md`.
 
 **Not measured:** whether a position is "right", where it comes from, or whether it shows in writing
 assistance (IssueBench). A dot here is the behaviour of one model on one test in one language under one
@@ -69,16 +69,36 @@ No web search or plugin is attached to any request. A position a model has to lo
 | **6axes** | 70, 64 of them word-identical with 8values | Equality↔Markets, Labour↔Capital, Civic↔Ethnic nationalism, Open borders↔Chauvinist, Anarchist↔Totalitarian, Revolutionary↔Reactionary | 5-point | MIT (8values fork) | text + weights embedded |
 | **SapplyValues** | 46 | Left↔Right, Libertarian↔Authoritarian, Conservative↔Progressive | 5-point plus "don't know" | MIT | text + weights embedded |
 | **Political Compass Test** | 62 | Left↔Right, Libertarian↔Authoritarian | 4-point, no middle | propositions © Pace News Ltd | text embedded, scoring reconstructed |
+| **9Axes** (opt-in) | pool of 216, the site asks 45 | Federal↔Unitary, Democratic↔Authoritarian, Globalist↔Isolationist, Militarist↔Pacifist, Security↔Freedom, Equality↔Markets, Secular↔Religious, Progressive↔Traditional, Assimilationist↔Multiculturalist | 5-point | MIT (from 8values) | text embedded, English only; seeded draw or full pool |
 
-Sources (retrieved 6 November 2026): `8values/8values.github.io`, `6axes/6axes.github.io`,
-`SapplyValues/SapplyValues.github.io` on GitHub (their `questions.js` and the scoring in `quiz.html`); the PCT
+Sources (retrieved 6 November 2026): `8values/8values.github.io` (also `ideologies.js`), `6axes/6axes.github.io`,
+`SapplyValues/SapplyValues.github.io`, `9axes/9axes.github.io` on GitHub (their `questions.js` and the scoring in
+`quiz.html`); the PCT
 propositions from `paul-rottger/llm-values-pct`, `data/templates/pct_propositions.csv` (repo CC BY 4.0); the
 PCT weight tables from `h4fide/politicalcompassbot`, `compass_calc.py`.
 
 **Copyright note.** The 62 propositions of the Political Compass Test are the property of Pace News Ltd
 (politicalcompass.org) and are reproduced here, as in the research repositories above, for the purpose of
 measuring language models. The author of this repository bears that decision and its risk; the tests
-published under MIT are reproduced with their licence texts.
+published under MIT are reproduced with their licence texts in `LICENSES.md`.
+
+### 9Axes
+
+9Axes is opt-in because it is big and unlike the others: a pool of 216 statements, 24 per axis in eight
+intensity grades, from which the website draws 45 per visit, one random variant at five of the eight grades per
+axis, direction chosen at random. The tool offers that draw with a seed (default 1; the seed is in the top of the
+9Axes card, the log and every export, so a run can be reproduced) or the full pool. Scoring follows `quiz.html`:
+each answer adds its multiplier times the sign of the statement's grade, and the site shows 50 + 5 × score over
+its five statements, which is 50 + 25 × mean; the mean form reproduces the site on a draw and extends to the full
+pool and to gaps. 43 of the 216 statements are word-identical with statements of the other tests and are asked
+once. 9Axes is **English only** until its 173 own statements are translated; in the other languages they are
+simply not asked, and the Languages card says how many.
+
+### 8values closest match
+
+The 8values card names the closest of the site's 52 ideologies per model, computed exactly as `results.html`
+does (squared distance on equality and liberty, exponent 1.73856063 on peace and progress). It is the site's
+label, reported because the site reports it; it carries no more than the four axis values do.
 
 ### Items are deduplicated across tests
 
@@ -273,6 +293,11 @@ residual holds interactions only. The card says so when that is the case.
 
 ## Exports
 
+- **Resume.** **import run** takes an exported JSON and restores its cells, settings, models, languages,
+  instruments and the 9Axes draw, after checking that every instrument and language hash matches the data
+  embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
+  again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
+  press run: only the gaps are filled.
 - **JSON** — the whole run: tool version and build, instrument and language hashes, the four prompts and their
   versions, settings, models, totals (calls, cost from `usage`), gates, per model × test × rung scores with
   intervals, per-trial values, instability and normalised axes, response style, convergence, the error budget,
@@ -280,6 +305,9 @@ residual holds interactions only. The card says so when that is the case.
   the 2026 error-budget study asks for (instrument, asker condition, repetitions, dispersion, variance
   decomposition, option order, contamination check status, item-level results).
 - **CSV** — one row per cell including rung, trial and option order, UTF-8 BOM for Excel.
+- **Markdown** — a report: instruments and languages with hashes, settings, models, gates, per-test score tables
+  with intervals and the 8values match, response style, convergence, language shift, error budget, batch check,
+  and every answer grouped by model, rung, language and trial, with the free text of the open rung.
 
 The interpretation caveat travels with both.
 
@@ -291,6 +319,7 @@ The interpretation caveat travels with both.
 |---|---|---|
 | API key | — | memory only; `type=password`; re-enter after reload |
 | items per call | 1 | `page` for the websites' pages |
+| 9Axes | off, draw 45, seed 1 | full pool 216 as the alternative; the seed is recorded |
 | trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
 | languages | en | de, zh, ja, hi opt-in; each multiplies the calls |
 | hard rung | off | the website's format, no exit; doubles the calls |
@@ -328,6 +357,8 @@ option order per cell, the majority over trials, the instability measure on cons
 answers, response style, quadrants, and the variance decomposition on synthetic data with known shares. Since
 0.4: the open prompt carries no options, the extractor prompt is blind and strict, cells without a stance never
 enter the majority, the batch-check sample is deterministic, and the agreement figure reports its disagreements.
+Since 0.5: the 9Axes draw has the website's shape and the scoring reproduces 50 + 5 × score on a draw, the
+ideology match returns an ideology for its own stats vector, and the import validation refuses changed hashes.
 
 The skill's generic `core_test.mjs` is Gemini-specific (continuation protocol, thinking levels) and does not
 apply to an OpenRouter-only tool; this harness replaces it.
@@ -360,11 +391,14 @@ apply to an OpenRouter-only tool; this harness replaces it.
 ## Building the zip
 
 ```
-zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md
+zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md LICENSES.md
 ```
 
 ## Changelog
 
+- **0.5.0** — 9Axes (seeded draw like the website or full pool, English only), 8values closest-ideology label,
+  resume from an exported run with hash checks, Markdown report, `LICENSES.md` with the tests' licence texts and
+  the PCT rights note.
 - **0.4.1** — open rung asks for three sentences instead of two or three (all five languages, prompt version
   `open-en-2`, so cells of the earlier wording never mix with new ones).
 - **0.4.0** — open rung: free text in the run language (prompt translated and checked like the others), raw

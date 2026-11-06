@@ -6,7 +6,7 @@
   "en": {
    "name": "English",
    "status": "original",
-   "hash": "8ac1cd9f0a377ca6e9b38468fa885832648ed7c82d8464ba2abb776055ff0105"
+   "hash": "a418a4100979b06d241adedce7ed7323242af327d7e8cac44f88aa098273a0b4"
   },
   "de": {
    "name": "Deutsch",
@@ -199,7 +199,478 @@
     "it_4c2da82c",
     "it_0eecb1d9"
    ],
-   "hash": "14d07da62e821108343a5fcf2a6bb231d51d8240736223fc7ebb62775b785a5c"
+   "hash": "14d07da62e821108343a5fcf2a6bb231d51d8240736223fc7ebb62775b785a5c",
+   "ideologies": [
+    {
+     "name": "Anarcho-Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 90
+     }
+    },
+    {
+     "name": "Libertarian Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 70,
+      "govt": 80,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Trotskyism",
+     "stats": {
+      "econ": 100,
+      "dipl": 100,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Marxism",
+     "stats": {
+      "econ": 100,
+      "dipl": 70,
+      "govt": 40,
+      "scty": 80
+     }
+    },
+    {
+     "name": "De Leonism",
+     "stats": {
+      "econ": 100,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Leninism",
+     "stats": {
+      "econ": 100,
+      "dipl": 40,
+      "govt": 20,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Stalinism/Maoism",
+     "stats": {
+      "econ": 100,
+      "dipl": 20,
+      "govt": 0,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Religious Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 30
+     }
+    },
+    {
+     "name": "State Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Theocratic Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Religious Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 70,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Democratic Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Revolutionary Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 20,
+      "govt": 50,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Libertarian Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 80,
+      "govt": 80,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Anarcho-Syndicalism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Left-Wing Populism",
+     "stats": {
+      "econ": 60,
+      "dipl": 40,
+      "govt": 30,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Theocratic Distributism",
+     "stats": {
+      "econ": 60,
+      "dipl": 40,
+      "govt": 30,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Distributism",
+     "stats": {
+      "econ": 60,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Social Liberalism",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Christian Democracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 50,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Social Democracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 70,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Progressivism",
+     "stats": {
+      "econ": 60,
+      "dipl": 80,
+      "govt": 60,
+      "scty": 100
+     }
+    },
+    {
+     "name": "Anarcho-Mutualism",
+     "stats": {
+      "econ": 60,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 70
+     }
+    },
+    {
+     "name": "National Totalitarianism",
+     "stats": {
+      "econ": 50,
+      "dipl": 20,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Global Totalitarianism",
+     "stats": {
+      "econ": 50,
+      "dipl": 80,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Technocracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 20,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Centrist",
+     "stats": {
+      "econ": 50,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Liberalism",
+     "stats": {
+      "econ": 50,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Religious Anarchism",
+     "stats": {
+      "econ": 50,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Right-Wing Populism",
+     "stats": {
+      "econ": 40,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Moderate Conservatism",
+     "stats": {
+      "econ": 40,
+      "dipl": 40,
+      "govt": 50,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Reactionary",
+     "stats": {
+      "econ": 40,
+      "dipl": 40,
+      "govt": 40,
+      "scty": 10
+     }
+    },
+    {
+     "name": "Social Libertarianism",
+     "stats": {
+      "econ": 60,
+      "dipl": 70,
+      "govt": 80,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Libertarianism",
+     "stats": {
+      "econ": 40,
+      "dipl": 60,
+      "govt": 80,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Anarcho-Egoism",
+     "stats": {
+      "econ": 40,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Nazism",
+     "stats": {
+      "econ": 40,
+      "dipl": 0,
+      "govt": 0,
+      "scty": 5
+     }
+    },
+    {
+     "name": "Autocracy",
+     "stats": {
+      "econ": 50,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Fascism",
+     "stats": {
+      "econ": 40,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Capitalist Fascism",
+     "stats": {
+      "econ": 20,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Conservatism",
+     "stats": {
+      "econ": 30,
+      "dipl": 40,
+      "govt": 40,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Neo-Liberalism",
+     "stats": {
+      "econ": 30,
+      "dipl": 30,
+      "govt": 50,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Classical Liberalism",
+     "stats": {
+      "econ": 30,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Authoritarian Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 30,
+      "govt": 20,
+      "scty": 40
+     }
+    },
+    {
+     "name": "State Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Neo-Conservatism",
+     "stats": {
+      "econ": 20,
+      "dipl": 20,
+      "govt": 40,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Fundamentalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 5
+     }
+    },
+    {
+     "name": "Libertarian Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 80,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Market Anarchism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Objectivism",
+     "stats": {
+      "econ": 10,
+      "dipl": 50,
+      "govt": 90,
+      "scty": 40
+     }
+    },
+    {
+     "name": "Totalitarian Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 30,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Ultra-Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 40,
+      "govt": 50,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Anarcho-Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    }
+   ],
+   "ideology_match": "dist = |econ−e|² + |govt−g|² + |dipl−d|^1.73856063 + |scty−s|^1.73856063, nearest wins (results.html)"
   },
   "6axes": {
    "name": "6axes",
@@ -479,9 +950,331 @@
     "it_76070818"
    ],
    "hash": "fe703ff5547b7d6ea88f422d28d52b6b66d0edb800e023e9dde5987e4da27a5c"
+  },
+  "9axes": {
+   "name": "9Axes",
+   "version": "216-item pool, site draws 5 per axis",
+   "source": "https://github.com/9axes/9axes.github.io",
+   "site": "https://9axes.github.io",
+   "licence": "MIT (from the original 8values)",
+   "scale": "likert5",
+   "range": [
+    0,
+    100
+   ],
+   "draw": {
+    "per_axis": 5,
+    "rates": [
+     1,
+     2,
+     3,
+     5,
+     7
+    ],
+    "note": "the website picks, per axis, one random variant at rate indexes 1,2,3,5,7 or their mirror 7,6,5,3,1, direction chosen at random; scoring uses only the sign of the rate"
+   },
+   "axes": {
+    "fed": {
+     "hi": "Federal",
+     "lo": "Unitary"
+    },
+    "dem": {
+     "hi": "Democratic",
+     "lo": "Authoritarian"
+    },
+    "glo": {
+     "hi": "Globalist",
+     "lo": "Isolationist"
+    },
+    "mil": {
+     "hi": "Militarist",
+     "lo": "Pacifist"
+    },
+    "sec": {
+     "hi": "Security",
+     "lo": "Freedom"
+    },
+    "equ": {
+     "hi": "Equality",
+     "lo": "Markets"
+    },
+    "rel": {
+     "hi": "Secular",
+     "lo": "Religious"
+    },
+    "pro": {
+     "hi": "Progressive",
+     "lo": "Traditional"
+    },
+    "mul": {
+     "hi": "Assimilationist",
+     "lo": "Multiculturalist"
+    }
+   },
+   "items": [
+    "it_7c2d64c4",
+    "it_b273d8f4",
+    "it_05c9db59",
+    "it_21442309",
+    "it_1b937d97",
+    "it_86efd8bd",
+    "it_c4a58892",
+    "it_8e0e09d7",
+    "it_ac7daeb8",
+    "it_a73eba60",
+    "it_eba8f9c2",
+    "it_56a3945c",
+    "it_3ecb9886",
+    "it_47661776",
+    "it_00e1ac25",
+    "it_cba2c07e",
+    "it_2734f6fe",
+    "it_c11f1fd3",
+    "it_c0c0064d",
+    "it_c8618719",
+    "it_80a9a78c",
+    "it_48af7077",
+    "it_d2397c55",
+    "it_7d3b350b",
+    "it_8b3399da",
+    "it_6b80287f",
+    "it_62bd49f0",
+    "it_b5b61800",
+    "it_d5daf39b",
+    "it_fc4b400d",
+    "it_437cbdb5",
+    "it_f085f993",
+    "it_30ff0c30",
+    "it_595df89c",
+    "it_52d89d99",
+    "it_58d709a8",
+    "it_6d1f343b",
+    "it_cef3c934",
+    "it_3ff99d88",
+    "it_dd1fceab",
+    "it_18855a16",
+    "it_9ae232a1",
+    "it_c15716bd",
+    "it_0eecb1d9",
+    "it_fbe45f1d",
+    "it_a6696949",
+    "it_705c5392",
+    "it_68bb1159",
+    "it_727758ce",
+    "it_ea986b16",
+    "it_07003cc5",
+    "it_c6e4bb8b",
+    "it_5488f83c",
+    "it_8b7f5956",
+    "it_784947b5",
+    "it_115794f5",
+    "it_f6cbec9c",
+    "it_884e40a0",
+    "it_5749e2a5",
+    "it_2cf5408d",
+    "it_0a01ea76",
+    "it_52d296e7",
+    "it_2fc58e9d",
+    "it_c393297c",
+    "it_30dcbfa2",
+    "it_1cc552bc",
+    "it_bc1fa041",
+    "it_c8150a6f",
+    "it_e46e4b07",
+    "it_4b56b35c",
+    "it_f1c5f5dc",
+    "it_06182494",
+    "it_610bf3f5",
+    "it_64b45bf3",
+    "it_4d3649a6",
+    "it_4c88e2c2",
+    "it_c087b856",
+    "it_fe475e1b",
+    "it_4bedfe57",
+    "it_4277108a",
+    "it_b76624dc",
+    "it_a2b393ed",
+    "it_70be1798",
+    "it_efbac21b",
+    "it_8f7286fb",
+    "it_b76f6c1e",
+    "it_cf9e56b2",
+    "it_0b04bbcc",
+    "it_1dd943c3",
+    "it_850814ef",
+    "it_b17c448e",
+    "it_9fa51ad7",
+    "it_104a285e",
+    "it_c0f356c3",
+    "it_e10df1bd",
+    "it_2360bf91",
+    "it_064c02e7",
+    "it_2e25de79",
+    "it_b607f0c1",
+    "it_b7d40c35",
+    "it_a0e35330",
+    "it_793b82d3",
+    "it_657cb29f",
+    "it_6b1083b1",
+    "it_5bec4e0c",
+    "it_03e050d2",
+    "it_45d33d65",
+    "it_ca62be48",
+    "it_2d98567d",
+    "it_cd28112b",
+    "it_01d8b7c2",
+    "it_47e91732",
+    "it_6ae3205a",
+    "it_0d7aee6c",
+    "it_9f019f15",
+    "it_73dfc46f",
+    "it_1f83ea76",
+    "it_66675ff0",
+    "it_697784ac",
+    "it_bef660f6",
+    "it_5ffc6715",
+    "it_4018bd6a",
+    "it_0dc9223b",
+    "it_825eb96d",
+    "it_9a15ca2a",
+    "it_e3adda38",
+    "it_6cb9e872",
+    "it_b0f90358",
+    "it_45939864",
+    "it_f4447fd6",
+    "it_645d8dc5",
+    "it_e2649645",
+    "it_c8648d14",
+    "it_aacd8e35",
+    "it_53c59439",
+    "it_c0551200",
+    "it_cd9e3461",
+    "it_c9e86840",
+    "it_b8775047",
+    "it_3297adae",
+    "it_7b728d76",
+    "it_2357dba4",
+    "it_007d5915",
+    "it_1c5fe4c1",
+    "it_c8fb6c6a",
+    "it_66892a22",
+    "it_57acd39c",
+    "it_2cd20e11",
+    "it_387f4a2a",
+    "it_2e39f9de",
+    "it_08f1fc6e",
+    "it_9417cee1",
+    "it_b12d0df5",
+    "it_8cc70ee6",
+    "it_f5b70151",
+    "it_22bd9d9e",
+    "it_c9a5ca20",
+    "it_e24ec3b1",
+    "it_d68cb0f7",
+    "it_06fbdc9e",
+    "it_b3f82e29",
+    "it_dbad7ed1",
+    "it_ebfb7f90",
+    "it_37c3b8d9",
+    "it_1896bdca",
+    "it_df74f356",
+    "it_c8106ce2",
+    "it_945dbde2",
+    "it_391ac8f1",
+    "it_0552b213",
+    "it_625dc6ec",
+    "it_72f3c972",
+    "it_3d46d403",
+    "it_4301386a",
+    "it_303a647f",
+    "it_4782ae04",
+    "it_25c72965",
+    "it_99d3d1a4",
+    "it_0912e2f4",
+    "it_0b4558f5",
+    "it_9d46455a",
+    "it_53b6c93b",
+    "it_9aeb1a8a",
+    "it_88053880",
+    "it_fd00e69b",
+    "it_effebfed",
+    "it_20df0a15",
+    "it_22e67915",
+    "it_933c49f2",
+    "it_747d603e",
+    "it_9b5fa888",
+    "it_d1ab3f1b",
+    "it_b1f772a3",
+    "it_2e9e7410",
+    "it_bc24cc58",
+    "it_2795387b",
+    "it_bd8bab0a",
+    "it_a7ef19c6",
+    "it_9c413333",
+    "it_7ef90412",
+    "it_d5c724bb",
+    "it_a5e8eb2a",
+    "it_dcde3589",
+    "it_95031ae7",
+    "it_ab1d7024",
+    "it_db917e68",
+    "it_a21c7019",
+    "it_f488dc75",
+    "it_1e352c8e",
+    "it_48cf558d",
+    "it_7a56c1c8",
+    "it_0af51468",
+    "it_f235c614",
+    "it_2569fbba",
+    "it_81d48077",
+    "it_44b4fdad"
+   ],
+   "hash": "1d8076b24b36eddb88cc178671fcf199bcc7b0acba96c5378b489022795c8ca5"
   }
  },
  "items": [
+  {
+   "id": "it_007d5915",
+   "text": {
+    "en": "The government should not break up monopolies"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_00e1ac25",
+   "text": {
+    "en": "There are many issues that it does not make sense to address at a local level"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_01d8b7c2",
+   "text": {
+    "en": "The government has no business looking into most people's personal lives"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
   {
    "id": "it_02899ca4",
    "text": {
@@ -524,6 +1317,20 @@
    }
   },
   {
+   "id": "it_03e050d2",
+   "text": {
+    "en": "The government should have access to the emails of suspected terrorists"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_0552b213",
    "text": {
     "en": "Genetic modification is a force for good, even on humans.",
@@ -538,6 +1345,12 @@
     },
     "6axes": {
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
     }
    },
    "translations": {
@@ -564,6 +1377,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_05c9db59",
+   "text": {
+    "en": "State laws should have precedence over national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_06182494",
+   "text": {
+    "en": "Any deals other countries want must be bad for us"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -621,6 +1462,48 @@
    }
   },
   {
+   "id": "it_064c02e7",
+   "text": {
+    "en": "Those who disagree with the government should be removed from the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_06fbdc9e",
+   "text": {
+    "en": "I believe in a higher power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_07003cc5",
+   "text": {
+    "en": "In order for humanity to survive, we must get past having separate nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_07231fc2",
    "text": {
     "en": "Autonomy of body extends even to minors, the mentally ill, and serious criminals.",
@@ -662,6 +1545,20 @@
    }
   },
   {
+   "id": "it_08f1fc6e",
+   "text": {
+    "en": "I support gay marriage"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_0912e2f4",
    "text": {
     "en": "Environmental regulations are essential.",
@@ -678,6 +1575,12 @@
     "6axes": {
      "econ_asp": 5,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
     }
    },
    "translations": {
@@ -724,6 +1627,12 @@
     "6axes": {
      "cosmopolitanism": -10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -795,6 +1704,20 @@
    }
   },
   {
+   "id": "it_0af51468",
+   "text": {
+    "en": "All humans share a common identity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_0b04bbcc",
    "text": {
     "en": "Even when protesting an authoritarian government, violence is not acceptable.",
@@ -810,6 +1733,12 @@
     },
     "6axes": {
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -855,6 +1784,12 @@
     "6axes": {
      "econ_asp": 5,
      "akraetia": 5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    },
    "translations": {
@@ -897,6 +1832,12 @@
     "6axes": {
      "akraetia": 10,
      "anarche": 10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -964,6 +1905,20 @@
      "verdict": "minor_shift",
      "note": "'ज़्यादा से ज़्यादा' can also read as 'as much as possible' (the trailing 'ही' pushes it to 'at most'), and 'कानून-व्यवस्था' is 'law and order' rather than 'law enforcement'; intended reading is still the likely one.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_0dc9223b",
+   "text": {
+    "en": "Equality of outcome is important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -1098,6 +2053,12 @@
      "nationalism": 10,
      "cosmopolitanism": -10,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -1263,6 +2224,20 @@
    }
   },
   {
+   "id": "it_104a285e",
+   "text": {
+    "en": "Countries fall apart with constant war"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_108bc354",
    "text": {
     "en": "Without democracy, a society is nothing.",
@@ -1321,6 +2296,12 @@
      "nationalism": -5,
      "cosmopolitanism": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    },
    "translations": {
@@ -1485,6 +2466,20 @@
    }
   },
   {
+   "id": "it_18855a16",
+   "text": {
+    "en": "Society could not function without leaders and followers"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_1896bdca",
    "text": {
     "en": "Sex outside marriage is immoral.",
@@ -1500,6 +2495,12 @@
     },
     "6axes": {
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    },
    "translations": {
@@ -1579,6 +2580,34 @@
      "verdict": "minor_shift",
      "note": "'पिटाई करना' means to beat/thrash, broader and harsher than 'spank' (a light smack); the intensity of a sensitive corporal-punishment item is raised and could change an answer. | revised: Resolved: the 'beat/thrash' intensity of पिटाई is gone and 'हल्की चपत' (light slap/smack) sits in the same mild corporal-punishment range as 'spank'; the added softener 'हल्की' and the loss of the on-the-bottom specificity of 'spank' make it marginally milder and less specific, but the answer to the item should not change.",
      "revised": true
+    }
+   }
+  },
+  {
+   "id": "it_1b937d97",
+   "text": {
+    "en": "The national government can't understand what the people need."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1c5fe4c1",
+   "text": {
+    "en": "Those who do not work should die"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -1677,6 +2706,20 @@
    }
   },
   {
+   "id": "it_1cc552bc",
+   "text": {
+    "en": "National cultures are important to protect"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_1ccfb084",
    "text": {
     "en": "A genuine free market requires restrictions on the ability of predator multinationals to create monopolies.",
@@ -1726,6 +2769,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_1dd943c3",
+   "text": {
+    "en": "Lasting peace leads to prosperity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1e352c8e",
+   "text": {
+    "en": "We should be more accepting to other cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1f83ea76",
+   "text": {
+    "en": "Whistleblowers should be strongly protected"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -1839,6 +2924,12 @@
     "6axes": {
      "nationalism": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -1865,6 +2956,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_21442309",
+   "text": {
+    "en": "State and local laws should have precedence over national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -2016,6 +3121,20 @@
    }
   },
   {
+   "id": "it_22bd9d9e",
+   "text": {
+    "en": "There must be a separation between church and state"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_22e67915",
    "text": {
     "en": "It is important that we maintain the traditions of our past.",
@@ -2031,6 +3150,12 @@
     "6axes": {
      "nationalism": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -2057,6 +3182,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2357dba4",
+   "text": {
+    "en": "The government should not regulate the economy at all"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2360bf91",
+   "text": {
+    "en": "Nations should not maintain a military"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -2114,6 +3267,12 @@
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -2140,6 +3299,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_25c72965",
+   "text": {
+    "en": "Technological progress is usually good"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_2734f6fe",
+   "text": {
+    "en": "Subdivisions should not be able to exempt from national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_2795387b",
+   "text": {
+    "en": "Only extremely talented immigrants, if that, should be permitted to enter the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -2187,6 +3388,34 @@
      "verdict": "minor_shift",
      "note": "Literal 'चर्चों' reads to a Hindi respondent as Christian churches specifically; the English item is meant as religious institutions generally, so the cultural referent narrows.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2cd20e11",
+   "text": {
+    "en": "Religious clothing should be banned from public"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2cf5408d",
+   "text": {
+    "en": "Nations should cooperate whenever it benefits them both"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -2244,6 +3473,48 @@
    }
   },
   {
+   "id": "it_2d98567d",
+   "text": {
+    "en": "Marijuana should be legalized"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2e25de79",
+   "text": {
+    "en": "The government should monitor all citizens to combat terrorism"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_2e39f9de",
+   "text": {
+    "en": "The government should not fund any religious organizations in any way"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_2e4aaeb5",
    "text": {
     "en": "Pornography, depicting consenting adults, should be legal for the adult population.",
@@ -2297,6 +3568,20 @@
    }
   },
   {
+   "id": "it_2e9e7410",
+   "text": {
+    "en": "We should not allow any refugees"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_2ea82df9",
    "text": {
     "en": "The means of production should belong to the workers who use them.",
@@ -2338,6 +3623,62 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2fc58e9d",
+   "text": {
+    "en": "I am proud to be in my country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_303a647f",
+   "text": {
+    "en": "We should put effort into getting a person on Mars in the near future"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_30dcbfa2",
+   "text": {
+    "en": "Alliances can pose a threat to a nation's sovereignty."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_30ff0c30",
+   "text": {
+    "en": "Each person should have one vote, each equal to every other"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -2391,6 +3732,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_3297adae",
+   "text": {
+    "en": "People should have to work for anything they get"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    }
   },
@@ -2520,6 +3875,12 @@
      "cosmopolitanism": -5,
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -2546,6 +3907,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_387f4a2a",
+   "text": {
+    "en": "There is no higher power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_391ac8f1",
+   "text": {
+    "en": "If AI could rule more effectively than humans, then AI should rule"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
     }
    }
   },
@@ -2665,6 +4054,12 @@
     "6axes": {
      "nationalism": 5,
      "anarche": 10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -2736,6 +4131,48 @@
    }
   },
   {
+   "id": "it_3ecb9886",
+   "text": {
+    "en": "A country cannot function without a national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_3ff99d88",
+   "text": {
+    "en": "Leaders must be strong or a nation will suffer"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_4018bd6a",
+   "text": {
+    "en": "From each according to his ability, to each according to his need"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_40402710",
    "text": {
     "en": "Society requires structure and bureaucracy in order to function.",
@@ -2773,6 +4210,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_4277108a",
+   "text": {
+    "en": "Countries that violate human rights should be toppled"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_4301386a",
+   "text": {
+    "en": "When people have already suffered for technology to be developed, we should use that technology"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_437cbdb5",
+   "text": {
+    "en": "Elections are an effective way of showing government approval"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    }
   },
@@ -2865,6 +4344,34 @@
    }
   },
   {
+   "id": "it_44b4fdad",
+   "text": {
+    "en": "The benefits of open borders would outweigh the costs"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_45939864",
+   "text": {
+    "en": "Basic things needed to live, such as healthcare, are rights"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_45cafcc3",
    "text": {
     "en": "Abortion, when the woman’s life is not threatened, should always be illegal.",
@@ -2918,6 +4425,48 @@
    }
   },
   {
+   "id": "it_45d33d65",
+   "text": {
+    "en": "Some freedom must be given up in order to keep people safe"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_47661776",
+   "text": {
+    "en": "The national government protects minorities better than some local governments do."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_4782ae04",
+   "text": {
+    "en": "Testing products on animals is ethical"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_47bcc411",
    "text": {
     "en": "In times of crisis, safety becomes more important than civil liberties.",
@@ -2959,6 +4508,62 @@
    }
   },
   {
+   "id": "it_47e91732",
+   "text": {
+    "en": "Abortion should be legal in all cases"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_48af7077",
+   "text": {
+    "en": "There is no need for local or state governments"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_48cf558d",
+   "text": {
+    "en": "All societies are a blend of cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_4b56b35c",
+   "text": {
+    "en": "Diplomacy only hurts nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_4bedfe57",
    "text": {
     "en": "Military action by our nation is often necessary to protect it.",
@@ -2975,6 +4580,12 @@
     "6axes": {
      "cosmopolitanism": 10,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -3050,6 +4661,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_4c88e2c2",
+   "text": {
+    "en": "There should be compulsory military service"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_4d3649a6",
+   "text": {
+    "en": "Only those who serve in the military should be allowed to have influence on who is in power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -3144,6 +4783,76 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_52d296e7",
+   "text": {
+    "en": "My nation is closer to my views than most nations in the world"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_52d89d99",
+   "text": {
+    "en": "People should have the power to choose their leaders"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_53b6c93b",
+   "text": {
+    "en": "Technology is not always beneficial"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_53c59439",
+   "text": {
+    "en": "Economies without any capitalism will collapse"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_5488f83c",
+   "text": {
+    "en": "The United Nations should have a military to enforce its resolutions"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    }
   },
@@ -3288,6 +4997,48 @@
    }
   },
   {
+   "id": "it_56a3945c",
+   "text": {
+    "en": "Local governments give each region good representation of their views"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_5749e2a5",
+   "text": {
+    "en": "Alliances are important for protecting a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_57acd39c",
+   "text": {
+    "en": "Religion must decline for society to progress"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_58172a84",
    "text": {
     "en": "Land should not be a commodity to be bought and sold.",
@@ -3385,6 +5136,20 @@
    }
   },
   {
+   "id": "it_58d709a8",
+   "text": {
+    "en": "The government must be by the people for the people"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_595df89c",
    "text": {
     "en": "Democracy is more than a decision-making process.",
@@ -3399,6 +5164,12 @@
     },
     "6axes": {
      "nationalism": 10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -3490,6 +5261,12 @@
     },
     "6axes": {
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -3573,6 +5350,104 @@
    }
   },
   {
+   "id": "it_5ffc6715",
+   "text": {
+    "en": "Communism, if implemented correctly, would be a good form of economics"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_610bf3f5",
+   "text": {
+    "en": "War is needed to make an economy thrive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_625dc6ec",
+   "text": {
+    "en": "Tradition just hinders the progress of technology"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_62bd49f0",
+   "text": {
+    "en": "Representatives rarely represent the nation well"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_645d8dc5",
+   "text": {
+    "en": "People should have equal opportunity to succeed"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_64b45bf3",
+   "text": {
+    "en": "A constant state of war benefits a country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_657cb29f",
+   "text": {
+    "en": "If you have nothing to hide, then you shouldn't care about the government having access to your communications"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_66675ff0",
    "text": {
     "en": "The very existence of the state is a threat to our liberty.",
@@ -3587,6 +5462,12 @@
     },
     "6axes": {
      "akraetia": 15
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -3613,6 +5494,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_66892a22",
+   "text": {
+    "en": "Faith is complete nonsense"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
     }
    }
   },
@@ -3756,6 +5651,48 @@
    }
   },
   {
+   "id": "it_68bb1159",
+   "text": {
+    "en": "A nation must obey its leadership without question"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_697784ac",
+   "text": {
+    "en": "There should be no police force"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_6ae3205a",
+   "text": {
+    "en": "Police should be regulated more"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_6b1083b1",
    "text": {
     "en": "The sacrifice of some civil liberties is necessary to protect us from acts of terrorism.",
@@ -3771,6 +5708,12 @@
     "6axes": {
      "nationalism": -5,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    },
    "translations": {
@@ -3801,6 +5744,20 @@
    }
   },
   {
+   "id": "it_6b80287f",
+   "text": {
+    "en": "People should vote issue by issue themselves"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_6cb9e872",
    "text": {
     "en": "I support single-payer, universal healthcare.",
@@ -3816,6 +5773,12 @@
     "6axes": {
      "econ_asp": 10,
      "akraetia": -7
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -3915,6 +5878,12 @@
     "6axes": {
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -4174,6 +6143,34 @@
    }
   },
   {
+   "id": "it_705c5392",
+   "text": {
+    "en": "Catering to popular opinion is detrimental to a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_70be1798",
+   "text": {
+    "en": "A nation usually needs a military in order to survive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_727758ce",
    "text": {
     "en": "A united world government would be beneficial to mankind.",
@@ -4189,6 +6186,12 @@
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -4215,6 +6218,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_72f3c972",
+   "text": {
+    "en": "Automation overall is extremely good for society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -4263,6 +6280,20 @@
    }
   },
   {
+   "id": "it_73dfc46f",
+   "text": {
+    "en": "Most drugs should be legalized"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_741bf3e9",
    "text": {
     "en": "The harder you work, the more you progress up the social ladder.",
@@ -4300,6 +6331,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_747d603e",
+   "text": {
+    "en": "Traditional medicines are often more effective than modern medicines"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    }
   },
@@ -4376,6 +6421,12 @@
      "econ_asp": -5,
      "nationalism": 5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -4402,6 +6453,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_793b82d3",
+   "text": {
+    "en": "A country must be sure to take all measures to enforce its laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_7a56c1c8",
+   "text": {
+    "en": "Everybody should speak at least two languages"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_7b728d76",
+   "text": {
+    "en": "The poor choose to be poor"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -4535,6 +6628,20 @@
    }
   },
   {
+   "id": "it_7c2d64c4",
+   "text": {
+    "en": "There is no need for a national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_7c569d77",
    "text": {
     "en": "Military action that defies international law is sometimes justified.",
@@ -4637,6 +6744,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_7d3b350b",
+   "text": {
+    "en": "Strong states weaken a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_7ef90412",
+   "text": {
+    "en": "A nation's culture is important to protect"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -4828,6 +6963,34 @@
    }
   },
   {
+   "id": "it_80a9a78c",
+   "text": {
+    "en": "States cannot function without a strong national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_81d48077",
+   "text": {
+    "en": "Anybody who wants to enter the country should be able to"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_825eb96d",
    "text": {
     "en": "Oppression by corporations is more of a concern than oppression by governments.",
@@ -4844,6 +7007,12 @@
     "6axes": {
      "econ_asp": 5,
      "econ_control": 10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -5024,6 +7193,20 @@
    }
   },
   {
+   "id": "it_850814ef",
+   "text": {
+    "en": "War usually leads to worse outcomes"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_8681e9e1",
    "text": {
     "en": "Controlling inflation is more important than controlling unemployment.",
@@ -5114,6 +7297,76 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_86efd8bd",
+   "text": {
+    "en": "People should hold more loyalty to their local state than their country."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_88053880",
+   "text": {
+    "en": "Technology is negatively affecting modern society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_884e40a0",
+   "text": {
+    "en": "International trade is generally beneficial."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_8b3399da",
+   "text": {
+    "en": "Direct democracy is the best form of government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_8b7f5956",
+   "text": {
+    "en": "Having independent nations with the risk of global conflict creates a large threat to humanity as a whole"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -5212,6 +7465,20 @@
    }
   },
   {
+   "id": "it_8cc70ee6",
+   "text": {
+    "en": "Religion does not belong in government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_8d53bbc8",
    "text": {
     "en": "Abstract art that doesn’t represent anything shouldn’t be considered art at all.",
@@ -5265,6 +7532,20 @@
    }
   },
   {
+   "id": "it_8e0e09d7",
+   "text": {
+    "en": "Laws should vary from area to area and culture to culture within a country."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_8f7286fb",
    "text": {
     "en": "It is more important to retain peaceful relations than to further our strength.",
@@ -5279,6 +7560,12 @@
     },
     "6axes": {
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -5403,6 +7690,48 @@
    }
   },
   {
+   "id": "it_933c49f2",
+   "text": {
+    "en": "The elders in society know the best path for it"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9417cee1",
+   "text": {
+    "en": "Every religion must be looked upon equally by the government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_945dbde2",
+   "text": {
+    "en": "Most bad things happening in the world are caused by us turning away from religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_94c4e7b2",
    "text": {
     "en": "The rich are too highly taxed.",
@@ -5452,6 +7781,20 @@
      "verdict": "minor_shift",
      "note": "'बहुत ज़्यादा' is 'very much' and only by implication 'too much'; the normative 'too highly' is weakened to a strong descriptive.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_95031ae7",
+   "text": {
+    "en": "Border protection is important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -5509,6 +7852,20 @@
    }
   },
   {
+   "id": "it_99d3d1a4",
+   "text": {
+    "en": "Human Caused climate change is currently one of the greatest threats to our way of life."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_9a15ca2a",
    "text": {
     "en": "Taxes should be increased on the rich to provide for the poor.",
@@ -5525,6 +7882,12 @@
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -5597,6 +7960,62 @@
    }
   },
   {
+   "id": "it_9ae232a1",
+   "text": {
+    "en": "Democracy makes it too easy for a majority to further itself at the expense of minorities"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9aeb1a8a",
+   "text": {
+    "en": "Traditions are important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9b5fa888",
+   "text": {
+    "en": "The Internet should be banned"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_9c413333",
+   "text": {
+    "en": "In general, immigrants are bad for the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_9d46455a",
    "text": {
     "en": "To chase progress at all costs is dangerous.",
@@ -5611,6 +8030,12 @@
     },
     "6axes": {
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -5653,6 +8078,12 @@
     "6axes": {
      "akraetia": 10,
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -5683,6 +8114,20 @@
    }
   },
   {
+   "id": "it_9fa51ad7",
+   "text": {
+    "en": "We have no right to militarily intervene in other nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_a0e35330",
    "text": {
     "en": "It is very important to maintain law and order.",
@@ -5700,6 +8145,12 @@
     "6axes": {
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -5882,6 +8333,34 @@
    }
   },
   {
+   "id": "it_a21c7019",
+   "text": {
+    "en": "I enjoy some foreign cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_a2b393ed",
+   "text": {
+    "en": "A government must maintain a strong military to defend itself"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_a41c9862",
    "text": {
     "en": "Those with a greater ability to pay should receive better healthcare.",
@@ -5923,6 +8402,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_a5e8eb2a",
+   "text": {
+    "en": "Illegal immigrants should be deported in most or all cases"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_a6696949",
+   "text": {
+    "en": "Elections are a waste of resources"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_a73eba60",
+   "text": {
+    "en": "Local governments can understand their citizens better than the national government could"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    }
   },
@@ -5976,6 +8497,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_a7ef19c6",
+   "text": {
+    "en": "Immigrants can never really adapt to our way of life"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -6087,6 +8622,12 @@
      "econ_asp": -10,
      "econ_control": -10,
      "akraetia": 5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
     }
    },
    "translations": {
@@ -6113,6 +8654,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ab1d7024",
+   "text": {
+    "en": "We should be taking in more refugees"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    }
   },
@@ -6240,6 +8795,20 @@
    }
   },
   {
+   "id": "it_ac7daeb8",
+   "text": {
+    "en": "It's a good idea to test a policy in one state rather than implementing it nationwide right away"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_adaf73c0",
    "text": {
     "en": "If economic globalisation is inevitable, it should primarily serve humanity rather than the interests of trans-national corporations.",
@@ -6293,6 +8862,34 @@
    }
   },
   {
+   "id": "it_b0f90358",
+   "text": {
+    "en": "The wealthy have far more than they need"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b12d0df5",
+   "text": {
+    "en": "Religion should be removed from everything in our government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_b17c448e",
    "text": {
     "en": "Military spending is a waste of money.",
@@ -6310,6 +8907,12 @@
      "nationalism": -5,
      "cosmopolitanism": -10,
      "akraetia": 10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6340,6 +8943,48 @@
    }
   },
   {
+   "id": "it_b1f772a3",
+   "text": {
+    "en": "Foreigners should never enter the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_b273d8f4",
+   "text": {
+    "en": "Subdivisions of nations should have their own militaries"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b3f82e29",
+   "text": {
+    "en": "Religious organizations often provide better assistance to the poor than the government does"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_b5b61800",
    "text": {
     "en": "It is important that the government follows the majority opinion, even if it is wrong.",
@@ -6356,6 +9001,12 @@
      "nationalism": -10,
      "akraetia": -5,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6382,6 +9033,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_b607f0c1",
+   "text": {
+    "en": "People should not have protections that could hinder discovering their criminal activity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -6435,6 +9100,48 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_b76624dc",
+   "text": {
+    "en": "A military option should always be considered"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_b76f6c1e",
+   "text": {
+    "en": "Diplomatic options should always be tried before war is even considered"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b7d40c35",
+   "text": {
+    "en": "Police need more power and protection"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -6556,6 +9263,12 @@
       0
      ],
      "page": 2
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6830,6 +9543,34 @@
    }
   },
   {
+   "id": "it_bc1fa041",
+   "text": {
+    "en": "My nation should stay out of international affairs"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_bc24cc58",
+   "text": {
+    "en": "Only our national language(s) should be spoken in our country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_bca87c97",
    "text": {
     "en": "Regardless of political opinions, it is important to side with your country.",
@@ -6895,6 +9636,12 @@
      "nationalism": -10,
      "akraetia": -5,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -6966,6 +9713,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_bef660f6",
+   "text": {
+    "en": "People's freedom should have no limits"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -7090,6 +9851,12 @@
     },
     "6axes": {
      "econ_asp": -10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -7120,6 +9887,62 @@
    }
   },
   {
+   "id": "it_c087b856",
+   "text": {
+    "en": "Countries that do not serve our interests should be toppled"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_c0c0064d",
+   "text": {
+    "en": "A group of states without a strong national government is merely an alliance, not a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c0f356c3",
+   "text": {
+    "en": "War is never justified"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c11f1fd3",
+   "text": {
+    "en": "People should think of themselves as citizens of their nation rather than their state"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_c15716bd",
    "text": {
     "en": "The general populace makes poor decisions.",
@@ -7135,6 +9958,12 @@
     "6axes": {
      "akraetia": -10,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -7181,6 +10010,12 @@
     "6axes": {
      "econ_asp": -5,
      "cosmopolitanism": -10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -7211,6 +10046,48 @@
    }
   },
   {
+   "id": "it_c4a58892",
+   "text": {
+    "en": "Local governments should have more power than they currently do"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c6e4bb8b",
+   "text": {
+    "en": "The United Nations needs more power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c8106ce2",
+   "text": {
+    "en": "The government should support and only recognize one religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_c8150a6f",
    "text": {
     "en": "The United Nations should be abolished.",
@@ -7227,6 +10104,12 @@
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": -10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -7253,6 +10136,76 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_c8618719",
+   "text": {
+    "en": "A national government must be strong to adequately protect all its citizens"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_c8648d14",
+   "text": {
+    "en": "People should have the right to leave their wealth to their descendents"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c8fb6c6a",
+   "text": {
+    "en": "Religion should be banned"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c9a5ca20",
+   "text": {
+    "en": "I believe there is something after death"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c9e86840",
+   "text": {
+    "en": "Government owned industry is usually a bad idea"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -7306,6 +10259,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ca62be48",
+   "text": {
+    "en": "Absolute freedom makes a society dangerous"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_cba2c07e",
+   "text": {
+    "en": "The national government needs more power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    }
   },
@@ -7388,6 +10369,76 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_cd28112b",
+   "text": {
+    "en": "People should be given freedom whenever it causes little security risk"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cd9e3461",
+   "text": {
+    "en": "Capitalism is better than any existing alternative"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cef3c934",
+   "text": {
+    "en": "Popular opinion is not always right"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cf9e56b2",
+   "text": {
+    "en": "Peace is preferable to war whenever possible"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_d1ab3f1b",
+   "text": {
+    "en": "We must go back to a basic way of life without modern conveniences."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -7487,6 +10538,62 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_d2397c55",
+   "text": {
+    "en": "Laws should be completely consistent within all regions of a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_d5c724bb",
+   "text": {
+    "en": "Illegal immigrants do not provide a benefit to the hosting country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_d5daf39b",
+   "text": {
+    "en": "The more people asked, the better chance there is of reaching the best decision."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_d68cb0f7",
+   "text": {
+    "en": "People must be allowed to follow a religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -7818,6 +10925,48 @@
    }
   },
   {
+   "id": "it_db917e68",
+   "text": {
+    "en": "Immigrants are a net positive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_dbad7ed1",
+   "text": {
+    "en": "Children should be educated in religious values."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_dcde3589",
+   "text": {
+    "en": "Immigrants should be expected to learn the language of the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_dd1fceab",
    "text": {
     "en": "A hierarchical state is best.",
@@ -7834,6 +10983,12 @@
      "nationalism": -5,
      "akraetia": -5,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -7946,6 +11101,20 @@
    }
   },
   {
+   "id": "it_df74f356",
+   "text": {
+    "en": "Theocracy is a good system of government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_e06d56a7",
    "text": {
     "en": "When you are troubled, it’s better not to think about it, but to keep busy with more cheerful things.",
@@ -7995,6 +11164,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_e10df1bd",
+   "text": {
+    "en": "In the modern era, militaries aren't really necessary"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
     }
    }
   },
@@ -8052,6 +11235,34 @@
    }
   },
   {
+   "id": "it_e24ec3b1",
+   "text": {
+    "en": "Religion is beneficial for society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_e2649645",
+   "text": {
+    "en": "People born to wealthy families have unfair success even when they aren't skilled and don't work hard"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_e3adda38",
    "text": {
     "en": "Public utilities like roads and electricity should be publicly owned.",
@@ -8065,6 +11276,12 @@
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    },
    "translations": {
@@ -8132,6 +11349,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_e46e4b07",
+   "text": {
+    "en": "Nobody in other countries has our best interests in mind"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -8226,6 +11457,48 @@
      "verdict": "minor_shift",
      "note": "'दखल देना' (interfere) carries a negative charge that the neutral 'be involved' does not; may nudge agreement slightly.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ea986b16",
+   "text": {
+    "en": "We are first and foremost citizens of Earth"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_eba8f9c2",
+   "text": {
+    "en": "Local governments address issues that the national government would never touch without them"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_ebfb7f90",
+   "text": {
+    "en": "Religion usually provides the truth"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -8409,6 +11682,20 @@
    }
   },
   {
+   "id": "it_efbac21b",
+   "text": {
+    "en": "We should respect those who have served in our military"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_effe0bd5",
    "text": {
     "en": "All industry and the bank should be nationalised.",
@@ -8465,6 +11752,12 @@
     "6axes": {
      "akraetia": -2,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -8491,6 +11784,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_f085f993",
+   "text": {
+    "en": "Democracy is the worst form of government, except for all the others we've tried."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -8536,6 +11843,34 @@
    }
   },
   {
+   "id": "it_f1c5f5dc",
+   "text": {
+    "en": "There should not be international law"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_f235c614",
+   "text": {
+    "en": "Our culture would be better with other cultures mixed in more"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_f4447fd6",
    "text": {
     "en": "It is necessary for the government to intervene in the economy to protect consumers.",
@@ -8552,6 +11887,12 @@
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -8600,6 +11941,12 @@
      "nationalism": 10,
      "cosmopolitanism": 10,
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -8679,6 +12026,34 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_f5b70151",
+   "text": {
+    "en": "Laws should not be based on religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_f6cbec9c",
+   "text": {
+    "en": "Nations fighting among each other gets in the way of progress"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -8836,6 +12211,34 @@
    }
   },
   {
+   "id": "it_fbe45f1d",
+   "text": {
+    "en": "Public opinion swings too much with emotional events to be useful for policy making"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_fc4b400d",
+   "text": {
+    "en": "Nobody but me can adequately represent my views"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_fc8011b8",
    "text": {
     "en": "We should open our borders to immigration.",
@@ -8879,6 +12282,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_fd00e69b",
+   "text": {
+    "en": "Genetic modification should be used rarely, if ever"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -8970,6 +12387,20 @@
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_fe475e1b",
+   "text": {
+    "en": "Only those who served in the military should be able to gain power in government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },

@@ -33,7 +33,8 @@ vm.createContext(ctx);
 try { vm.runInContext(m[1], ctx, { filename: "compass-bench.html#core" }); } catch (e) { console.error(`core block does not evaluate: ${e.message}`); process.exit(2); }
 for (const fn of ["apiError", "isTransient", "runPool", "extractJson", "openrouterOnce", "llm", "scoreInstrument", "normaliseAxes", "bootstrapCI", "cellKey", "buildGroups", "buildSinglePrompt", "buildPagePrompt", "singleSchema", "pageSchema", "estimateRun", "setInstruments", "scaleFor", "optionsFor",
   "orderFor", "orderedCodes", "majorityAnswers", "trialInstability", "responseStyle", "quadrantOf", "varianceDecomposition", "bootstrapShares", "toUnit",
-  "setUi", "defaultPrompt", "usableInLang", "shiftDistance", "buildOpenPrompt", "buildExtractPrompt", "extractSchema", "sampleForCheck", "agreement", "stanceToAnswer"])
+  "setUi", "defaultPrompt", "usableInLang", "shiftDistance", "buildOpenPrompt", "buildExtractPrompt", "extractSchema", "sampleForCheck", "agreement", "stanceToAnswer",
+  "scoreNineAxes", "drawNineAxes", "ideologyMatch", "validateImport"])
   if (typeof ctx[fn] !== "function") { console.error(`required function missing from core block: ${fn}`); process.exit(2); }
 
 const DATA = JSON.parse(itemsFile);
@@ -48,12 +49,16 @@ let passed = 0, failed = 0;
 async function test(name, fn) { try { await fn(); passed++; console.log("ok  ", name); } catch (e) { failed++; console.log("FAIL", name, "\n    ", e.message.split("\n")[0]); } }
 
 await test("embedded items JSON is byte-identical to compass-bench-items.json", () => assert.equal(emb[1], itemsFile));
-await test("dedup: 182 unique items, 66 shared, instrument sizes 70/70/46/62, every id resolves", () => {
-  assert.equal(ITEMS.length, 182);
-  assert.equal(ITEMS.filter(it => Object.keys(it.effects).length > 1).length, 66);
-  assert.equal(JSON.stringify(Object.fromEntries(Object.entries(DATA.instruments).map(([k, v]) => [k, v.items.length]))), JSON.stringify({ "8values": 70, "6axes": 70, "sapply": 46, "pct": 62 }));
+const FOUR = ["8values", "6axes", "sapply", "pct"];
+const inFour = it => Object.keys(it.effects).some(k => FOUR.includes(k));
+await test("dedup: 355 unique items (182 across the four fixed tests, 173 only in 9Axes), 72 shared, instrument sizes 70/70/46/62/216, every id resolves", () => {
+  assert.equal(ITEMS.length, 355);
+  assert.equal(ITEMS.filter(inFour).length, 182);
+  assert.equal(ITEMS.filter(it => Object.keys(it.effects).length > 1).length, 72);
+  assert.equal(JSON.stringify(Object.fromEntries(Object.entries(DATA.instruments).map(([k, v]) => [k, v.items.length]))), JSON.stringify({ "8values": 70, "6axes": 70, "sapply": 46, "pct": 62, "9axes": 216 }));
   for (const k in DATA.instruments) for (const id of DATA.instruments[k].items) assert.ok(BY_ID.get(id)?.effects[k], `${k} item ${id} missing effects`);
-  assert.equal(new Set(ITEMS.map(it => it.text.en.toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim())).size, 182, "no two items share a normalised text");
+  assert.equal(new Set(ITEMS.map(it => it.text.en.toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim())).size, 355, "no two items share a normalised text");
+  assert.equal(ITEMS.filter(it => it.effects["9axes"] && !inFour(it)).length, 173, "9Axes-only items");
 });
 for (const [key, inst] of [["eightvalues", "8values"], ["sixaxes", "6axes"]]) await test(`golden ${inst}: ${FIX[key].length} vectors match the original quiz.html formula`, () => {
   const items = instItems(inst);
@@ -100,8 +105,8 @@ await test("cell keys: deterministic, distinct per item/model/trial/mode/prompt 
 });
 await test("groups: single = one per item; page = PCT pages minus shared items, tens elsewhere, every item exactly once", () => {
   const order = ["8values", "6axes", "sapply", "pct"];
-  assert.equal(ctx.buildGroups(ITEMS, order, "single").length, 182);
-  const g = ctx.buildGroups(ITEMS, order, "page");
+  assert.equal(ctx.buildGroups(ITEMS, order, "single").length, 355);
+  const g = ctx.buildGroups(ITEMS.filter(inFour), order, "page");
   // website pages are 7/14/18/12/5/6; page 2 loses "Land should not be a commodity…" (asked as a SapplyValues item) and
   // page 3 loses "All authority should be questioned." (asked as an 8values item)
   const pct = g.filter(x => x.inst === "pct").map(x => x.items.length); assert.equal(JSON.stringify([...pct]), JSON.stringify([7, 13, 17, 12, 5, 6]));
@@ -252,14 +257,17 @@ await test("languages: five sets, every item translated with a verdict, hashes d
   assert.equal(new Set(langs.map(l => DATA.languages[l].hash)).size, 5, "language hashes distinct");
   const V = new Set(["faithful", "minor_shift", "major_shift", "wrong", "uncertain"]);
   for (const it of ITEMS) for (const l of langs.slice(1)) {
+    if (!inFour(it)) { assert.ok(!it.text[l], `${it.id} is 9Axes-only and must be English only until translated`); continue; }
     assert.ok(it.text[l] && it.text[l].trim().length > 0, `${it.id} has ${l} text`);
     assert.ok(V.has(it.translations?.[l]?.verdict), `${it.id} ${l} has a verdict`);
     assert.ok(typeof it.translations[l].back === "string" && it.translations[l].back.length > 0, `${it.id} ${l} has a back-translation`);
   }
+  assert.equal(ITEMS.filter(it => it.text.de).length, 182, "182 translated items");
   for (const l of langs.slice(1)) {
-    const excluded = ITEMS.filter(it => !ctx.usableInLang(it, l)).length;
+    const excluded = ITEMS.filter(it => it.text[l] && !ctx.usableInLang(it, l)).length;
     assert.equal(excluded, DATA.languages[l].excluded, `${l}: excluded count matches the language record`);
-    assert.ok(excluded / ITEMS.length <= 0.10, `${l}: not translation-limited`);
+    assert.ok(excluded / 182 <= 0.10, `${l}: not translation-limited`);
+    assert.ok(ITEMS.filter(it => !it.text[l]).every(it => !ctx.usableInLang(it, l)), `${l}: untranslated items are not usable`);
     assert.ok(DATA.ui.option_labels[l] && Object.keys(DATA.ui.option_labels[l]).length === 6, `${l}: six option labels`);
     for (const k of ["soft_single", "soft_page", "hard_single", "hard_page"]) {
       const p = DATA.ui.prompts[l][k]; assert.ok(p.includes("{options}") && p.includes(k.endsWith("page") ? "{statements}" : "{statement}"), `${l} ${k}: placeholders`);
@@ -274,7 +282,7 @@ await test("per-language prompts and labels: defaultPrompt and option lines use 
   ctx.setUi(DATA.ui);
   const de = ctx.defaultPrompt("soft", "single", "de"); assert.ok(de.includes("{statement}") && de !== ctx.defaultPrompt("soft", "single", "en"));
   assert.equal(ctx.defaultPrompt("hard", "page", "en"), ctx.defaultPrompt("hard", "page", "xx"), "unknown language falls back to English");
-  const it = ITEMS[0], codes = ctx.optionsFor(it, "soft");
+  const it = ITEMS.find(x => x.text.zh), codes = ctx.optionsFor(it, "soft");
   const p = ctx.buildSinglePrompt("", it, "zh", codes, "soft");
   assert.ok(p.includes(it.text.zh) && !p.includes(it.text.en), "statement in the run language only");
   assert.ok(p.includes(DATA.ui.option_labels.zh.agree) && p.includes("- no_position:"), "labels in the run language, codes unchanged");
@@ -305,6 +313,39 @@ await test("open rung: cells without an extracted stance never enter the majorit
   assert.notEqual(JSON.stringify(s1.map(c => c.key)), JSON.stringify(pool.slice(0, 10).map(c => c.key)), "sample is not simply the first n");
   const ag = ctx.agreement(new Map([["k1", "agree"], ["k2", "disagree"], ["k3", "refused"], ["k9", "agree"]]), new Map([["k1", "agree"], ["k2", "neutral"], ["k3", "refused"]]));
   assert.equal(ag.n, 3); assert.equal(ag.same, 2); assert.ok(Math.abs(ag.pct - 2 / 3) < 1e-9); assert.equal(ag.diffs[0].key, "k2"); assert.equal(ag.diffs[0].single, "neutral");
+});
+await test("9Axes: the seeded draw has the website's shape; scoring on a draw equals 50 + 5·score; full pool and gaps use the mean form", () => {
+  const items = instItems("9axes"); const axes = Object.keys(DATA.instruments["9axes"].axes);
+  const d1 = ctx.drawNineAxes(items, 7), d2 = ctx.drawNineAxes(items, 7), d3 = ctx.drawNineAxes(items, 8);
+  assert.equal(d1.length, 45); assert.equal(JSON.stringify(d1), JSON.stringify(d2)); assert.notEqual(JSON.stringify(d1), JSON.stringify(d3));
+  for (const a of axes) { const mine = d1.map(id => BY_ID.get(id)).filter(it => it.effects["9axes"].axis === a); assert.equal(mine.length, 5, `5 per axis (${a})`);
+    const idx = mine.map(it => { const e = it.effects["9axes"]; return e.sign > 0 ? 4 - e.rate : 3 + e.rate; }).sort((x, y) => x - y);
+    // the site draws grades 1,2,3,5,7 or, when the direction flips, their mirror 7,6,5,3,1
+    assert.ok(JSON.stringify(idx) === "[1,2,3,5,7]" || JSON.stringify(idx) === "[1,3,5,6,7]", `rate indexes 1,2,3,5,7 or mirrored (${a}): ${idx}`); }
+  // website: scores[ax] += mult·sign; calc_score = 50 + 5·score
+  const rnd = (() => { let a = 3; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })();
+  const MULTS = [1, 0.5, 0, -0.5, -1], CODE = ["strongly_agree", "agree", "neutral", "disagree", "strongly_disagree"];
+  for (let v = 0; v < 5; v++) {
+    const drawn = d1.map(id => BY_ID.get(id)); const picks = drawn.map(() => Math.floor(rnd() * 5));
+    const site = {}; axes.forEach(a => site[a] = 0); drawn.forEach((it, i) => site[it.effects["9axes"].axis] += MULTS[picks[i]] * it.effects["9axes"].sign);
+    const s = ctx.scoreInstrument("9axes", drawn, new Map(drawn.map((it, i) => [it.id, CODE[picks[i]]])));
+    for (const a of axes) assert.equal(s[a].value, Number((50 + 5 * site[a]).toFixed(1)), `axis ${a}`); }
+  const all = ctx.scoreInstrument("9axes", items, new Map(items.map(it => [it.id, it.effects["9axes"].sign > 0 ? "strongly_agree" : "strongly_disagree"])));
+  for (const a of axes) { assert.equal(all[a].value, 75); assert.equal(all[a].total, 24); }
+  const gap = ctx.scoreInstrument("9axes", items, new Map()); for (const a of axes) assert.equal(gap[a].value, null);
+});
+await test("8values closest ideology: an exact stats vector returns that ideology; the site's mixed exponents are used", () => {
+  const ideo = DATA.instruments["8values"].ideologies; assert.equal(ideo.length, 52);
+  for (const io of [ideo[0], ideo[20], ideo[51]]) { const axes = Object.fromEntries(Object.entries(io.stats).map(([k, v]) => [k, { value: v }])); assert.equal(ctx.ideologyMatch(axes, ideo), io.name); }
+  assert.equal(ctx.ideologyMatch({ econ: { value: null }, govt: { value: 1 }, dipl: { value: 1 }, scty: { value: 1 } }, ideo), null);
+  const near = ctx.ideologyMatch({ econ: { value: 100 }, govt: { value: 100 }, dipl: { value: 50 }, scty: { value: 90 } }, ideo); assert.equal(near, "Anarcho-Communism");
+});
+await test("import validation: same hashes pass, a changed instrument or language hash or an unknown item id refuses", () => {
+  const ok = { tool: "compass-bench", cells: [{ key: "k", item_id: ITEMS[0].id }], instruments: Object.fromEntries(Object.entries(DATA.instruments).map(([k, v]) => [k, { hash: v.hash }])), languages: Object.fromEntries(Object.entries(DATA.languages).map(([k, v]) => [k, { hash: v.hash }])) };
+  assert.equal(ctx.validateImport(ok, DATA).length, 0);
+  const bad = JSON.parse(JSON.stringify(ok)); bad.instruments.pct.hash = "0000"; bad.languages.de.hash = "1111"; bad.cells.push({ key: "x", item_id: "it_nope" });
+  const problems = ctx.validateImport(bad, DATA); assert.equal(problems.length, 3, problems.join("; "));
+  assert.ok(ctx.validateImport({ tool: "other" }, DATA).length >= 2);
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

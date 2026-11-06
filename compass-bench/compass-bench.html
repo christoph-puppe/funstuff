@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>compass-bench v0.4 · political compass tests for language models</title>
+<title>compass-bench v0.5 · political compass tests for language models</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -221,7 +221,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
 <div id="shell">
   <div id="topbar">
     <div class="brand">compass<span>·</span>bench</div>
-    <div class="pill" id="pill-version">v0.4.1</div>
+    <div class="pill" id="pill-version">v0.5.0</div>
     <div class="pill" id="pill-build" title="build">—</div>
     <div class="pill" id="pill-catalog">CATALOG —</div>
     <div class="pill" id="pill-sel">0 MODELS</div>
@@ -390,6 +390,9 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
           <div class="spacer"></div>
           <button class="tiny" id="btn-exp-json" disabled>⤓ json</button>
           <button class="tiny" id="btn-exp-csv" disabled>⤓ csv</button>
+          <button class="tiny" id="btn-exp-md" disabled>⤓ md</button>
+          <button class="tiny" id="btn-import">⤒ import run</button>
+          <input type="file" id="import-file" accept="application/json,.json" style="display:none">
         </div>
         <div class="progress-wrap" id="prog">
           <div class="progress-meta"><span id="prog-label">—</span><span id="prog-count">0 / 0</span></div>
@@ -445,7 +448,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
         <div class="card-head"><span class="ic">◈</span><h2>Convergence across instruments</h2>
           <div class="spacer"></div><span class="nano" id="conv-meta"></span></div>
         <div class="compass-wrap" id="conv-body"></div>
-        <div class="hint" style="margin-top:9px">Economic (left ↔ right) × authority (libertarian ↔ authoritarian) on a common [−1, +1] scale: 8values ● · 6axes ■ · SapplyValues ◆ · PCT ▲, one of each per model, joined per model. The tool never averages across instruments; a long polygon is a finding about the instruments, not noise to remove.</div>
+        <div class="hint" style="margin-top:9px">Economic (left ↔ right) × authority (libertarian ↔ authoritarian) on a common [−1, +1] scale: 8values ● · 6axes ■ · SapplyValues ◆ · PCT ▲ · 9Axes ✚, one of each per model, joined per model. The tool never averages across instruments; a long polygon is a finding about the instruments, not noise to remove.</div>
       </div>
 
       <div class="card" id="shift-card" style="display:none">
@@ -504,7 +507,7 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
   "en": {
    "name": "English",
    "status": "original",
-   "hash": "8ac1cd9f0a377ca6e9b38468fa885832648ed7c82d8464ba2abb776055ff0105"
+   "hash": "a418a4100979b06d241adedce7ed7323242af327d7e8cac44f88aa098273a0b4"
   },
   "de": {
    "name": "Deutsch",
@@ -697,7 +700,478 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "it_4c2da82c",
     "it_0eecb1d9"
    ],
-   "hash": "14d07da62e821108343a5fcf2a6bb231d51d8240736223fc7ebb62775b785a5c"
+   "hash": "14d07da62e821108343a5fcf2a6bb231d51d8240736223fc7ebb62775b785a5c",
+   "ideologies": [
+    {
+     "name": "Anarcho-Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 90
+     }
+    },
+    {
+     "name": "Libertarian Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 70,
+      "govt": 80,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Trotskyism",
+     "stats": {
+      "econ": 100,
+      "dipl": 100,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Marxism",
+     "stats": {
+      "econ": 100,
+      "dipl": 70,
+      "govt": 40,
+      "scty": 80
+     }
+    },
+    {
+     "name": "De Leonism",
+     "stats": {
+      "econ": 100,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Leninism",
+     "stats": {
+      "econ": 100,
+      "dipl": 40,
+      "govt": 20,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Stalinism/Maoism",
+     "stats": {
+      "econ": 100,
+      "dipl": 20,
+      "govt": 0,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Religious Communism",
+     "stats": {
+      "econ": 100,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 30
+     }
+    },
+    {
+     "name": "State Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Theocratic Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Religious Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 70,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Democratic Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Revolutionary Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 20,
+      "govt": 50,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Libertarian Socialism",
+     "stats": {
+      "econ": 80,
+      "dipl": 80,
+      "govt": 80,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Anarcho-Syndicalism",
+     "stats": {
+      "econ": 80,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Left-Wing Populism",
+     "stats": {
+      "econ": 60,
+      "dipl": 40,
+      "govt": 30,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Theocratic Distributism",
+     "stats": {
+      "econ": 60,
+      "dipl": 40,
+      "govt": 30,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Distributism",
+     "stats": {
+      "econ": 60,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Social Liberalism",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Christian Democracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 50,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Social Democracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 70,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Progressivism",
+     "stats": {
+      "econ": 60,
+      "dipl": 80,
+      "govt": 60,
+      "scty": 100
+     }
+    },
+    {
+     "name": "Anarcho-Mutualism",
+     "stats": {
+      "econ": 60,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 70
+     }
+    },
+    {
+     "name": "National Totalitarianism",
+     "stats": {
+      "econ": 50,
+      "dipl": 20,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Global Totalitarianism",
+     "stats": {
+      "econ": 50,
+      "dipl": 80,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Technocracy",
+     "stats": {
+      "econ": 60,
+      "dipl": 60,
+      "govt": 20,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Centrist",
+     "stats": {
+      "econ": 50,
+      "dipl": 50,
+      "govt": 50,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Liberalism",
+     "stats": {
+      "econ": 50,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Religious Anarchism",
+     "stats": {
+      "econ": 50,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Right-Wing Populism",
+     "stats": {
+      "econ": 40,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Moderate Conservatism",
+     "stats": {
+      "econ": 40,
+      "dipl": 40,
+      "govt": 50,
+      "scty": 30
+     }
+    },
+    {
+     "name": "Reactionary",
+     "stats": {
+      "econ": 40,
+      "dipl": 40,
+      "govt": 40,
+      "scty": 10
+     }
+    },
+    {
+     "name": "Social Libertarianism",
+     "stats": {
+      "econ": 60,
+      "dipl": 70,
+      "govt": 80,
+      "scty": 70
+     }
+    },
+    {
+     "name": "Libertarianism",
+     "stats": {
+      "econ": 40,
+      "dipl": 60,
+      "govt": 80,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Anarcho-Egoism",
+     "stats": {
+      "econ": 40,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Nazism",
+     "stats": {
+      "econ": 40,
+      "dipl": 0,
+      "govt": 0,
+      "scty": 5
+     }
+    },
+    {
+     "name": "Autocracy",
+     "stats": {
+      "econ": 50,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Fascism",
+     "stats": {
+      "econ": 40,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Capitalist Fascism",
+     "stats": {
+      "econ": 20,
+      "dipl": 20,
+      "govt": 20,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Conservatism",
+     "stats": {
+      "econ": 30,
+      "dipl": 40,
+      "govt": 40,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Neo-Liberalism",
+     "stats": {
+      "econ": 30,
+      "dipl": 30,
+      "govt": 50,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Classical Liberalism",
+     "stats": {
+      "econ": 30,
+      "dipl": 60,
+      "govt": 60,
+      "scty": 80
+     }
+    },
+    {
+     "name": "Authoritarian Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 30,
+      "govt": 20,
+      "scty": 40
+     }
+    },
+    {
+     "name": "State Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 30,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Neo-Conservatism",
+     "stats": {
+      "econ": 20,
+      "dipl": 20,
+      "govt": 40,
+      "scty": 20
+     }
+    },
+    {
+     "name": "Fundamentalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 30,
+      "govt": 30,
+      "scty": 5
+     }
+    },
+    {
+     "name": "Libertarian Capitalism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 80,
+      "scty": 60
+     }
+    },
+    {
+     "name": "Market Anarchism",
+     "stats": {
+      "econ": 20,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Objectivism",
+     "stats": {
+      "econ": 10,
+      "dipl": 50,
+      "govt": 90,
+      "scty": 40
+     }
+    },
+    {
+     "name": "Totalitarian Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 30,
+      "govt": 0,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Ultra-Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 40,
+      "govt": 50,
+      "scty": 50
+     }
+    },
+    {
+     "name": "Anarcho-Capitalism",
+     "stats": {
+      "econ": 0,
+      "dipl": 50,
+      "govt": 100,
+      "scty": 50
+     }
+    }
+   ],
+   "ideology_match": "dist = |econ−e|² + |govt−g|² + |dipl−d|^1.73856063 + |scty−s|^1.73856063, nearest wins (results.html)"
   },
   "6axes": {
    "name": "6axes",
@@ -977,9 +1451,331 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "it_76070818"
    ],
    "hash": "fe703ff5547b7d6ea88f422d28d52b6b66d0edb800e023e9dde5987e4da27a5c"
+  },
+  "9axes": {
+   "name": "9Axes",
+   "version": "216-item pool, site draws 5 per axis",
+   "source": "https://github.com/9axes/9axes.github.io",
+   "site": "https://9axes.github.io",
+   "licence": "MIT (from the original 8values)",
+   "scale": "likert5",
+   "range": [
+    0,
+    100
+   ],
+   "draw": {
+    "per_axis": 5,
+    "rates": [
+     1,
+     2,
+     3,
+     5,
+     7
+    ],
+    "note": "the website picks, per axis, one random variant at rate indexes 1,2,3,5,7 or their mirror 7,6,5,3,1, direction chosen at random; scoring uses only the sign of the rate"
+   },
+   "axes": {
+    "fed": {
+     "hi": "Federal",
+     "lo": "Unitary"
+    },
+    "dem": {
+     "hi": "Democratic",
+     "lo": "Authoritarian"
+    },
+    "glo": {
+     "hi": "Globalist",
+     "lo": "Isolationist"
+    },
+    "mil": {
+     "hi": "Militarist",
+     "lo": "Pacifist"
+    },
+    "sec": {
+     "hi": "Security",
+     "lo": "Freedom"
+    },
+    "equ": {
+     "hi": "Equality",
+     "lo": "Markets"
+    },
+    "rel": {
+     "hi": "Secular",
+     "lo": "Religious"
+    },
+    "pro": {
+     "hi": "Progressive",
+     "lo": "Traditional"
+    },
+    "mul": {
+     "hi": "Assimilationist",
+     "lo": "Multiculturalist"
+    }
+   },
+   "items": [
+    "it_7c2d64c4",
+    "it_b273d8f4",
+    "it_05c9db59",
+    "it_21442309",
+    "it_1b937d97",
+    "it_86efd8bd",
+    "it_c4a58892",
+    "it_8e0e09d7",
+    "it_ac7daeb8",
+    "it_a73eba60",
+    "it_eba8f9c2",
+    "it_56a3945c",
+    "it_3ecb9886",
+    "it_47661776",
+    "it_00e1ac25",
+    "it_cba2c07e",
+    "it_2734f6fe",
+    "it_c11f1fd3",
+    "it_c0c0064d",
+    "it_c8618719",
+    "it_80a9a78c",
+    "it_48af7077",
+    "it_d2397c55",
+    "it_7d3b350b",
+    "it_8b3399da",
+    "it_6b80287f",
+    "it_62bd49f0",
+    "it_b5b61800",
+    "it_d5daf39b",
+    "it_fc4b400d",
+    "it_437cbdb5",
+    "it_f085f993",
+    "it_30ff0c30",
+    "it_595df89c",
+    "it_52d89d99",
+    "it_58d709a8",
+    "it_6d1f343b",
+    "it_cef3c934",
+    "it_3ff99d88",
+    "it_dd1fceab",
+    "it_18855a16",
+    "it_9ae232a1",
+    "it_c15716bd",
+    "it_0eecb1d9",
+    "it_fbe45f1d",
+    "it_a6696949",
+    "it_705c5392",
+    "it_68bb1159",
+    "it_727758ce",
+    "it_ea986b16",
+    "it_07003cc5",
+    "it_c6e4bb8b",
+    "it_5488f83c",
+    "it_8b7f5956",
+    "it_784947b5",
+    "it_115794f5",
+    "it_f6cbec9c",
+    "it_884e40a0",
+    "it_5749e2a5",
+    "it_2cf5408d",
+    "it_0a01ea76",
+    "it_52d296e7",
+    "it_2fc58e9d",
+    "it_c393297c",
+    "it_30dcbfa2",
+    "it_1cc552bc",
+    "it_bc1fa041",
+    "it_c8150a6f",
+    "it_e46e4b07",
+    "it_4b56b35c",
+    "it_f1c5f5dc",
+    "it_06182494",
+    "it_610bf3f5",
+    "it_64b45bf3",
+    "it_4d3649a6",
+    "it_4c88e2c2",
+    "it_c087b856",
+    "it_fe475e1b",
+    "it_4bedfe57",
+    "it_4277108a",
+    "it_b76624dc",
+    "it_a2b393ed",
+    "it_70be1798",
+    "it_efbac21b",
+    "it_8f7286fb",
+    "it_b76f6c1e",
+    "it_cf9e56b2",
+    "it_0b04bbcc",
+    "it_1dd943c3",
+    "it_850814ef",
+    "it_b17c448e",
+    "it_9fa51ad7",
+    "it_104a285e",
+    "it_c0f356c3",
+    "it_e10df1bd",
+    "it_2360bf91",
+    "it_064c02e7",
+    "it_2e25de79",
+    "it_b607f0c1",
+    "it_b7d40c35",
+    "it_a0e35330",
+    "it_793b82d3",
+    "it_657cb29f",
+    "it_6b1083b1",
+    "it_5bec4e0c",
+    "it_03e050d2",
+    "it_45d33d65",
+    "it_ca62be48",
+    "it_2d98567d",
+    "it_cd28112b",
+    "it_01d8b7c2",
+    "it_47e91732",
+    "it_6ae3205a",
+    "it_0d7aee6c",
+    "it_9f019f15",
+    "it_73dfc46f",
+    "it_1f83ea76",
+    "it_66675ff0",
+    "it_697784ac",
+    "it_bef660f6",
+    "it_5ffc6715",
+    "it_4018bd6a",
+    "it_0dc9223b",
+    "it_825eb96d",
+    "it_9a15ca2a",
+    "it_e3adda38",
+    "it_6cb9e872",
+    "it_b0f90358",
+    "it_45939864",
+    "it_f4447fd6",
+    "it_645d8dc5",
+    "it_e2649645",
+    "it_c8648d14",
+    "it_aacd8e35",
+    "it_53c59439",
+    "it_c0551200",
+    "it_cd9e3461",
+    "it_c9e86840",
+    "it_b8775047",
+    "it_3297adae",
+    "it_7b728d76",
+    "it_2357dba4",
+    "it_007d5915",
+    "it_1c5fe4c1",
+    "it_c8fb6c6a",
+    "it_66892a22",
+    "it_57acd39c",
+    "it_2cd20e11",
+    "it_387f4a2a",
+    "it_2e39f9de",
+    "it_08f1fc6e",
+    "it_9417cee1",
+    "it_b12d0df5",
+    "it_8cc70ee6",
+    "it_f5b70151",
+    "it_22bd9d9e",
+    "it_c9a5ca20",
+    "it_e24ec3b1",
+    "it_d68cb0f7",
+    "it_06fbdc9e",
+    "it_b3f82e29",
+    "it_dbad7ed1",
+    "it_ebfb7f90",
+    "it_37c3b8d9",
+    "it_1896bdca",
+    "it_df74f356",
+    "it_c8106ce2",
+    "it_945dbde2",
+    "it_391ac8f1",
+    "it_0552b213",
+    "it_625dc6ec",
+    "it_72f3c972",
+    "it_3d46d403",
+    "it_4301386a",
+    "it_303a647f",
+    "it_4782ae04",
+    "it_25c72965",
+    "it_99d3d1a4",
+    "it_0912e2f4",
+    "it_0b4558f5",
+    "it_9d46455a",
+    "it_53b6c93b",
+    "it_9aeb1a8a",
+    "it_88053880",
+    "it_fd00e69b",
+    "it_effebfed",
+    "it_20df0a15",
+    "it_22e67915",
+    "it_933c49f2",
+    "it_747d603e",
+    "it_9b5fa888",
+    "it_d1ab3f1b",
+    "it_b1f772a3",
+    "it_2e9e7410",
+    "it_bc24cc58",
+    "it_2795387b",
+    "it_bd8bab0a",
+    "it_a7ef19c6",
+    "it_9c413333",
+    "it_7ef90412",
+    "it_d5c724bb",
+    "it_a5e8eb2a",
+    "it_dcde3589",
+    "it_95031ae7",
+    "it_ab1d7024",
+    "it_db917e68",
+    "it_a21c7019",
+    "it_f488dc75",
+    "it_1e352c8e",
+    "it_48cf558d",
+    "it_7a56c1c8",
+    "it_0af51468",
+    "it_f235c614",
+    "it_2569fbba",
+    "it_81d48077",
+    "it_44b4fdad"
+   ],
+   "hash": "1d8076b24b36eddb88cc178671fcf199bcc7b0acba96c5378b489022795c8ca5"
   }
  },
  "items": [
+  {
+   "id": "it_007d5915",
+   "text": {
+    "en": "The government should not break up monopolies"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_00e1ac25",
+   "text": {
+    "en": "There are many issues that it does not make sense to address at a local level"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_01d8b7c2",
+   "text": {
+    "en": "The government has no business looking into most people's personal lives"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
   {
    "id": "it_02899ca4",
    "text": {
@@ -1022,6 +1818,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_03e050d2",
+   "text": {
+    "en": "The government should have access to the emails of suspected terrorists"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_0552b213",
    "text": {
     "en": "Genetic modification is a force for good, even on humans.",
@@ -1036,6 +1846,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
     }
    },
    "translations": {
@@ -1062,6 +1878,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_05c9db59",
+   "text": {
+    "en": "State laws should have precedence over national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_06182494",
+   "text": {
+    "en": "Any deals other countries want must be bad for us"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -1119,6 +1963,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_064c02e7",
+   "text": {
+    "en": "Those who disagree with the government should be removed from the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_06fbdc9e",
+   "text": {
+    "en": "I believe in a higher power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_07003cc5",
+   "text": {
+    "en": "In order for humanity to survive, we must get past having separate nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_07231fc2",
    "text": {
     "en": "Autonomy of body extends even to minors, the mentally ill, and serious criminals.",
@@ -1160,6 +2046,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_08f1fc6e",
+   "text": {
+    "en": "I support gay marriage"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_0912e2f4",
    "text": {
     "en": "Environmental regulations are essential.",
@@ -1176,6 +2076,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "econ_asp": 5,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
     }
    },
    "translations": {
@@ -1222,6 +2128,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "cosmopolitanism": -10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -1293,6 +2205,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_0af51468",
+   "text": {
+    "en": "All humans share a common identity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_0b04bbcc",
    "text": {
     "en": "Even when protesting an authoritarian government, violence is not acceptable.",
@@ -1308,6 +2234,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -1353,6 +2285,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "econ_asp": 5,
      "akraetia": 5
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    },
    "translations": {
@@ -1395,6 +2333,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": 10,
      "anarche": 10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -1462,6 +2406,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "minor_shift",
      "note": "'ज़्यादा से ज़्यादा' can also read as 'as much as possible' (the trailing 'ही' pushes it to 'at most'), and 'कानून-व्यवस्था' is 'law and order' rather than 'law enforcement'; intended reading is still the likely one.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_0dc9223b",
+   "text": {
+    "en": "Equality of outcome is important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -1596,6 +2554,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": 10,
      "cosmopolitanism": -10,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -1761,6 +2725,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_104a285e",
+   "text": {
+    "en": "Countries fall apart with constant war"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_108bc354",
    "text": {
     "en": "Without democracy, a society is nothing.",
@@ -1819,6 +2797,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": -5,
      "cosmopolitanism": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    },
    "translations": {
@@ -1983,6 +2967,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_18855a16",
+   "text": {
+    "en": "Society could not function without leaders and followers"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_1896bdca",
    "text": {
     "en": "Sex outside marriage is immoral.",
@@ -1998,6 +2996,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    },
    "translations": {
@@ -2077,6 +3081,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "minor_shift",
      "note": "'पिटाई करना' means to beat/thrash, broader and harsher than 'spank' (a light smack); the intensity of a sensitive corporal-punishment item is raised and could change an answer. | revised: Resolved: the 'beat/thrash' intensity of पिटाई is gone and 'हल्की चपत' (light slap/smack) sits in the same mild corporal-punishment range as 'spank'; the added softener 'हल्की' and the loss of the on-the-bottom specificity of 'spank' make it marginally milder and less specific, but the answer to the item should not change.",
      "revised": true
+    }
+   }
+  },
+  {
+   "id": "it_1b937d97",
+   "text": {
+    "en": "The national government can't understand what the people need."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1c5fe4c1",
+   "text": {
+    "en": "Those who do not work should die"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -2175,6 +3207,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_1cc552bc",
+   "text": {
+    "en": "National cultures are important to protect"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_1ccfb084",
    "text": {
     "en": "A genuine free market requires restrictions on the ability of predator multinationals to create monopolies.",
@@ -2224,6 +3270,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_1dd943c3",
+   "text": {
+    "en": "Lasting peace leads to prosperity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1e352c8e",
+   "text": {
+    "en": "We should be more accepting to other cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_1f83ea76",
+   "text": {
+    "en": "Whistleblowers should be strongly protected"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -2337,6 +3425,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -2363,6 +3457,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_21442309",
+   "text": {
+    "en": "State and local laws should have precedence over national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -2514,6 +3622,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_22bd9d9e",
+   "text": {
+    "en": "There must be a separation between church and state"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_22e67915",
    "text": {
     "en": "It is important that we maintain the traditions of our past.",
@@ -2529,6 +3651,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -2555,6 +3683,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2357dba4",
+   "text": {
+    "en": "The government should not regulate the economy at all"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2360bf91",
+   "text": {
+    "en": "Nations should not maintain a military"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -2612,6 +3768,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -2638,6 +3800,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_25c72965",
+   "text": {
+    "en": "Technological progress is usually good"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_2734f6fe",
+   "text": {
+    "en": "Subdivisions should not be able to exempt from national laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_2795387b",
+   "text": {
+    "en": "Only extremely talented immigrants, if that, should be permitted to enter the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -2685,6 +3889,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "minor_shift",
      "note": "Literal 'चर्चों' reads to a Hindi respondent as Christian churches specifically; the English item is meant as religious institutions generally, so the cultural referent narrows.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2cd20e11",
+   "text": {
+    "en": "Religious clothing should be banned from public"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2cf5408d",
+   "text": {
+    "en": "Nations should cooperate whenever it benefits them both"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -2742,6 +3974,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_2d98567d",
+   "text": {
+    "en": "Marijuana should be legalized"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_2e25de79",
+   "text": {
+    "en": "The government should monitor all citizens to combat terrorism"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_2e39f9de",
+   "text": {
+    "en": "The government should not fund any religious organizations in any way"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_2e4aaeb5",
    "text": {
     "en": "Pornography, depicting consenting adults, should be legal for the adult population.",
@@ -2795,6 +4069,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_2e9e7410",
+   "text": {
+    "en": "We should not allow any refugees"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_2ea82df9",
    "text": {
     "en": "The means of production should belong to the workers who use them.",
@@ -2836,6 +4124,62 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_2fc58e9d",
+   "text": {
+    "en": "I am proud to be in my country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_303a647f",
+   "text": {
+    "en": "We should put effort into getting a person on Mars in the near future"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_30dcbfa2",
+   "text": {
+    "en": "Alliances can pose a threat to a nation's sovereignty."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_30ff0c30",
+   "text": {
+    "en": "Each person should have one vote, each equal to every other"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -2889,6 +4233,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_3297adae",
+   "text": {
+    "en": "People should have to work for anything they get"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    }
   },
@@ -3018,6 +4376,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "cosmopolitanism": -5,
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -3044,6 +4408,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_387f4a2a",
+   "text": {
+    "en": "There is no higher power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_391ac8f1",
+   "text": {
+    "en": "If AI could rule more effectively than humans, then AI should rule"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
     }
    }
   },
@@ -3163,6 +4555,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": 5,
      "anarche": 10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -3234,6 +4632,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_3ecb9886",
+   "text": {
+    "en": "A country cannot function without a national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_3ff99d88",
+   "text": {
+    "en": "Leaders must be strong or a nation will suffer"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_4018bd6a",
+   "text": {
+    "en": "From each according to his ability, to each according to his need"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_40402710",
    "text": {
     "en": "Society requires structure and bureaucracy in order to function.",
@@ -3271,6 +4711,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_4277108a",
+   "text": {
+    "en": "Countries that violate human rights should be toppled"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_4301386a",
+   "text": {
+    "en": "When people have already suffered for technology to be developed, we should use that technology"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_437cbdb5",
+   "text": {
+    "en": "Elections are an effective way of showing government approval"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    }
   },
@@ -3363,6 +4845,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_44b4fdad",
+   "text": {
+    "en": "The benefits of open borders would outweigh the costs"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_45939864",
+   "text": {
+    "en": "Basic things needed to live, such as healthcare, are rights"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_45cafcc3",
    "text": {
     "en": "Abortion, when the woman’s life is not threatened, should always be illegal.",
@@ -3416,6 +4926,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_45d33d65",
+   "text": {
+    "en": "Some freedom must be given up in order to keep people safe"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_47661776",
+   "text": {
+    "en": "The national government protects minorities better than some local governments do."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_4782ae04",
+   "text": {
+    "en": "Testing products on animals is ethical"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_47bcc411",
    "text": {
     "en": "In times of crisis, safety becomes more important than civil liberties.",
@@ -3457,6 +5009,62 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_47e91732",
+   "text": {
+    "en": "Abortion should be legal in all cases"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_48af7077",
+   "text": {
+    "en": "There is no need for local or state governments"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_48cf558d",
+   "text": {
+    "en": "All societies are a blend of cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_4b56b35c",
+   "text": {
+    "en": "Diplomacy only hurts nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_4bedfe57",
    "text": {
     "en": "Military action by our nation is often necessary to protect it.",
@@ -3473,6 +5081,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "cosmopolitanism": 10,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -3548,6 +5162,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_4c88e2c2",
+   "text": {
+    "en": "There should be compulsory military service"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_4d3649a6",
+   "text": {
+    "en": "Only those who serve in the military should be allowed to have influence on who is in power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -3642,6 +5284,76 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_52d296e7",
+   "text": {
+    "en": "My nation is closer to my views than most nations in the world"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_52d89d99",
+   "text": {
+    "en": "People should have the power to choose their leaders"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_53b6c93b",
+   "text": {
+    "en": "Technology is not always beneficial"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_53c59439",
+   "text": {
+    "en": "Economies without any capitalism will collapse"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_5488f83c",
+   "text": {
+    "en": "The United Nations should have a military to enforce its resolutions"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    }
   },
@@ -3786,6 +5498,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_56a3945c",
+   "text": {
+    "en": "Local governments give each region good representation of their views"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_5749e2a5",
+   "text": {
+    "en": "Alliances are important for protecting a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_57acd39c",
+   "text": {
+    "en": "Religion must decline for society to progress"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_58172a84",
    "text": {
     "en": "Land should not be a commodity to be bought and sold.",
@@ -3883,6 +5637,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_58d709a8",
+   "text": {
+    "en": "The government must be by the people for the people"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_595df89c",
    "text": {
     "en": "Democracy is more than a decision-making process.",
@@ -3897,6 +5665,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "nationalism": 10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -3988,6 +5762,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -4071,6 +5851,104 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_5ffc6715",
+   "text": {
+    "en": "Communism, if implemented correctly, would be a good form of economics"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_610bf3f5",
+   "text": {
+    "en": "War is needed to make an economy thrive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_625dc6ec",
+   "text": {
+    "en": "Tradition just hinders the progress of technology"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_62bd49f0",
+   "text": {
+    "en": "Representatives rarely represent the nation well"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_645d8dc5",
+   "text": {
+    "en": "People should have equal opportunity to succeed"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_64b45bf3",
+   "text": {
+    "en": "A constant state of war benefits a country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_657cb29f",
+   "text": {
+    "en": "If you have nothing to hide, then you shouldn't care about the government having access to your communications"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_66675ff0",
    "text": {
     "en": "The very existence of the state is a threat to our liberty.",
@@ -4085,6 +5963,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "akraetia": 15
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -4111,6 +5995,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_66892a22",
+   "text": {
+    "en": "Faith is complete nonsense"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
     }
    }
   },
@@ -4254,6 +6152,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_68bb1159",
+   "text": {
+    "en": "A nation must obey its leadership without question"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_697784ac",
+   "text": {
+    "en": "There should be no police force"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_6ae3205a",
+   "text": {
+    "en": "Police should be regulated more"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_6b1083b1",
    "text": {
     "en": "The sacrifice of some civil liberties is necessary to protect us from acts of terrorism.",
@@ -4269,6 +6209,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -5,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    },
    "translations": {
@@ -4299,6 +6245,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_6b80287f",
+   "text": {
+    "en": "People should vote issue by issue themselves"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_6cb9e872",
    "text": {
     "en": "I support single-payer, universal healthcare.",
@@ -4314,6 +6274,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "econ_asp": 10,
      "akraetia": -7
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -4413,6 +6379,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -4672,6 +6644,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_705c5392",
+   "text": {
+    "en": "Catering to popular opinion is detrimental to a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_70be1798",
+   "text": {
+    "en": "A nation usually needs a military in order to survive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_727758ce",
    "text": {
     "en": "A united world government would be beneficial to mankind.",
@@ -4687,6 +6687,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
     }
    },
    "translations": {
@@ -4713,6 +6719,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_72f3c972",
+   "text": {
+    "en": "Automation overall is extremely good for society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -4761,6 +6781,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_73dfc46f",
+   "text": {
+    "en": "Most drugs should be legalized"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_741bf3e9",
    "text": {
     "en": "The harder you work, the more you progress up the social ladder.",
@@ -4798,6 +6832,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_747d603e",
+   "text": {
+    "en": "Traditional medicines are often more effective than modern medicines"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
     }
    }
   },
@@ -4874,6 +6922,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "econ_asp": -5,
      "nationalism": 5,
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -4900,6 +6954,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_793b82d3",
+   "text": {
+    "en": "A country must be sure to take all measures to enforce its laws"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_7a56c1c8",
+   "text": {
+    "en": "Everybody should speak at least two languages"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_7b728d76",
+   "text": {
+    "en": "The poor choose to be poor"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -5033,6 +7129,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_7c2d64c4",
+   "text": {
+    "en": "There is no need for a national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_7c569d77",
    "text": {
     "en": "Military action that defies international law is sometimes justified.",
@@ -5135,6 +7245,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_7d3b350b",
+   "text": {
+    "en": "Strong states weaken a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_7ef90412",
+   "text": {
+    "en": "A nation's culture is important to protect"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -5326,6 +7464,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_80a9a78c",
+   "text": {
+    "en": "States cannot function without a strong national government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_81d48077",
+   "text": {
+    "en": "Anybody who wants to enter the country should be able to"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_825eb96d",
    "text": {
     "en": "Oppression by corporations is more of a concern than oppression by governments.",
@@ -5342,6 +7508,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "econ_asp": 5,
      "econ_control": 10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -5522,6 +7694,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_850814ef",
+   "text": {
+    "en": "War usually leads to worse outcomes"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_8681e9e1",
    "text": {
     "en": "Controlling inflation is more important than controlling unemployment.",
@@ -5612,6 +7798,76 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_86efd8bd",
+   "text": {
+    "en": "People should hold more loyalty to their local state than their country."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_88053880",
+   "text": {
+    "en": "Technology is negatively affecting modern society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_884e40a0",
+   "text": {
+    "en": "International trade is generally beneficial."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_8b3399da",
+   "text": {
+    "en": "Direct democracy is the best form of government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_8b7f5956",
+   "text": {
+    "en": "Having independent nations with the risk of global conflict creates a large threat to humanity as a whole"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -5710,6 +7966,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_8cc70ee6",
+   "text": {
+    "en": "Religion does not belong in government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_8d53bbc8",
    "text": {
     "en": "Abstract art that doesn’t represent anything shouldn’t be considered art at all.",
@@ -5763,6 +8033,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_8e0e09d7",
+   "text": {
+    "en": "Laws should vary from area to area and culture to culture within a country."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_8f7286fb",
    "text": {
     "en": "It is more important to retain peaceful relations than to further our strength.",
@@ -5777,6 +8061,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "cosmopolitanism": 10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -5901,6 +8191,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_933c49f2",
+   "text": {
+    "en": "The elders in society know the best path for it"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9417cee1",
+   "text": {
+    "en": "Every religion must be looked upon equally by the government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_945dbde2",
+   "text": {
+    "en": "Most bad things happening in the world are caused by us turning away from religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_94c4e7b2",
    "text": {
     "en": "The rich are too highly taxed.",
@@ -5950,6 +8282,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "minor_shift",
      "note": "'बहुत ज़्यादा' is 'very much' and only by implication 'too much'; the normative 'too highly' is weakened to a strong descriptive.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_95031ae7",
+   "text": {
+    "en": "Border protection is important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -6007,6 +8353,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_99d3d1a4",
+   "text": {
+    "en": "Human Caused climate change is currently one of the greatest threats to our way of life."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_9a15ca2a",
    "text": {
     "en": "Taxes should be increased on the rich to provide for the poor.",
@@ -6023,6 +8383,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -6095,6 +8461,62 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_9ae232a1",
+   "text": {
+    "en": "Democracy makes it too easy for a majority to further itself at the expense of minorities"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9aeb1a8a",
+   "text": {
+    "en": "Traditions are important"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_9b5fa888",
+   "text": {
+    "en": "The Internet should be banned"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_9c413333",
+   "text": {
+    "en": "In general, immigrants are bad for the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_9d46455a",
    "text": {
     "en": "To chase progress at all costs is dangerous.",
@@ -6109,6 +8531,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -6151,6 +8579,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": 10,
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6181,6 +8615,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_9fa51ad7",
+   "text": {
+    "en": "We have no right to militarily intervene in other nations"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_a0e35330",
    "text": {
     "en": "It is very important to maintain law and order.",
@@ -6198,6 +8646,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": -10,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -6380,6 +8834,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_a21c7019",
+   "text": {
+    "en": "I enjoy some foreign cultures"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_a2b393ed",
+   "text": {
+    "en": "A government must maintain a strong military to defend itself"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_a41c9862",
    "text": {
     "en": "Those with a greater ability to pay should receive better healthcare.",
@@ -6421,6 +8903,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_a5e8eb2a",
+   "text": {
+    "en": "Illegal immigrants should be deported in most or all cases"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_a6696949",
+   "text": {
+    "en": "Elections are a waste of resources"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_a73eba60",
+   "text": {
+    "en": "Local governments can understand their citizens better than the national government could"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    }
   },
@@ -6474,6 +8998,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_a7ef19c6",
+   "text": {
+    "en": "Immigrants can never really adapt to our way of life"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -6585,6 +9123,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "econ_asp": -10,
      "econ_control": -10,
      "akraetia": 5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
     }
    },
    "translations": {
@@ -6611,6 +9155,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ab1d7024",
+   "text": {
+    "en": "We should be taking in more refugees"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
     }
    }
   },
@@ -6738,6 +9296,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_ac7daeb8",
+   "text": {
+    "en": "It's a good idea to test a policy in one state rather than implementing it nationwide right away"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_adaf73c0",
    "text": {
     "en": "If economic globalisation is inevitable, it should primarily serve humanity rather than the interests of trans-national corporations.",
@@ -6791,6 +9363,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_b0f90358",
+   "text": {
+    "en": "The wealthy have far more than they need"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b12d0df5",
+   "text": {
+    "en": "Religion should be removed from everything in our government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_b17c448e",
    "text": {
     "en": "Military spending is a waste of money.",
@@ -6808,6 +9408,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": -5,
      "cosmopolitanism": -10,
      "akraetia": 10
+    },
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6838,6 +9444,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_b1f772a3",
+   "text": {
+    "en": "Foreigners should never enter the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_b273d8f4",
+   "text": {
+    "en": "Subdivisions of nations should have their own militaries"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b3f82e29",
+   "text": {
+    "en": "Religious organizations often provide better assistance to the poor than the government does"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_b5b61800",
    "text": {
     "en": "It is important that the government follows the majority opinion, even if it is wrong.",
@@ -6854,6 +9502,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": -10,
      "akraetia": -5,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -6880,6 +9534,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_b607f0c1",
+   "text": {
+    "en": "People should not have protections that could hinder discovering their criminal activity"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -6933,6 +9601,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_b76624dc",
+   "text": {
+    "en": "A military option should always be considered"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_b76f6c1e",
+   "text": {
+    "en": "Diplomatic options should always be tried before war is even considered"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_b7d40c35",
+   "text": {
+    "en": "Police need more power and protection"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -7054,6 +9764,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
       0
      ],
      "page": 2
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -7328,6 +10044,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_bc1fa041",
+   "text": {
+    "en": "My nation should stay out of international affairs"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_bc24cc58",
+   "text": {
+    "en": "Only our national language(s) should be spoken in our country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 4,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_bca87c97",
    "text": {
     "en": "Regardless of political opinions, it is important to side with your country.",
@@ -7393,6 +10137,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": -10,
      "akraetia": -5,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -7464,6 +10214,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_bef660f6",
+   "text": {
+    "en": "People's freedom should have no limits"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -7588,6 +10352,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     },
     "6axes": {
      "econ_asp": -10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -7618,6 +10388,62 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_c087b856",
+   "text": {
+    "en": "Countries that do not serve our interests should be toppled"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_c0c0064d",
+   "text": {
+    "en": "A group of states without a strong national government is merely an alliance, not a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c0f356c3",
+   "text": {
+    "en": "War is never justified"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c11f1fd3",
+   "text": {
+    "en": "People should think of themselves as citizens of their nation rather than their state"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_c15716bd",
    "text": {
     "en": "The general populace makes poor decisions.",
@@ -7633,6 +10459,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": -10,
      "anarche": -5
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    },
    "translations": {
@@ -7679,6 +10511,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "econ_asp": -5,
      "cosmopolitanism": -10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -7709,6 +10547,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_c4a58892",
+   "text": {
+    "en": "Local governments should have more power than they currently do"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 2,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c6e4bb8b",
+   "text": {
+    "en": "The United Nations needs more power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 3,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c8106ce2",
+   "text": {
+    "en": "The government should support and only recognize one religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_c8150a6f",
    "text": {
     "en": "The United Nations should be abolished.",
@@ -7725,6 +10605,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "nationalism": -5,
      "cosmopolitanism": -10
+    },
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
     }
    },
    "translations": {
@@ -7751,6 +10637,76 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_c8618719",
+   "text": {
+    "en": "A national government must be strong to adequately protect all its citizens"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_c8648d14",
+   "text": {
+    "en": "People should have the right to leave their wealth to their descendents"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c8fb6c6a",
+   "text": {
+    "en": "Religion should be banned"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c9a5ca20",
+   "text": {
+    "en": "I believe there is something after death"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 0
+    }
+   }
+  },
+  {
+   "id": "it_c9e86840",
+   "text": {
+    "en": "Government owned industry is usually a bad idea"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -7804,6 +10760,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ca62be48",
+   "text": {
+    "en": "Absolute freedom makes a society dangerous"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_cba2c07e",
+   "text": {
+    "en": "The national government needs more power"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    }
   },
@@ -7886,6 +10870,76 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_cd28112b",
+   "text": {
+    "en": "People should be given freedom whenever it causes little security risk"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "sec",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cd9e3461",
+   "text": {
+    "en": "Capitalism is better than any existing alternative"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cef3c934",
+   "text": {
+    "en": "Popular opinion is not always right"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_cf9e56b2",
+   "text": {
+    "en": "Peace is preferable to war whenever possible"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_d1ab3f1b",
+   "text": {
+    "en": "We must go back to a basic way of life without modern conveniences."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 4,
+     "variant": 2
     }
    }
   },
@@ -7985,6 +11039,62 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_d2397c55",
+   "text": {
+    "en": "Laws should be completely consistent within all regions of a nation"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_d5c724bb",
+   "text": {
+    "en": "Illegal immigrants do not provide a benefit to the hosting country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_d5daf39b",
+   "text": {
+    "en": "The more people asked, the better chance there is of reaching the best decision."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_d68cb0f7",
+   "text": {
+    "en": "People must be allowed to follow a religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 2
     }
    }
   },
@@ -8316,6 +11426,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_db917e68",
+   "text": {
+    "en": "Immigrants are a net positive"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_dbad7ed1",
+   "text": {
+    "en": "Children should be educated in religious values."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_dcde3589",
+   "text": {
+    "en": "Immigrants should be expected to learn the language of the country"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
    "id": "it_dd1fceab",
    "text": {
     "en": "A hierarchical state is best.",
@@ -8332,6 +11484,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": -5,
      "akraetia": -5,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -8444,6 +11602,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_df74f356",
+   "text": {
+    "en": "Theocracy is a good system of government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 4,
+     "variant": 0
+    }
+   }
+  },
+  {
    "id": "it_e06d56a7",
    "text": {
     "en": "When you are troubled, it’s better not to think about it, but to keep busy with more cheerful things.",
@@ -8493,6 +11665,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_e10df1bd",
+   "text": {
+    "en": "In the modern era, militaries aren't really necessary"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
     }
    }
   },
@@ -8550,6 +11736,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_e24ec3b1",
+   "text": {
+    "en": "Religion is beneficial for society"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_e2649645",
+   "text": {
+    "en": "People born to wealthy families have unfair success even when they aren't skilled and don't work hard"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_e3adda38",
    "text": {
     "en": "Public utilities like roads and electricity should be publicly owned.",
@@ -8563,6 +11777,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -5
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    },
    "translations": {
@@ -8630,6 +11850,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_e46e4b07",
+   "text": {
+    "en": "Nobody in other countries has our best interests in mind"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -8724,6 +11958,48 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "minor_shift",
      "note": "'दखल देना' (interfere) carries a negative charge that the neutral 'be involved' does not; may nudge agreement slightly.",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_ea986b16",
+   "text": {
+    "en": "We are first and foremost citizens of Earth"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_eba8f9c2",
+   "text": {
+    "en": "Local governments address issues that the national government would never touch without them"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "fed",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_ebfb7f90",
+   "text": {
+    "en": "Religion usually provides the truth"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": -1,
+     "rate": 3,
+     "variant": 0
     }
    }
   },
@@ -8907,6 +12183,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_efbac21b",
+   "text": {
+    "en": "We should respect those who have served in our military"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 1,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_effe0bd5",
    "text": {
     "en": "All industry and the bank should be nationalised.",
@@ -8963,6 +12253,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
     "6axes": {
      "akraetia": -2,
      "anarche": -10
+    },
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 2
     }
    },
    "translations": {
@@ -8989,6 +12285,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_f085f993",
+   "text": {
+    "en": "Democracy is the worst form of government, except for all the others we've tried."
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -9034,6 +12344,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_f1c5f5dc",
+   "text": {
+    "en": "There should not be international law"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": -1,
+     "rate": 4,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_f235c614",
+   "text": {
+    "en": "Our culture would be better with other cultures mixed in more"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_f4447fd6",
    "text": {
     "en": "It is necessary for the government to intervene in the economy to protect consumers.",
@@ -9050,6 +12388,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "econ_asp": 10,
      "econ_control": 10,
      "akraetia": -10
+    },
+    "9axes": {
+     "axis": "equ",
+     "sign": 1,
+     "rate": 1,
+     "variant": 0
     }
    },
    "translations": {
@@ -9098,6 +12442,12 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "nationalism": 10,
      "cosmopolitanism": 10,
      "anarche": 5
+    },
+    "9axes": {
+     "axis": "mul",
+     "sign": -1,
+     "rate": 2,
+     "variant": 0
     }
    },
    "translations": {
@@ -9177,6 +12527,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_f5b70151",
+   "text": {
+    "en": "Laws should not be based on religion"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "rel",
+     "sign": 1,
+     "rate": 1,
+     "variant": 1
+    }
+   }
+  },
+  {
+   "id": "it_f6cbec9c",
+   "text": {
+    "en": "Nations fighting among each other gets in the way of progress"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "glo",
+     "sign": 1,
+     "rate": 2,
+     "variant": 2
     }
    }
   },
@@ -9334,6 +12712,34 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
    }
   },
   {
+   "id": "it_fbe45f1d",
+   "text": {
+    "en": "Public opinion swings too much with emotional events to be useful for policy making"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": -1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
+   "id": "it_fc4b400d",
+   "text": {
+    "en": "Nobody but me can adequately represent my views"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "dem",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
+    }
+   }
+  },
+  {
    "id": "it_fc8011b8",
    "text": {
     "en": "We should open our borders to immigration.",
@@ -9377,6 +12783,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_fd00e69b",
+   "text": {
+    "en": "Genetic modification should be used rarely, if ever"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "pro",
+     "sign": -1,
+     "rate": 2,
+     "variant": 1
     }
    }
   },
@@ -9468,6 +12888,20 @@ svg.conv .grid-line{stroke:var(--border-2);stroke-width:1} svg.conv .axis{stroke
      "verdict": "faithful",
      "note": "",
      "revised": false
+    }
+   }
+  },
+  {
+   "id": "it_fe475e1b",
+   "text": {
+    "en": "Only those who served in the military should be able to gain power in government"
+   },
+   "effects": {
+    "9axes": {
+     "axis": "mil",
+     "sign": 1,
+     "rate": 3,
+     "variant": 2
     }
    }
   },
@@ -9617,11 +13051,12 @@ back-translations in the data file), prompts and option labels per language, a l
 the translation gate (6) and the shift-versus-noise gate (7), language as a factor in the error budget.
 Since 0.4: the open rung: free text with no options, stored raw, then a blind batched extractor (a cheap model that
 never sees the model id) maps each answer onto the test's scale or `refused`; a batch check re-extracts a sample at
-batch size 1 and gate 3 reports the agreement per language. Deliberately not here (later milestones): 9Axes, resume
-from an export, the item-inversion contamination check.
+batch size 1 and gate 3 reports the agreement per language. Since 0.5: 9Axes (216-item pool, the website's seeded draw of
+45 or the full pool; English only until translated), the 8values closest-ideology label, resume from an exported run
+(hashes must match), Markdown export. Deliberately not here: the item-inversion contamination check (0.6).
 */
-const TOOL_VERSION = "0.4.1";
-const BUILD = "2026-11-06.5";
+const TOOL_VERSION = "0.5.0";
+const BUILD = "2026-11-06.6";
 const PROMPT_VERSIONS = { soft: "soft-en-1", hard: "hard-en-1", open: "open-en-2" };
 const EXTRACT_VERSION = "extract-1";
 const $ = id => document.getElementById(id);
@@ -9632,7 +13067,7 @@ const DATA = JSON.parse($("items-data").textContent);
 const ITEMS = DATA.items;
 const ITEM_BY_ID = new Map(ITEMS.map(it => [it.id, it]));
 const INSTRUMENTS = DATA.instruments;
-const INST_ORDER = ["8values", "6axes", "sapply", "pct"];
+const INST_ORDER = ["8values", "6axes", "sapply", "pct", "9axes"];
 /* PCT scoring status: the reconstructed weight tables were checked against 12 website-scored trials of the
    2026 error-budget study (see README); the test harness re-runs that check on every build. */
 const PCT_VALIDATION = { vectors: 12, matched: 12, source: "error-budget study, data/raw_trials (website-scored)" };
@@ -9974,11 +13409,66 @@ function bootstrapShares(obs, factors, draws, seed) {
   const out = {}; for (const k in acc) { const v = acc[k].sort((a, b) => a - b); out[k] = [v[Math.floor(0.025 * (v.length - 1))], v[Math.ceil(0.975 * (v.length - 1))]]; }
   return out;
 }
+// 9Axes (quiz.html): scores[axis] += m · sign; the site shows 50 + 5·score over its 5 drawn items per axis, which is
+// 50 + 25 · mean(m · sign). The mean form reproduces the site on a draw and extends to the full pool and to gaps.
+function scoreNineAxes(items, answers) {
+  const axes = Object.keys(INSTRUMENTS_META["9axes"].axes);
+  const sum = {}, answered = {}, total = {};
+  axes.forEach(a => { sum[a] = 0; answered[a] = 0; total[a] = 0; });
+  for (const it of items) {
+    const eff = it.effects["9axes"]; const m = ANSWER_MULT[answers.get(it.id)];
+    total[eff.axis]++;
+    if (m === undefined) continue;
+    answered[eff.axis]++; sum[eff.axis] += m * eff.sign;
+  }
+  const out = {};
+  axes.forEach(a => out[a] = { value: answered[a] ? round1(50 + 25 * sum[a] / answered[a]) : null, answered: answered[a], total: total[a] });
+  return out;
+}
+// The website's draw: per axis a random direction, then one random variant at rate indexes 1,2,3,5,7 (or mirrored
+// 7,6,5,3,1); 45 statements. Seeded here, so the same seed draws the same questionnaire.
+function drawNineAxes(items, seed) {
+  const rnd = mulberry32(seed | 0), RATE_IDX = [1, 2, 3, 5, 7], picked = [];
+  const axes = Object.keys(INSTRUMENTS_META["9axes"].axes);
+  const rateIndex = eff => eff.sign > 0 ? 4 - eff.rate : 3 + eff.rate;   // rate 4..1 → 0..3, −1..−4 → 4..7
+  for (const a of axes) {
+    const c = rnd() < 0.5;
+    for (const t of RATE_IDX) {
+      const ri = c ? t : 8 - t;
+      const pool = items.filter(it => it.effects["9axes"]?.axis === a && rateIndex(it.effects["9axes"]) === ri).sort((x, y) => x.effects["9axes"].variant - y.effects["9axes"].variant);
+      if (pool.length) picked.push(pool[Math.floor(rnd() * pool.length)].id);
+    }
+  }
+  return picked;
+}
+// 8values closest ideology, exactly as results.html computes it (mixed exponents included).
+function ideologyMatch(axes, ideologies) {
+  const e = axes.econ?.value, g = axes.govt?.value, d = axes.dipl?.value, sc = axes.scty?.value;
+  if ([e, g, d, sc].some(v => v == null)) return null;
+  let best = null, bestDist = Infinity;
+  for (const io of ideologies) {
+    const dist = Math.pow(Math.abs(io.stats.econ - e), 2) + Math.pow(Math.abs(io.stats.govt - g), 2) + Math.pow(Math.abs(io.stats.dipl - d), 1.73856063) + Math.pow(Math.abs(io.stats.scty - sc), 1.73856063);
+    if (dist < bestDist) { bestDist = dist; best = io.name; }
+  }
+  return best;
+}
+// An exported run may be resumed only against the same instruments and language sets; the hashes decide.
+function validateImport(obj, data) {
+  const problems = [];
+  if (!obj || obj.tool !== "compass-bench") problems.push("not a compass-bench export");
+  if (!Array.isArray(obj?.cells)) problems.push("no cells in the export");
+  for (const [k, v] of Object.entries(obj?.instruments || {})) if (data.instruments[k] && v.hash !== data.instruments[k].hash) problems.push(`instrument ${k}: hash ${String(v.hash).slice(0, 12)} ≠ ${data.instruments[k].hash.slice(0, 12)}`);
+  for (const [k, v] of Object.entries(obj?.languages || {})) if (data.languages[k] && v.hash !== data.languages[k].hash) problems.push(`language ${k}: hash ${String(v.hash).slice(0, 12)} ≠ ${data.languages[k].hash.slice(0, 12)}`);
+  const ids = new Set((data.items || []).map(it => it.id));
+  const unknown = (obj?.cells || []).filter(c => !ids.has(c.item_id)).length; if (unknown) problems.push(`${unknown} cell(s) refer to unknown items`);
+  return problems;
+}
 let INSTRUMENTS_META = null;   // set by the host (the embedded JSON's `instruments`); the test sets it too
 function setInstruments(meta) { INSTRUMENTS_META = meta; }
 function scoreInstrument(instId, items, answers) {
   if (instId === "sapply") return scoreSapply(items, answers);
   if (instId === "pct") return scorePct(items, answers);
+  if (instId === "9axes") return scoreNineAxes(items, answers);
   return scoreWeighted(instId, items, answers);
 }
 // Common axes in [-1, +1] for cross-instrument reading: economic (+right), authority (+authoritarian),
@@ -9991,6 +13481,7 @@ function normaliseAxes(instId, axes) {
   if (instId === "6axes") return { economic: pct100(v("econ_asp")), authority: pct100(v("akraetia")), culture: pct100(v("anarche")) };
   if (instId === "sapply") return { economic: ten(v("right")), authority: ten(v("auth")), culture: v("prog") == null ? null : -v("prog") / 10 };
   if (instId === "pct") return { economic: ten(v("econ")), authority: ten(v("soc")), culture: null };
+  if (instId === "9axes") return { economic: pct100(v("equ")), authority: pct100(v("dem")), culture: pct100(v("pro")) };
   return {};
 }
 
@@ -10138,7 +13629,7 @@ const priceIn = m => Number(m?.pricing?.prompt || 0), priceOut = m => Number(m?.
 const fmtPrice = m => { const i = priceIn(m) * 1e6, o = priceOut(m) * 1e6; return (!i && !o) ? "free" : `$${i.toFixed(2)}/$${o.toFixed(2)}`; };
 const supportsStructured = m => (m.supported_parameters || []).some(p => p === "structured_outputs" || p === "response_format");
 const LS = { sel: "cb1.sel", cfg: "cb3.cfg", rail: "cb1.rail", prompts: "cb3.prompts", catalog: "cb1.catalog", langs: "cb3.langs" };
-const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "bootstrap", "cat-structured", "rung-hard", "rung-open", "randomise", "batch-size", "max-tokens-open", "check-sample", "auto-extract"];
+const CFG_INPUTS = ["mode", "trials", "concurrency", "max-tokens", "retries", "reasoning", "gate-answer", "gate-instab", "bootstrap", "cat-structured", "rung-hard", "rung-open", "randomise", "batch-size", "max-tokens-open", "check-sample", "auto-extract", "nine-mode", "nine-seed"];
 const RUNG_ORDER = ["open", "soft", "hard"];
 // textarea id → [prompt key, warn chip, placeholders]; the texts themselves live in state.prompts[lang][key]
 const PROMPT_FIELDS = { "prompt-single": ["soft_single", "warn-single", ["{statement}", "{options}"]], "prompt-page": ["soft_page", "warn-page", ["{statements}", "{options}"]],
@@ -10236,27 +13727,46 @@ function toggleModel(id) { if (state.selected.has(id)) state.selected.delete(id)
 const enabledInstruments = () => INST_ORDER.filter(k => $("inst-" + k)?.checked);
 function activeItems() {
   const on = new Set(enabledInstruments());
-  return ITEMS.filter(it => Object.keys(it.effects).some(k => on.has(k)));
+  const nine = on.has("9axes") ? new Set(nineAxesSelection().ids) : null;
+  return ITEMS.filter(it => Object.keys(it.effects).some(k => on.has(k) && (k !== "9axes" || nine.has(it.id))));
 }
 function renderInstruments() {
   $("inst-list").innerHTML = INST_ORDER.map(k => {
     const m = INSTRUMENTS[k];
     const axes = Object.entries(m.axes).map(([a, p]) => `${p.lo} ↔ ${p.hi}`).join(" · ");
-    const extra = k === "pct" ? `<span class="badge ${PCT_VALIDATION.matched === PCT_VALIDATION.vectors ? "ok" : "warn"}" title="${escapeHtml(PCT_VALIDATION.source)}">scoring ${PCT_VALIDATION.matched === PCT_VALIDATION.vectors ? "validated" : "approximate"} ${PCT_VALIDATION.matched}/${PCT_VALIDATION.vectors}</span>` : `<span class="badge ok">${escapeHtml(m.licence)}</span>`;
-    return `<div class="inst-row"><input type="checkbox" id="inst-${k}" checked>
+    const extra = k === "pct" ? `<span class="badge ${PCT_VALIDATION.matched === PCT_VALIDATION.vectors ? "ok" : "warn"}" title="${escapeHtml(PCT_VALIDATION.source)}">scoring ${PCT_VALIDATION.matched === PCT_VALIDATION.vectors ? "validated" : "approximate"} ${PCT_VALIDATION.matched}/${PCT_VALIDATION.vectors}</span>` : `<span class="badge ok">${escapeHtml(m.licence.split(" ")[0])}</span>`;
+    const controls = k === "9axes" ? `<div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><select id="nine-mode" style="width:auto"><option value="draw">draw 45 like the site</option><option value="pool">full pool 216</option></select><input type="number" id="nine-seed" value="1" min="1" max="999999" style="width:80px" title="seed of the draw"><span class="hint" id="nine-hint"></span></div>` : "";
+    return `<div class="inst-row"><input type="checkbox" id="inst-${k}" ${k === "9axes" ? "" : "checked"}>
       <div><div class="n">${escapeHtml(m.name)}</div><div class="h">${escapeHtml(m.version)}</div></div>
       <div class="h">${m.items.length} items</div>
-      <div class="ax">${escapeHtml(axes)}</div>
+      <div class="ax">${escapeHtml(axes)}${controls}</div>
       <div style="text-align:right">${extra}<div class="h" title="${m.hash}">${m.hash.slice(0, 12)}</div></div></div>`;
-  }).join("") + `<div class="inst-row off"><input type="checkbox" disabled><div><div class="n">9Axes</div><div class="h">216-item pool</div></div><div class="h">—</div><div class="ax">nine axes, seeded draw of 45 like the website</div><div style="text-align:right"><span class="badge quiet">0.5</span></div></div>`;
+  }).join("");
   INST_ORDER.forEach(k => $("inst-" + k).addEventListener("change", () => { updateInstMeta(); updatePlan(); }));
+  $("nine-mode").addEventListener("change", () => { saveCfg(); updateInstMeta(); updatePlan(); });
+  $("nine-seed").addEventListener("input", () => { saveCfg(); updateInstMeta(); updatePlan(); });
   updateInstMeta();
+}
+// 9Axes: the ids in play right now, from the rail: the seeded draw (45, as on the website) or the whole pool.
+function nineAxesSelection() {
+  const all = INSTRUMENTS["9axes"].items;
+  if ($("nine-mode").value === "pool") return { mode: "pool", seed: null, ids: all };
+  const seed = Math.max(1, parseInt($("nine-seed").value) || 1);
+  return { mode: "draw", seed, ids: drawNineAxes(all.map(id => ITEM_BY_ID.get(id)), seed) };
+}
+// The items an instrument contributes to a run: everything for the four fixed tests, the selection for 9Axes.
+function instrumentItems(inst, sel) {
+  const ids = inst === "9axes" ? (sel || state.nineAxes || nineAxesSelection()).ids : INSTRUMENTS[inst].items;
+  return ids.map(id => ITEM_BY_ID.get(id));
 }
 function updateInstMeta() {
   const items = activeItems();
-  const shared = items.filter(it => Object.keys(it.effects).filter(k => $("inst-" + k).checked).length > 1).length;
-  $("inst-meta").textContent = `${items.length} unique items · ${shared} shared`;
+  const on = new Set(enabledInstruments());
+  const shared = items.filter(it => Object.keys(it.effects).filter(k => on.has(k)).length > 1).length;
+  const untranslated = items.filter(it => !it.text.de).length;
+  $("inst-meta").textContent = `${items.length} unique items · ${shared} shared${untranslated ? ` · ${untranslated} English only` : ""}`;
   $("pill-items").textContent = items.length + " ITEMS";
+  if ($("nine-hint")) { const sel = $("inst-9axes").checked ? nineAxesSelection() : null; $("nine-hint").textContent = sel ? (sel.mode === "draw" ? `seed ${sel.seed} → ${sel.ids.length} statements, 5 per axis` : "216 statements, 24 per axis") : ""; }
 }
 function renderLanguages() {
   let saved = ["en"]; try { saved = JSON.parse(localStorage.getItem(LS.langs) || '["en"]'); } catch (e) {}
@@ -10264,9 +13774,10 @@ function renderLanguages() {
     const L = DATA.languages[code], have = !!L;
     const on = have && saved.includes(code);
     const excluded = have && code !== "en" ? ITEMS.filter(it => it.text[code] && !usableInLang(it, code)).length : 0;
+    const untranslated = have && code !== "en" ? ITEMS.filter(it => !it.text[code]).length : 0;
     const verdicts = L?.verdicts ? Object.entries(L.verdicts).map(([k, v]) => `${k} ${v}`).join(" · ") : "";
     return `<div class="lang-row ${have ? "" : "off"}"><input type="checkbox" id="lang-${code}" ${on ? "checked" : ""} ${have ? "" : "disabled"}>
-      <div class="mono">${code}</div><div>${LANG_NAMES[code]}${have ? ` <span class="hint">· ${escapeHtml(L.status)}${verdicts ? " · " + escapeHtml(verdicts) : ""}${excluded ? ` · <span style="color:var(--amber)">${excluded} excluded</span>` : ""}</span>` : ` <span class="hint">· translation pending</span>`}</div>
+      <div class="mono">${code}</div><div>${LANG_NAMES[code]}${have ? ` <span class="hint">· ${escapeHtml(L.status)}${verdicts ? " · " + escapeHtml(verdicts) : ""}${excluded ? ` · <span style="color:var(--amber)">${excluded} excluded</span>` : ""}${untranslated ? ` · ${untranslated} items not translated (9Axes)` : ""}</span>` : ` <span class="hint">· translation pending</span>`}</div>
       <div style="text-align:right">${have ? `<span class="h mono" style="font-size:10px;color:var(--text-quiet)" title="${L.hash}">${L.hash.slice(0, 12)}</span>` : `<span class="badge quiet">0.3</span>`}</div></div>`;
   }).join("");
   availableLangs().forEach(code => $("lang-" + code).addEventListener("change", () => { try { localStorage.setItem(LS.langs, JSON.stringify(enabledLangs())); } catch (e) {} updateLangMeta(); updatePlan(); }));
@@ -10335,7 +13846,8 @@ function setRunning(on) {
   $("btn-rescore").disabled = on || !Object.keys(state.cells).length;
   const openCells = Object.values(state.cells).filter(c => c.rung === "open" && c.status === "ok");
   $("btn-extract").disabled = on || !openCells.length; $("btn-check").disabled = on || !openCells.some(c => c.extract && c.extract.batch_size > 1);
-  $("btn-exp-json").disabled = $("btn-exp-csv").disabled = on || !Object.keys(state.cells).length;
+  $("btn-exp-json").disabled = $("btn-exp-csv").disabled = $("btn-exp-md").disabled = on || !Object.keys(state.cells).length;
+  $("btn-import").disabled = on;
 }
 function showProgress(label, done, total) {
   $("prog").classList.add("show"); $("prog-label").textContent = label; $("prog-count").textContent = `${done} / ${total}`;
@@ -10357,6 +13869,7 @@ async function run() {
   const cfg = { apiKey: key, retries: Math.min(5, Math.max(0, parseInt($("retries").value) || 0)), title: "compass-bench " + TOOL_VERSION };
   const maxTokens = Math.max(30, parseInt($("max-tokens").value) || 200);
   state.cancel = false; setRunning(true);
+  if ($("inst-9axes").checked) { state.nineAxes = nineAxesSelection(); l.info(`9Axes: ${state.nineAxes.mode === "draw" ? `seeded draw ${state.nineAxes.seed}, ${state.nineAxes.ids.length} statements` : "full pool, 216 statements"}`); }
   const est = state.estimate;
   l.info(`run: ${models.length} models × ${rungs.length} rung(s) × ${langs.length} language(s) × ${trials} trial(s) = ${est.calls} calls, estimate ~$${est.usd.toFixed(3)}, ~${est.minutes.toFixed(1)} min`);
   l.info(`deterministic/model split: dedup, grouping, option order, scoring, intervals, gates and the error budget are JS; the model only answers. No web search or plugin on any request.`);
@@ -10522,7 +14035,7 @@ function rescore() {
     const trials = [...new Set(mine.map(c => c.trial))].sort((a, b) => a - b);
     style.push({ model, rung, lang, ...responseStyle(mine) });
     for (const inst of insts) {
-      const items = INSTRUMENTS[inst].items.map(id => ITEM_BY_ID.get(id)).filter(it => usableInLang(it, lang));
+      const items = instrumentItems(inst).filter(it => usableInLang(it, lang));
       const idSet = new Set(items.map(it => it.id));
       const cellsHere = mine.filter(c => idSet.has(c.item_id));
       if (!cellsHere.length) continue;
@@ -10536,7 +14049,8 @@ function rescore() {
       const ci = bootstrapCI(inst, items, maj.answers, draws, parseInt(hash53(model + inst + rung + lang).slice(0, 8), 16));
       const gate1 = {}; for (const a in axes) gate1[a] = axes[a].total ? axes[a].answered / axes[a].total >= thr : false;
       scores.push({ model, inst, rung, lang, axes, ci, norm: normaliseAxes(inst, axes), perTrial, instability: inst_, unstable: inst_ ? inst_.worst > instThr : false,
-        answered: maj.answers.size, refused: maj.refusals.size, neutral_dropped: maj.neutralDropped.length, total: items.length, excluded: INSTRUMENTS[inst].items.length - items.length, trials: trials.length, gate1, insufficient: Object.values(gate1).some(v => !v) });
+        answered: maj.answers.size, refused: maj.refusals.size, neutral_dropped: maj.neutralDropped.length, total: items.length, excluded: instrumentItems(inst).length - items.length, trials: trials.length, gate1, insufficient: Object.values(gate1).some(v => !v),
+        ideology: inst === "8values" ? ideologyMatch(axes, INSTRUMENTS["8values"].ideologies || []) : null });
       if (maj.neutralDropped.length) l.info(`${model} · ${rung} · ${lang} · pct: ${maj.neutralDropped.length} neutral answer(s) have no PCT option and count as unanswered`);
     }
   }
@@ -10593,18 +14107,19 @@ function renderGates() {
 }
 
 /* ===================== compasses ===================== */
-const PROJECTION = { "8values": ["econ", "govt"], "6axes": ["econ_asp", "akraetia"], "sapply": ["right", "auth"], "pct": ["econ", "soc"] };
+const PROJECTION = { "8values": ["econ", "govt"], "6axes": ["econ_asp", "akraetia"], "sapply": ["right", "auth"], "pct": ["econ", "soc"], "9axes": ["equ", "dem"] };
+const INVERTED = new Set(["8values", "6axes", "9axes"]);   // sites count equality / liberty / democracy upward
 // x grows to the right pole (markets / right), y grows upward to the authoritarian pole, as on the websites.
 function toXY(inst, axes, x, y) {
   const r = INSTRUMENTS[inst].range;
-  const f = (axisKey, v) => { if (v == null) return null; const t = (v - r[0]) / (r[1] - r[0]); return (inst === "8values" || inst === "6axes") ? 1 - t : t; };
+  const f = (axisKey, v) => { if (v == null) return null; const t = (v - r[0]) / (r[1] - r[0]); return INVERTED.has(inst) ? 1 - t : t; };
   // 8values/6axes: high econ = Equality (left), high govt/akraetia = Liberty (bottom) → invert both
   return { x: f(x, axes[x]?.value), y: f(y, axes[y]?.value) };
 }
 function compassSvg(inst, rows) {
   const [ax, ay] = PROJECTION[inst], meta = INSTRUMENTS[inst], S = 260, P = 22;
   const lo = (k, side) => meta.axes[k][side];
-  const inv = inst === "8values" || inst === "6axes";
+  const inv = INVERTED.has(inst);
   const xl = inv ? lo(ax, "hi") : lo(ax, "lo"), xr = inv ? lo(ax, "lo") : lo(ax, "hi");
   const yt = inv ? lo(ay, "lo") : lo(ay, "hi"), yb = inv ? lo(ay, "hi") : lo(ay, "lo");
   const px = t => P + t * (S - 2 * P), py = t => S - P - t * (S - 2 * P);
@@ -10658,8 +14173,8 @@ function renderCompasses() {
   $("compass-grid").innerHTML = insts.map(inst => {
     const rows = sc.filter(s => s.inst === inst), meta = INSTRUMENTS[inst];
     const tracks = Object.keys(meta.axes).map(a => `<div class="track"><span class="lo">${escapeHtml(meta.axes[a].lo)}</span>${trackSvg(inst, a, rows)}<span class="hi">${escapeHtml(meta.axes[a].hi)}</span></div>`).join("");
-    const table = `<div class="scroll-x"><table class="grid"><tr><th>model</th>${Object.keys(meta.axes).map(a => `<th>${escapeHtml(a)}</th>`).join("")}<th>answered</th><th>refused</th>${nTrials >= 2 ? "<th>sd</th>" : ""}</tr>${rows.map(r => `<tr><td class="mono" style="color:${modelColor(r.model)}">${escapeHtml(r.model)}</td>${Object.keys(meta.axes).map(a => `<td class="num" ${r.gate1[a] ? "" : 'style="color:var(--amber)"'}>${r.axes[a].value ?? "—"}${r.ci?.[a] ? `<span class="hint"> [${r.ci[a][0]}, ${r.ci[a][1]}]</span>` : ""}</td>`).join("")}<td class="num">${r.answered}/${r.total}${r.excluded ? `<span class="hint"> (−${r.excluded})</span>` : ""}</td><td class="num">${r.refused}${r.neutral_dropped ? ` +${r.neutral_dropped}n` : ""}</td>${nTrials >= 2 ? `<td class="num" ${r.unstable ? 'style="color:var(--amber)"' : ""}>${r.instability?.worst != null ? r.instability.worst.toFixed(2) : "—"}</td>` : ""}</tr>`).join("")}</table></div>`;
-    return `<div class="sub-card"><span class="nano">${escapeHtml(meta.name)} · ${meta.hash.slice(0, 12)} · ${PROJECTION[inst][0]} × ${PROJECTION[inst][1]}</span>
+    const table = `<div class="scroll-x"><table class="grid"><tr><th>model</th>${Object.keys(meta.axes).map(a => `<th>${escapeHtml(a)}</th>`).join("")}<th>answered</th><th>refused</th>${nTrials >= 2 ? "<th>sd</th>" : ""}${inst === "8values" ? "<th>closest match</th>" : ""}</tr>${rows.map(r => `<tr><td class="mono" style="color:${modelColor(r.model)}">${escapeHtml(r.model)}</td>${Object.keys(meta.axes).map(a => `<td class="num" ${r.gate1[a] ? "" : 'style="color:var(--amber)"'}>${r.axes[a].value ?? "—"}${r.ci?.[a] ? `<span class="hint"> [${r.ci[a][0]}, ${r.ci[a][1]}]</span>` : ""}</td>`).join("")}<td class="num">${r.answered}/${r.total}${r.excluded ? `<span class="hint"> (−${r.excluded})</span>` : ""}</td><td class="num">${r.refused}${r.neutral_dropped ? ` +${r.neutral_dropped}n` : ""}</td>${nTrials >= 2 ? `<td class="num" ${r.unstable ? 'style="color:var(--amber)"' : ""}>${r.instability?.worst != null ? r.instability.worst.toFixed(2) : "—"}</td>` : ""}${inst === "8values" ? `<td>${r.ideology ? escapeHtml(r.ideology) : "—"}${r.insufficient ? '<span class="hint"> (gate 1)</span>' : ""}</td>` : ""}</tr>`).join("")}</table></div>`;
+    return `<div class="sub-card"><span class="nano">${escapeHtml(meta.name)} · ${meta.hash.slice(0, 12)} · ${PROJECTION[inst][0]} × ${PROJECTION[inst][1]}${inst === "9axes" && state.nineAxes ? ` · ${state.nineAxes.mode === "draw" ? `draw seed ${state.nineAxes.seed}` : "full pool"}` : ""}</span>
       <div class="compass-wrap">${compassSvg(inst, rows)}<div class="tracks">${tracks}</div></div>${table}</div>`;
   }).join("");
   const models = [...new Set(sc.map(s => s.model))].sort();
@@ -10701,11 +14216,11 @@ function renderLadder() {
   }
   $("ladder-grid").innerHTML = charts.join("");
 }
-const CONV_SHAPES = { "8values": "circle", "6axes": "square", "sapply": "diamond", "pct": "triangle" };
+const CONV_SHAPES = { "8values": "circle", "6axes": "square", "sapply": "diamond", "pct": "triangle", "9axes": "cross" };
 function shapeSvg(kind, x, y, col, hollow, title) {
   const f = hollow ? "none" : col, r = 5;
   const body = kind === "circle" ? `<circle cx="${x}" cy="${y}" r="${r}"` : kind === "square" ? `<rect x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}"`
-    : kind === "diamond" ? `<polygon points="${x},${y - r - 1} ${x + r + 1},${y} ${x},${y + r + 1} ${x - r - 1},${y}"` : `<polygon points="${x},${y - r - 1} ${x + r + 1},${y + r} ${x - r - 1},${y + r}"`;
+    : kind === "diamond" ? `<polygon points="${x},${y - r - 1} ${x + r + 1},${y} ${x},${y + r + 1} ${x - r - 1},${y}"` : kind === "cross" ? `<polygon points="${x - 2},${y - r - 1} ${x + 2},${y - r - 1} ${x + 2},${y - 2} ${x + r + 1},${y - 2} ${x + r + 1},${y + 2} ${x + 2},${y + 2} ${x + 2},${y + r + 1} ${x - 2},${y + r + 1} ${x - 2},${y + 2} ${x - r - 1},${y + 2} ${x - r - 1},${y - 2} ${x - 2},${y - 2}"` : `<polygon points="${x},${y - r - 1} ${x + r + 1},${y + r} ${x - r - 1},${y + r}"`;
   return `${body} fill="${f}" stroke="${col}" stroke-width="1.8"><title>${escapeHtml(title)}</title></${kind === "circle" ? "circle" : kind === "square" ? "rect" : "polygon"}>`;
 }
 function renderConvergence() {
@@ -10802,11 +14317,12 @@ function download(name, text, mime) {
 }
 const stamp = () => new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 const CAVEAT = "A marker is the behaviour of one model on one test in one language under one framing on one day; it is not a worldview. Quote it with the instrument and its hash, the language and its hash, the rung, the number of trials and the refusal rate. PCT scoring is a reconstruction validated against website results; items answered no_position or neutral do not enter the PCT sum, which the website does not allow.";
-function exportJson() {
+function buildExport() {
   const settings = {}; CFG_INPUTS.forEach(k => settings[k] = $(k).type === "checkbox" ? $(k).checked : $(k).value);
-  download(`compass-bench-${stamp()}.json`, JSON.stringify({
+  return {
     tool: "compass-bench", version: TOOL_VERSION, build: BUILD, run_at: new Date().toISOString(), interpretation_caveat: CAVEAT,
     items_schema: DATA.schema, instruments: Object.fromEntries(INST_ORDER.map(k => [k, { name: INSTRUMENTS[k].name, version: INSTRUMENTS[k].version, hash: INSTRUMENTS[k].hash, enabled: $("inst-" + k).checked }])),
+    nine_axes: state.nineAxes || null,
     languages: Object.fromEntries(availableLangs().map(l => [l, { ...DATA.languages[l], enabled: enabledLangs().includes(l), excluded_items: ITEMS.filter(it => it.text[l] && !usableInLang(it, l)).map(it => it.id) }])),
     prompt_versions: PROMPT_VERSIONS, prompts: Object.fromEntries(enabledLangs().map(l => [l, Object.fromEntries(["soft_single", "soft_page", "hard_single", "hard_page", "open_single"].map(k => [k, promptFor(k.split("_")[0], k.split("_")[1], l)]))])),
     extractor: { prompt: $("prompt-extract").value, version: EXTRACT_VERSION, model: $("extract-model").value, batch_size: $("batch-size").value, batch_check: state.batchCheck || null }, settings,
@@ -10815,8 +14331,74 @@ function exportJson() {
       option_order: settings.randomise ? "randomised per cell by hash parity (agree-first / disagree-first), recorded per cell" : "fixed agree-first",
       item_level_results: "cells", web_search: "none attached to any request", pct_scoring: PCT_VALIDATION },
     models: [...state.selected].sort(), totals: { calls: state.calls, cost_usd: state.cost }, gates: state.gates, scores: state.scores, response_style: state.style, convergence: state.convergence, language_shift: state.shift, error_budget: state.errorBudget, cells: Object.values(state.cells)
-  }, null, 2), "application/json");
+  };
 }
+function exportJson() { download(`compass-bench-${stamp()}.json`, JSON.stringify(buildExport(), null, 2), "application/json"); }
+// Resume: cells come back under their keys; ok cells are skipped by the next run, error and pending ones are redone.
+function importRun(obj) {
+  const problems = validateImport(obj, DATA);
+  if (problems.length) { problems.forEach(p => l.err("import refused: " + p)); return false; }
+  const before = Object.keys(state.cells).length;
+  let ok = 0, err = 0, pend = 0;
+  for (const c of obj.cells) { if (!c.key) continue; state.cells[c.key] = c; if (c.status === "ok") ok++; else if (c.status === "error") err++; else pend++; }
+  if (obj.nine_axes) state.nineAxes = obj.nine_axes;
+  if (obj.batch_check || obj.extractor?.batch_check) state.batchCheck = obj.extractor?.batch_check || null;
+  // settings and selection of the exported run, so the next run continues it
+  if (obj.settings) for (const [k, v] of Object.entries(obj.settings)) { const el = $(k); if (!el) continue; if (el.type === "checkbox") el.checked = !!v; else el.value = v; }
+  if (Array.isArray(obj.models)) { state.selected = new Set(obj.models); persistSelection(); }
+  if (obj.languages) for (const [l, v] of Object.entries(obj.languages)) { const el = $("lang-" + l); if (el && !el.disabled) el.checked = !!v.enabled; }
+  if (obj.instruments) for (const [k, v] of Object.entries(obj.instruments)) { const el = $("inst-" + k); if (el) el.checked = !!v.enabled; }
+  if (obj.nine_axes) { $("nine-mode").value = obj.nine_axes.mode; if (obj.nine_axes.seed) $("nine-seed").value = obj.nine_axes.seed; }
+  saveCfg(); updateInstMeta(); updateLangMeta(); renderCatalog(); checkPlaceholders();
+  l.ok(`resumed ${obj.cells.length} cells from ${obj.version ? "v" + obj.version : "an export"} (${obj.run_at || "no date"}): ${ok} ok, ${err} error, ${pend} pending → ${err + pend} will be asked again by the next run${before ? `; ${before} cells were already in this session` : ""}`);
+  state.lastRun = "resumed " + (obj.run_at || "").slice(0, 16).replace("T", " ");
+  rescore(); updatePlan(); setRunning(false);
+  return true;
+}
+function importFile(file) {
+  const r = new FileReader();
+  r.onload = () => { try { importRun(JSON.parse(r.result)); } catch (e) { l.err("import failed: " + e.message); } };
+  r.onerror = () => l.err("could not read the file");
+  r.readAsText(file);
+}
+// Markdown: everything a reader needs to quote a number, then every answer.
+function buildMarkdown() {
+  const ex = buildExport(); const L = [];
+  const fmt = v => v == null ? "—" : typeof v === "number" ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : String(v);
+  L.push(`# compass-bench run · ${ex.run_at.slice(0, 16).replace("T", " ")}`, "", `Tool ${ex.version} build ${ex.build} · ${ex.totals.calls} calls · $${ex.totals.cost_usd.toFixed(4)}`, "", `> ${CAVEAT}`, "");
+  L.push("## Instruments and languages", "", "| instrument | version | hash | enabled |", "|---|---|---|---|");
+  for (const [k, v] of Object.entries(ex.instruments)) L.push(`| ${v.name} | ${v.version} | \`${v.hash.slice(0, 12)}\` | ${v.enabled ? "yes" : "no"} |`);
+  if (ex.nine_axes) L.push("", `9Axes: ${ex.nine_axes.mode === "draw" ? `seeded draw ${ex.nine_axes.seed}, ${ex.nine_axes.ids.length} statements` : "full pool"}`);
+  L.push("", "| language | status | hash | enabled | excluded |", "|---|---|---|---|---|");
+  for (const [k, v] of Object.entries(ex.languages)) L.push(`| ${k} | ${v.status} | \`${v.hash.slice(0, 12)}\` | ${v.enabled ? "yes" : "no"} | ${v.excluded_items.length} |`);
+  L.push("", "## Settings", "", "```", ...Object.entries(ex.settings).map(([k, v]) => `${k} = ${v}`), "```", "", `Models: ${ex.models.join(", ")}`, "");
+  L.push("## Gates", "", "| # | gate | result | detail |", "|---|---|---|---|");
+  for (const g of ex.gates || []) L.push(`| ${g.id} | ${g.name} | ${g.pass === null ? "n/a" : g.pass ? "pass" : "FAIL"} | ${g.detail.replace(/\n/g, "<br>").replace(/\|/g, "/")} |`);
+  L.push("", "## Scores (native scales; [interval] = bootstrap over items)", "");
+  for (const inst of INST_ORDER) { const rows = (ex.scores || []).filter(s => s.inst === inst); if (!rows.length) continue;
+    const meta = INSTRUMENTS[inst], axes = Object.keys(meta.axes);
+    L.push(`### ${meta.name}`, "", `| model | rung | lang | ${axes.join(" | ")} | answered | refused |${inst === "8values" ? " closest match |" : ""}`, `|---|---|---|${axes.map(() => "---").join("|")}|---|---|${inst === "8values" ? "---|" : ""}`);
+    for (const r of rows) L.push(`| ${r.model} | ${r.rung} | ${r.lang} | ${axes.map(a => `${fmt(r.axes[a].value)}${r.ci?.[a] ? ` [${r.ci[a][0]}, ${r.ci[a][1]}]` : ""}${r.gate1[a] ? "" : " (gate 1)"}`).join(" | ")} | ${r.answered}/${r.total} | ${r.refused} |${inst === "8values" ? ` ${r.ideology || "—"} |` : ""}`);
+    L.push(""); }
+  if (ex.response_style?.length) { L.push("## Response style", "", "| model | rung | lang | answered | agree | disagree | neutral | refusal | order shift | trial disagreement |", "|---|---|---|---|---|---|---|---|---|---|");
+    for (const x of ex.response_style) L.push(`| ${x.model} | ${x.rung} | ${x.lang} | ${x.answered}/${x.n} | ${pctOrDash(x.agree)} | ${pctOrDash(x.disagree)} | ${pctOrDash(x.neutral)} | ${pctOrDash(x.refusal)} | ${x.order_shift == null ? "—" : (x.order_shift * 100).toFixed(1) + " pp"} | ${pctOrDash(x.trial_disagreement)} |`); L.push(""); }
+  if (ex.convergence?.length) { L.push("## Convergence (quadrants on the common axes)", "", "| model | rung | lang | quadrants | agree |", "|---|---|---|---|---|");
+    for (const c of ex.convergence) L.push(`| ${c.model} | ${c.rung} | ${c.lang} | ${c.quadrants.map(q => `${q.inst} ${q.q}`).join(", ")} | ${c.agree == null ? "—" : c.agree ? "yes" : "no"} |`); L.push(""); }
+  if (ex.language_shift?.length) { L.push("## Language shift (distance from en on the unit square)", "", "| model | rung | instrument | lang | distance | noise | within noise |", "|---|---|---|---|---|---|---|");
+    for (const x of ex.language_shift) L.push(`| ${x.model} | ${x.rung} | ${x.inst} | ${x.lang} | ${fmt(x.distance)} | ${fmt(x.noise)} | ${x.within_noise == null ? "—" : x.within_noise ? "yes" : "no"} |`); L.push(""); }
+  if (ex.error_budget) { const eb = ex.error_budget; L.push("## Error budget", "", `${eb.n} observations · ${eb.corrected ? "ω² shares" : "raw η² shares"}`, "", "| factor | share | interval |", "|---|---|---|");
+    for (const k of ["axis", "model", "rung", "lang", "residual"]) L.push(`| ${EB_LABEL[k]} | ${((eb.shares[k] ?? 0) * 100).toFixed(1)} % | ${eb.ci?.[k] ? `[${(eb.ci[k][0] * 100).toFixed(0)}, ${(eb.ci[k][1] * 100).toFixed(0)}]` : "—"} |`); L.push(""); }
+  if (ex.extractor?.batch_check) { L.push("## Extractor batch check", "", "| language | answers | agree | share |", "|---|---|---|---|");
+    for (const [l_, b] of Object.entries(ex.extractor.batch_check)) L.push(`| ${l_} | ${b.n} | ${b.same} | ${b.pct == null ? "—" : (b.pct * 100).toFixed(1) + " %"} |`); L.push(""); }
+  L.push("## Answers", "");
+  const cells = [...ex.cells].sort((a, b) => a.model.localeCompare(b.model) || a.rung.localeCompare(b.rung) || a.lang.localeCompare(b.lang) || a.trial - b.trial || a.item_id.localeCompare(b.item_id));
+  let head = "";
+  for (const c of cells) { const h = `### ${c.model} · ${c.rung} · ${c.lang} · trial ${c.trial}`; if (h !== head) { head = h; L.push("", h, ""); }
+    const it = ITEM_BY_ID.get(c.item_id); const txt = (it.text[c.lang] || it.text.en).replace(/\n/g, " ");
+    L.push(`- **${c.status === "ok" ? (c.answer ?? "not extracted") : c.status}** · ${txt}${c.lang !== "en" ? ` _(${it.text.en.replace(/\n/g, " ")})_` : ""}${c.rung === "open" && c.raw ? `\n  > ${c.raw.replace(/\s+/g, " ").slice(0, 400)}` : ""}${c.error ? ` · error: ${c.error}` : ""}`); }
+  return L.join("\n") + "\n";
+}
+function exportMd() { download(`compass-bench-${stamp()}.md`, buildMarkdown(), "text/markdown;charset=utf-8"); }
 const csvCell = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
 function exportCsv() {
   const head = ["cell_key", "model", "served_by", "instruments", "item_id", "statement_en", "lang", "rung", "trial", "order", "mode", "group", "status", "answer", "stance", "confidence", "raw_text", "latency_ms", "cost_usd", "error"];
@@ -10862,7 +14444,9 @@ function init() {
   $("btn-run").addEventListener("click", () => run().catch(e => { l.err("run failed: " + e.message); setRunning(false); }));
   $("btn-cancel").addEventListener("click", () => { state.cancel = true; l.warn("cancel requested — finishing in-flight calls"); });
   $("btn-rescore").addEventListener("click", () => { l.info("rescoring locally, no API calls"); rescore(); });
-  $("btn-exp-json").addEventListener("click", exportJson); $("btn-exp-csv").addEventListener("click", exportCsv);
+  $("btn-exp-json").addEventListener("click", exportJson); $("btn-exp-csv").addEventListener("click", exportCsv); $("btn-exp-md").addEventListener("click", exportMd);
+  $("btn-import").addEventListener("click", () => $("import-file").click());
+  $("import-file").addEventListener("change", e => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ""; });
   ["res-model", "res-status"].forEach(id => $(id).addEventListener("change", renderResults)); $("res-search").addEventListener("input", renderResults);
   $("con-clear").addEventListener("click", () => { $("con-lines").innerHTML = ""; logCount = 0; $("con-count").textContent = "0"; });
   let dragging = false;
@@ -10874,6 +14458,7 @@ function init() {
   l.info(`compass-bench v${TOOL_VERSION} build ${BUILD} ready · ${ITEMS.length} unique items from ${INST_ORDER.length} instruments · languages ${availableLangs().map(l => `${l} ${DATA.languages[l].hash.slice(0, 8)}`).join(" · ")}`);
   l.info(`instrument hashes: ${INST_ORDER.map(k => `${k} ${INSTRUMENTS[k].hash.slice(0, 10)}`).join(" · ")}`);
   l.info("PCT scoring: reconstructed tables, " + PCT_VALIDATION.matched + "/" + PCT_VALIDATION.vectors + " website-scored trials reproduced");
+  l.info("resume: import an exported run JSON (same instrument and language hashes); ok cells are skipped, the rest asked again");
   l.warn("the API key stays in this tab's memory; a reload clears it. If the catalog fails on file://, serve the folder with: python -m http.server");
   updatePlan();
   fetchCatalog(false);
