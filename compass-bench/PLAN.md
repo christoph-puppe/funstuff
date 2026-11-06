@@ -357,11 +357,12 @@ Keine Temperatur, kein `top_p`, kein Websuche-Schalter.
 
 ## 12. Architektur
 
-- **Vier Dateien im Repo:** `compass-bench.html` (das Tool, läuft allein), `compass-bench-items.json`
-  (Items, Gewichte, Übersetzungen mit Verdikten; im HTML eingebettet, Gleichheit per Test),
-  `compass-bench.test.mjs` (der Test-Harness) und `README_compass-bench.md` im Stil der Geschwister mit
-  den Lizenzhinweisen, dem Copyright-Hinweis zum PCT und den Hashes aller Instrument- und
-  Sprachfassungen. `TOOL_VERSION` im Code, `BUILD` sichtbar.
+- **Eigenes Verzeichnis `compass-bench/`** im Repo mit `compass-bench.html` (das Tool, läuft allein),
+  `compass-bench-items.json` (Items, Gewichte, Übersetzungen mit Verdikten; im HTML eingebettet,
+  Gleichheit per Test), `compass-bench.test.mjs` (der Test-Harness), `README.md` mit den
+  Lizenzhinweisen, dem Copyright-Hinweis zum PCT und den Hashes aller Instrument- und Sprachfassungen,
+  `PLAN.md` und `compass-bench.zip` (Tool, Datendatei, README) zum Download. `TOOL_VERSION` im Code,
+  `BUILD` sichtbar.
 - **Backend OpenRouter**, wie die Geschwister. Gemini-direkt bleibt Backlog.
 - **Instrumente als Daten**: `INSTRUMENTS` mit `id, name, source, licence, version, scale, axes,
   score(answers)`; die Items kommen aus dem eingebetteten JSON, dedupliziert über Instrumente, jedes

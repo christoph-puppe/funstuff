@@ -230,7 +230,8 @@ await test("variance decomposition: synthetic data with known shares (axis 80 %,
   assert.ok(Math.abs(w.shares.residual - 2 / 12) < 1e-9 && Math.abs(w.shares.axis - 8 / 12) < 1e-9, JSON.stringify(w.shares));
   assert.equal(ctx.varianceDecomposition([{ value: 1, axis: "A", model: "m", rung: "soft" }], ["axis"]), null);
   const b1 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3), b2 = ctx.bootstrapShares(noisy, ["axis", "model", "rung"], 50, 3);
-  assert.equal(JSON.stringify(b1), JSON.stringify(b2)); assert.ok(b1.axis[0] <= w.shares.axis && b1.axis[1] >= w.shares.axis - 1e-9);
+  assert.equal(JSON.stringify(b1), JSON.stringify(b2)); assert.ok(b1.axis[0] <= w.shares.axis + 1e-9 && b1.axis[1] >= w.shares.axis - 1e-9, `basic interval ${b1.axis} must bracket ${w.shares.axis}`);
+  assert.ok(Object.values(b1).every(([lo, hi]) => lo >= 0 && hi <= 1 && lo <= hi), "shares intervals clipped to [0, 1]");
 });
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

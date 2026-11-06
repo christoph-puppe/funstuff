@@ -1,15 +1,17 @@
 # compass-bench
 
-A single-file browser tool that gives language models the well-known political compass tests, scores the
-answers with each test's own published algorithm, and draws every model where the test's website would
-draw it. It also measures what a single dot cannot show: how many statements the model refused, and how
-wide the interval around the dot is.
+A single-file browser tool that gives language models the well-known political compass tests in five
+languages, scores the answers with each test's own published algorithm, and draws every model where the
+test's website would draw it. It also measures what a single dot cannot show: how many statements the model
+refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
+asked in German, Chinese, Japanese or Hindi.
 
-Version 0.2.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.3.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
-Files: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the statements,
-weights and hashes; embedded in the HTML, byte-identical), `compass-bench.test.mjs` (the test harness).
-`TOOL_VERSION` and `BUILD` are in the top bar and in every export.
+This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
+statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
+`compass-bench.test.mjs` (the test harness), `PLAN.md`, and `compass-bench.zip` with the tool, its data file
+and this README for download. `TOOL_VERSION` and `BUILD` are in the top bar and in every export.
 
 Sibling tools in this directory: `whoami-bench` (what models claim about themselves), `phylo-bench`
 (functional distance over sampled continuations), `nihilartikel-bench` (agreement on fabricated entities).
@@ -26,10 +28,11 @@ Sibling tools in this directory: `whoami-bench` (what models claim about themsel
 | 4 | **Stability** | SD of each axis across repeated trials on a [−1, +1] scale; the share of items whose repeated answers differed |
 | 5 | **Response style** | raw agreement before direction coding (acquiescence), and the shift in agreement when the answer scale is shown disagree-first instead of agree-first |
 | 6 | **Convergence across instruments** | whether a model lands in the same quadrant of economic × authority on every test that passed the answer-rate gate |
-| 7 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, and what is left for trial noise and interactions |
+| 7 | **Language shift** | distance between a model's point in English and in each other language, per test, against the model's own trial noise |
+| 8 | **Error budget** | how much of the variance in this run is instrument and axis, model, rung, language, and what is left for trial noise and interactions |
 
-Later milestones add the open rung, five languages, 9Axes, resume from an export and an item-inversion
-contamination check. The plan is in `PLAN_compass-bench.md`.
+Later milestones add the open rung, 9Axes, resume from an export and an item-inversion contamination check.
+The plan is in `PLAN.md`.
 
 **Not measured:** whether a position is "right", where it comes from, or whether it shows in writing
 assistance (IssueBench). A dot here is the behaviour of one model on one test in one language under one
@@ -39,14 +42,16 @@ framing on one day. It is not a worldview.
 
 ## Quick start
 
-1. Open `compass-bench.html` in a browser. Chrome and Firefox work from `file://`. If the model catalog
-   fails to load, serve the folder: `python -m http.server`, then `http://localhost:8000/compass-bench.html`.
+1. Open `compass-bench.html` in a browser (or unpack `compass-bench.zip` anywhere and open it there). Chrome
+   and Firefox work from `file://`. If the model catalog fails to load, serve the folder:
+   `python -m http.server`, then `http://localhost:8000/compass-bench.html`.
 2. Paste an OpenRouter key in the left rail. It stays in the tab's memory, is sent only to `openrouter.ai`,
    and is never written to storage, exports or the log. A reload clears it. **Use a spend-capped key.**
 3. Tick one or more models in the live catalog (filter by name or vendor, or paste a slug). The estimate
    under **Run** updates with every tick: calls, tokens, dollars at catalog prices, minutes.
-4. Press **run**. Markers appear per test once the run completes; **rescore** recomputes locally after
-   you change a gate threshold, with no API calls.
+4. Tick the languages you want under **Languages** (English is on; the other four are opt-in) and press
+   **run**. Markers appear per test once the run completes; **rescore** recomputes locally after you change a
+   gate threshold, with no API calls.
 
 Default run: 182 statements × 1 rung × 1 language × 1 trial = **182 calls per model**, about two minutes at
 concurrency 4, cents for a cheap model and around 20 cents for a flagship. The hard rung doubles that, every
@@ -124,6 +129,26 @@ key. With both rungs on, the **Ladder** card draws each model's projection axes 
 position, a line that moves from soft to hard is forcing sensitivity. The `open` rung (free text with an
 extractor) is a later milestone.
 
+### Languages
+
+Every test exists only in English. The German, Chinese, Japanese and Hindi sets are translations made once,
+in the build session, by Maker-Checker sub-agents: one agent translated the 182 statements, the six option
+labels and the four prompt templates; a second agent in a separate context back-translated each statement and
+judged it on five levels (`faithful`, `minor_shift`, `major_shift`, `wrong`, `uncertain`); items judged
+`major_shift` or worse went back to a Maker once, were re-judged, and kept the better of the two. Both agents
+were Claude; the independence is a separate context, not a different vendor. The result is in
+`compass-bench-items.json`: `text.<lang>` per item, `translations.<lang>` with back-translation, verdict and
+note, `languages.<lang>` with verdict counts and a SHA-256 over the texts, `ui.option_labels` and `ui.prompts`
+per language.
+
+A run in `de` is entirely German: statement, option labels and instruction. The option codes the model replies
+with stay English, so scoring is language-independent. Items judged `wrong` or `uncertain` are not asked in
+that language (gate 6); a language with more than 10 % excluded items is marked translation-limited. The
+cell key carries the language hash, so a corrected translation never mixes with results of the old one.
+
+What a shift between languages measures: the model and the translation together. The back-translations are in
+the data file so a critic can tell the two apart; a review of the German set as a diff on that file is welcome.
+
 ### Trials and option order
 
 **Trials** repeat the same cell. The headline value uses the per-item majority over trials; each trial is also
@@ -160,10 +185,11 @@ The mode is part of the cell key, so results of the two modes never mix.
 | 2 | **Instability** across trials above the threshold (default SD 0.25 on the unit scale); needs trials ≥ 2 | marker hollow with the trial range instead of a point |
 | 4 | **Convergence**: a model lands in different quadrants on different tests | both markers shown and joined, never averaged |
 | 5 | **Cohort size** below 3 | no cohort means, no dashed mean in the ladder |
+| 6 | **Translation verdicts**: items judged wrong or uncertain | not asked in that language; above 10 % the language is translation-limited |
+| 7 | **Language shift vs. noise**: a shift smaller than the model's own trial noise (needs trials ≥ 2) | drawn grey, not reported as a finding |
 | 8 | **PCT scoring** reproduces the website-scored trials | else `scoring: approximate` everywhere |
 
-Gates 3, 6 and 7 (extractor batch check, translation verdicts, language shift versus noise) arrive with the
-milestones that produce their inputs; the card lists them as not applicable until then.
+Gate 3 (extractor batch check) arrives with the open rung.
 
 ---
 
@@ -188,11 +214,20 @@ model (circle, square, diamond, triangle), joined into a polygon per model. The 
 instruments; the 2026 study found PCT and 8values correlate at r = −0.26 across models, and a long polygon is
 that finding, not noise to remove.
 
+### Language shift
+
+For the selected rung: a normalised economic × authority compass with one marker per language per model and
+test, each joined to its English point, and a heatmap of the distance from English on the unit square (0 is
+the same point, 2.83 the opposite corners). A cell turns grey when the distance is below the model's own
+trial-to-trial noise, the root sum of squares of the two instabilities; that needs trials ≥ 2, otherwise every
+shift is measured but none is judged.
+
 ### Error budget
 
-A crossed main-effect decomposition of the normalised axis values over three factors: instrument × axis, model,
-rung; the residual is trial-to-trial noise plus interactions. Shares of the total sum of squares, with a
-bootstrap interval over observations. Amber ticks mark the 2026 study's values on 19 models (instrument and
+A crossed main-effect decomposition of the normalised axis values over four factors: instrument × axis, model,
+rung, language; the residual is trial-to-trial noise plus interactions. Shares of the total sum of squares, with
+a basic (reflected) bootstrap interval over observations, clipped to 0–100 %, because resampling inflates the
+main-effect sums of squares and a plain percentile interval can miss the point estimate. Amber ticks mark the 2026 study's values on 19 models (instrument and
 axis 52 %, model 13 %, noise 35 %). With one model the model share is zero by construction; with one trial the
 residual holds interactions only. The card says so when that is the case.
 
@@ -219,6 +254,7 @@ The interpretation caveat travels with both.
 | API key | — | memory only; `type=password`; re-enter after reload |
 | items per call | 1 | `page` for the websites' pages |
 | trials / cell | 1 | repeats of the same cell; 3 for anything you intend to cite |
+| languages | en | de, zh, ja, hi opt-in; each multiplies the calls |
 | hard rung | off | the website's format, no exit; doubles the calls |
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
@@ -254,8 +290,12 @@ apply to an OpenRouter-only tool; this harness replaces it.
 
 ## Known limitations
 
-- **One language** in this version, and one trial unless you raise it. A marker at n=1 is a point without a
-  repeat-to-repeat interval; read it as a first look, not a finding.
+- **One trial unless you raise it.** A marker at n=1 is a point without a repeat-to-repeat interval; read it
+  as a first look, not a finding.
+- **Translations were checked by a model, not by native speakers** (German excepted, where the author can read
+  the diff). The verdicts say how the back-translation compared, not that a native speaker would phrase the
+  item that way. Treat a language shift as a hypothesis about model plus translation until a native speaker
+  has read the items that drive it.
 - **The error budget is a main-effects decomposition**, not the study's random-effects model with cluster
   bootstrap. It answers the same question at the level of one run; it is not comparable number for number.
 - **The PCT weights are a reconstruction.** They reproduce the website on every trial we could check; the
@@ -267,8 +307,18 @@ apply to an OpenRouter-only tool; this harness replaces it.
 
 ---
 
+## Building the zip
+
+```
+zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md
+```
+
 ## Changelog
 
+- **0.3.0** — five languages: de, zh, ja, hi translated once by Maker-Checker sub-agents, verdicts and
+  back-translations in the data file, per-language prompts and option labels, language selector on the
+  compasses, language-shift compass and heatmap, gates 6 and 7, language as a factor in the error budget, basic
+  bootstrap for the shares; files moved into their own directory with a zip for download.
 - **0.2.0** — hard rung with its own prompts; trials ≥ 2 with per-trial scoring, instability (gate 2) and
   trial-range whiskers; option-order randomisation per cell; response-style card (acquiescence, order shift,
   trial disagreement); ladder across rungs; convergence compass on normalised axes (gate 4); error-budget card
