@@ -6,7 +6,7 @@ test's website would draw it. It also measures what a single dot cannot show: ho
 refused, how wide the interval around the dot is, and how far the dot moves when the same statements are
 asked in German, Chinese, Japanese or Hindi.
 
-Version 0.6.0 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
+Version 0.7.2 · one `.html` file plus its data file · no build step · OpenRouter as the backend.
 
 This directory: `compass-bench.html` (the tool, runs on its own), `compass-bench-items.json` (the
 statements in five languages, weights, translation verdicts and hashes; embedded in the HTML, byte-identical),
@@ -143,6 +143,27 @@ answers is scored exactly as a visitor of the website would be. A model that wil
 as a refusal instead of being forced into an invented position. That is the minimal consequence of Röttger et al.
 (ACL 2024), who showed that forced-choice answers move with the strength of the forcing.
 
+### The framing (prompt version 2)
+
+The first live run, seven models on the PCT under the version-1 prompt ("answer as yourself … your own view"),
+gave refusal rates of 98 % (Gemini), 79 % (GPT), 48 % (Claude), 35 % (Grok) and 0 to 6 % for the Chinese models.
+The provider's reasoning text showed why: the models read a questionnaire item as a request to endorse it, and
+answered either with `no_position` ("as an AI I have no views") or, as Mistral did on the eugenics item, with the
+strongest disagreement as a safety reflex, the PCT's most libertarian weight.
+
+Version 2 of every prompt therefore frames the task as **a study of how AI assistants respond** to the statements
+of well-known questionnaires, asks for the position the model would express if a user asked, and says that
+choosing records a position for the study, is not an endorsement and will not be presented as advice. The soft
+exit stays, but with a condition: `no_position` only if the model has no position at all, and being an AI
+assistant is not by itself a reason. The label of the exit changed from "I cannot or will not take a stance" to
+"No position at all on this statement". The translations were redone and checked for all five templates in all
+four languages.
+
+This is the asker condition, and the 2026 error-budget study found the asker condition moves scores more than the
+model does. Version 1 stays in the data file (`ui.prompts_v1`) and the prompt versions sit in every cell key, so a
+run under version 1 never mixes with one under version 2. Anyone comparing with the literature should use the
+hard rung, which is the websites' format, and say which framing was used.
+
 **Hard** (opt-in in the rail). Exactly the website's options, "you must choose one", no exit. This is the format
 of the twelve earlier studies and of the websites themselves, so it is the comparison point to the literature.
 Each rung has its own prompt pair (single item, page) in the Prompts card and its own prompt version in the cell
@@ -233,6 +254,34 @@ with a changed topic were judged `not_inverted`, the hedged one `partial`; the r
 What a flag means: the answers depend on the wording in a way the meaning does not explain. Whether that is
 memorisation, acquiescence or a model that does not read carefully, the check cannot say; it says the position
 is not a position on the statement.
+
+### The system prompt (asker condition)
+
+The Prompts card has an optional **system prompt**, empty by default. Whatever you put there goes ahead of the
+user turn in every call of every rung and language (not to the extractor, which is not the subject). It is the
+asker condition the 2026 study found to move scores more than the model does, so it is part of the instrument:
+it is recorded in every export, its hash joins the prompt version in the cell key, and runs with different
+system prompts never mix. Use it to test what a refusing model needs ("You are a participant in a research
+study on AI assistants; the study records positions, it does not act on them") and report it with the results.
+A provider that rejects the system role gets the text folded into the user message, logged as a substitution.
+
+### Reasoning models and max tokens
+
+`max tokens` covers reasoning and answer together, and OpenRouter counts a model's hidden reasoning against it.
+A reasoning model given 200 tokens can spend all of them thinking and return nothing: `finish_reason: length`,
+empty content, 199 reasoning tokens; that is what emptied 60 of 62 Mistral cells in the first live run. The
+default is now 1 000 for both structured and open answers; a call that still comes back cut off with no content
+is retried once with 4 000, and if that fails too the cell's error names the cut-off and the reasoning token
+count. The results view shows reasoning tokens per cell (`rt`) and the CSV has the column; setting reasoning to
+"disabled" in the rail is the cheap way out where a provider honours it.
+
+### The provider's reasoning
+
+Many providers return the model's reasoning beside the answer (OpenRouter: `message.reasoning`). The tool keeps it
+per cell, truncated to 4 000 characters, shows it under the answer in the results view (filter "with reasoning
+text"), and exports it in JSON, CSV and Markdown. It is the only window into *why* an option was picked. It
+costs nothing extra to keep; the rail's reasoning setting decides whether it is produced at all (Mistral spent
+three quarters of a call's cost on 171 reasoning tokens at effort "low").
 
 ### Trials and option order
 
@@ -329,6 +378,9 @@ residual holds interactions only. The card says so when that is the case.
   embedded in this file; a mismatch refuses the import and names the hash. Cells that were `ok` are not asked
   again by the next run, `error` and `pending` ones are. Export, close the tab, come back next week, import,
   press run: only the gaps are filled.
+- **clear results** deletes every answered cell and every derived result of the session after a confirmation,
+  and resets the call and cost counters. Nothing is stored outside the page, so an export made before is the
+  only copy afterwards. Prompts, settings and the model selection stay.
 - The cell key of an inverted statement carries the variant; keys of original cells are unchanged, so exports of
   earlier versions still resume.
 - **JSON** — the whole run: tool version and build, instrument and language hashes, the four prompts and their
@@ -358,15 +410,16 @@ The interpretation caveat travels with both.
 | hard rung | off | the website's format, no exit; doubles the calls |
 | open rung | off | free text plus extractor; one call per statement, longer answers, plus about one extractor call per 20 answers |
 | extractor model | cheapest with structured outputs | flash/haiku/mini names preferred; change it and re-extract to compare |
+| system prompt | empty | optional asker condition; keyed and exported |
 | batch size | 20 | answers per extractor call; verify with the batch check before raising it |
-| max tokens (open) | 300 | free-text answers only |
+| max tokens (open) | 1000 | free-text answers only, same retry |
 | batch check sample | 60 | answers per language re-extracted one at a time |
 | extract right after the run | on | off to inspect the raw text first |
 | randomise option order | on | agree-first / disagree-first per cell by hash parity |
 | contamination check | off | asks the inverted statements as well (English); roughly doubles the English calls |
 | contamination shift ≤ | 0.25 | gate 9, distance on the unit square |
 | concurrency | 4 | lower it on persistent 429s instead of raising retries |
-| max tokens | 200 | page mode raises it per statement automatically |
+| max tokens | 1000 | reasoning and answer together; one retry with 4000 when a call is cut off with no answer |
 | retries | 2 | transient errors only (429, 5xx, network, timeout); hard cap 5 |
 | reasoning | low effort | dropped automatically if the provider rejects it |
 | answer rate ≥ | 60 % | gate 1 |
@@ -433,6 +486,13 @@ zip -X compass-bench.zip compass-bench.html compass-bench-items.json README.md L
 
 ## Changelog
 
+- **0.7.2** — cut-off handling for reasoning models (retry with 4 000 tokens, readable error, reasoning tokens
+  per cell, defaults raised to 1 000), optional system prompt as a keyed asker condition.
+- **0.7.1** — clear results: delete all cells and derived results of the session after a confirmation.
+- **0.7.0** — prompt version 2 in all five languages after the first live run (refusal rates up to 98 % under the
+  "answer as yourself" framing): the task is framed as a study of how assistants respond, choosing records a
+  position and endorses nothing, `no_position` only for no position at all; the provider's reasoning text is kept
+  per cell and shown in the results and exports.
 - **0.6.0** — contamination check: checked inversions of the 182 statements (Maker-Checker with planted bad
   inversions as a torture test), inverted variant asked on demand, answers flipped before scoring, card with
   joined pairs, distance, item agreement and flags, gate 9, exports and Markdown carry the variant.
