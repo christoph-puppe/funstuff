@@ -9056,6 +9056,14 @@
       ]
     },
     "Microsoft.Compute": {
+      "": [
+        "imagePublisher",
+        "imageOffer",
+        "imageSku",
+        "imageVersion",
+        "imageId",
+        "licenseType"
+      ],
       "cloudServices": [
         "packageUrl",
         "configuration",
@@ -37386,6 +37394,10 @@
       ]
     },
     "Microsoft.HybridCompute": {
+      "": [
+        "imageSKU",
+        "imageOffer"
+      ],
       "machines": [
         "osProfile.computerName",
         "osProfile",
@@ -72973,6 +72985,14 @@
       ]
     },
     "Microsoft.Sql": {
+      "": [
+        "automaticTuning.state",
+        "transparentDataEncryption.status",
+        "securityAlertPolicies.state",
+        "securityAlertPolicies.emailAccountAdmins",
+        "securityAlertPolicies.disabledAlerts",
+        "auditingSettings.state"
+      ],
       "servers/keys": [
         "subregion",
         "serverKeyType",
