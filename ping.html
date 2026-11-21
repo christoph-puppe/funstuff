@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#050b0e">
+    <title>Ping-Monitor zu google.com</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=PT+Mono&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @property --light {
+            syntax: '<color>';
+            inherits: true;
+            initial-value: #a8e6bf;
+        }
+
+        :root {
+            color-scheme: dark;
+
+            --ground: #050b0e;
+            --ground-far: #0a171b;
+            --bank: #020506;
+            --ink: #e3ede6;
+            --ink-soft: #93a8a0;
+            --accent: #a8e6bf;
+            --warm: #e0b060;
+            --ember: #e0705a;
+            --rule: rgba(168, 230, 191, 0.16);
+
+            /* The colour of the light. Script moves it with the latency. */
+            --light: #a8e6bf;
+            transition: --light 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+            --display: 'Old Standard TT', 'Times New Roman', Times, serif;
+            --text: 'PT Sans', 'Segoe UI', system-ui, sans-serif;
+            --mono: 'PT Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+            --gutter: clamp(16px, 4vw, 40px);
+            --column: 1100px;
+
+            scrollbar-color: #24403f var(--bank);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        ::selection {
+            background: rgba(168, 230, 191, 0.28);
+            color: #f4faf6;
+        }
+
+        html { background: var(--bank); }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: var(--ink);
+            font-family: var(--text);
+            font-size: 1rem;
+            line-height: 1.5;
+            caret-color: var(--accent);
+            background:
+                radial-gradient(130% 70% at 50% 0%, #0e2026 0%, rgba(14, 32, 38, 0) 62%),
+                linear-gradient(#060d11 0%, var(--ground-far) 44%, var(--ground) 62%, var(--bank) 100%);
+            background-attachment: fixed;
+        }
+
+        /* Fine grain of the painted ground, over everything, never in the way. */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.055;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 -0.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+        }
+
+        .scene {
+            position: relative;
+            isolation: isolate;
+            overflow-x: clip;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto auto minmax(260px, 1fr) auto;
+        }
+
+        .column {
+            width: min(var(--column), 100% - 2 * var(--gutter));
+            margin-inline: auto;
+        }
+
+        /* ---------- Title ---------- */
+
+        .title {
+            padding-top: clamp(20px, 4vh, 44px);
+        }
+
+        h1 {
+            margin: 0;
+            font-family: var(--display);
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+            line-height: 1.2;
+            letter-spacing: 0.005em;
+            color: var(--ink);
+            text-wrap: balance;
+        }
+
+        h1 .host {
+            font-style: normal;
+            color: color-mix(in oklab, var(--light) 55%, var(--ink));
+        }
+
+        /* ---------- The reading: the light source ---------- */
+
+        .reading {
+            position: relative;
+            padding-block: clamp(28px, 7vh, 84px) clamp(24px, 5vh, 56px);
+            text-align: center;
+        }
+
+        .reading::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 46%;
+            z-index: -1;
+            width: min(1040px, 160vw);
+            aspect-ratio: 1.55;
+            translate: -50% -50%;
+            pointer-events: none;
+            background: radial-gradient(closest-side,
+                color-mix(in srgb, var(--light) 24%, transparent) 0%,
+                color-mix(in srgb, var(--light) 9%, transparent) 36%,
+                transparent 74%);
+        }
+
+        .clouds {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            z-index: -1;
+            width: 100vw;
+            height: 100%;
+            translate: -50% 0;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0.55;
+            -webkit-mask-image: radial-gradient(60% 70% at 50% 46%, #000 0%, transparent 100%);
+            mask-image: radial-gradient(60% 70% at 50% 46%, #000 0%, transparent 100%);
+        }
+
+        .clouds i {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: calc(100% + 1200px);
+            background-repeat: repeat-x;
+            background-size: 1200px 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='400' preserveAspectRatio='none'%3E%3Cfilter id='c' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.02' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.70  0 0 0 0 0.92  0 0 0 0 0.80  1.9 0 0 0 -0.82'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+            animation: drift 240s linear infinite;
+        }
+
+        @keyframes drift {
+            to { transform: translateX(-1200px); }
+        }
+
+        .value {
+            margin: 0;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.14em;
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: clamp(4.5rem, 17vw, 6rem);
+            line-height: 0.92;
+            font-variant-numeric: lining-nums tabular-nums;
+            color: color-mix(in oklab, var(--light) 30%, #f6fbf7);
+            text-shadow:
+                0 0 0.5em color-mix(in srgb, var(--light) 55%, transparent),
+                0 0.04em 0.06em rgba(2, 5, 6, 0.55);
+        }
+
+        .value .unit {
+            font-style: italic;
+            font-size: 0.3em;
+            color: var(--ink-soft);
+            text-shadow: none;
+        }
+
+        .state {
+            margin: 0.9rem 0 0;
+            font-size: 0.95rem;
+            color: var(--ink-soft);
+        }
+
+        .reading[data-state='lost'] .value {
+            color: #f0c5ba;
+        }
+
+        /* ---------- The water: the chart ---------- */
+
+        .water {
+            position: relative;
+            min-height: clamp(260px, 42vh, 460px);
+        }
+
+        /* Horizon: brightest under the light, lost toward the edges. */
+        .water::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                color-mix(in srgb, var(--light) 60%, transparent) 50%,
+                transparent 100%);
+        }
+
+        /* Long horizontal strokes of light lying on the water. */
+        .water::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.5;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='400' preserveAspectRatio='none'%3E%3Cfilter id='w' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0016 0.22' numOctaves='3' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.66  0 0 0 0 0.90  0 0 0 0 0.75  2.4 0 0 0 -1.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+            -webkit-mask-image: radial-gradient(55% 90% at 50% 0%, #000 0%, transparent 100%);
+            mask-image: radial-gradient(55% 90% at 50% 0%, #000 0%, transparent 100%);
+        }
+
+        #pingChart {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: pan-y;
+        }
+
+        .tip {
+            position: absolute;
+            left: 0;
+            top: 0;
+            padding: 0.35rem 0.6rem;
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            line-height: 1.3;
+            white-space: nowrap;
+            color: var(--ink);
+            background: rgba(3, 8, 10, 0.94);
+            border: 1px solid var(--rule);
+            border-radius: 2px;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
+            pointer-events: none;
+        }
+
+        .tip[hidden] { display: none; }
+
+        /* ---------- The near bank: figures and controls ---------- */
+
+        .bank {
+            padding-block: clamp(18px, 3.5vh, 34px) clamp(20px, 4vh, 40px);
+            background: linear-gradient(rgba(2, 5, 6, 0) 0%, rgba(2, 5, 6, 0.85) 60%);
+        }
+
+        .bank .column {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 28px clamp(28px, 6vw, 72px);
+        }
+
+        .figures {
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(4, max-content);
+            gap: 14px clamp(22px, 4vw, 48px);
+        }
+
+        .figures dt,
+        .field label {
+            font-size: 0.85rem;
+            line-height: 1.2;
+            color: var(--ink-soft);
+        }
+
+        .figures dd {
+            margin: 0.3rem 0 0;
+            font-family: var(--mono);
+            font-size: 1.05rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink);
+        }
+
+        .controls {
+            display: flex;
+            gap: clamp(20px, 3vw, 36px);
+        }
+
+        .field {
+            display: grid;
+            gap: 0.3rem;
+        }
+
+        .field .box {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            min-height: 44px;
+            border-bottom: 1px solid var(--rule);
+            transition: border-color 0.25s ease-out;
+        }
+
+        .field .box:hover { border-color: rgba(168, 230, 191, 0.4); }
+        .field .box:focus-within { border-color: var(--accent); }
+
+        .field input {
+            width: 5.5ch;
+            padding: 0.55rem 0 0.45rem;
+            border: 0;
+            background: transparent;
+            color: var(--ink);
+            font-family: var(--mono);
+            font-size: 1.15rem;
+            font-variant-numeric: tabular-nums;
+            accent-color: var(--accent);
+        }
+
+        .field input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 1px;
+        }
+
+        .field .suffix {
+            font-size: 0.85rem;
+            color: var(--ink-soft);
+        }
+
+        .note {
+            grid-column: 1 / -1;
+            margin: 0;
+            max-width: 68ch;
+            font-size: 0.85rem;
+            color: var(--ink-soft);
+        }
+
+        @media (max-width: 760px) {
+            .bank .column { grid-template-columns: 1fr; }
+            .figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .controls { justify-content: flex-start; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            :root { transition: none; }
+            .clouds i { animation: none; }
+        }
+
+        @media (forced-colors: active) {
+            body::after, .clouds, .water::after, .reading::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="scene">
+        <header class="title column">
+            <h1>Ping-Monitor zu <span class="host">google.com</span></h1>
+        </header>
+
+        <section class="reading" id="reading" aria-label="Aktueller Ping">
+            <div class="clouds" aria-hidden="true"><i></i></div>
+            <p class="value">
+                <span id="currentPing">…</span><span class="unit" id="pingUnit">ms</span>
+            </p>
+            <p class="state" id="pingState">Erste Messung läuft</p>
+        </section>
+
+        <section class="water" id="water" aria-label="Verlauf">
+            <canvas id="pingChart" role="img" aria-label="Latenzverlauf, noch keine Messung"></canvas>
+            <div class="tip" id="tip" hidden></div>
+        </section>
+
+        <footer class="bank">
+            <div class="column">
+                <dl class="figures">
+                    <div><dt>Minimum</dt><dd id="statMin">–</dd></div>
+                    <div><dt>Median</dt><dd id="statMed">–</dd></div>
+                    <div><dt>Maximum</dt><dd id="statMax">–</dd></div>
+                    <div><dt>Ausfälle</dt><dd id="statLoss">–</dd></div>
+                </dl>
+
+                <div class="controls">
+                    <div class="field">
+                        <label for="period">Periode</label>
+                        <div class="box">
+                            <input type="number" id="period" value="2" min="1" max="3600" inputmode="numeric">
+                            <span class="suffix">Sekunden</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="history">Historie</label>
+                        <div class="box">
+                            <input type="number" id="history" value="30" min="5" max="500" inputmode="numeric">
+                            <span class="suffix">Punkte</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="note">Gemessen wird die Dauer einer HTTPS-Anfrage an www.google.com aus dem Browser, kein ICMP-Ping. Die Skala ist logarithmisch.</p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+    (() => {
+        'use strict';
+
+        const $ = (id) => document.getElementById(id);
+        const pingEl = $('currentPing');
+        const unitEl = $('pingUnit');
+        const stateEl = $('pingState');
+        const readingEl = $('reading');
+        const periodInput = $('period');
+        const historyInput = $('history');
+        const canvas = $('pingChart');
+        const ctx = canvas.getContext('2d');
+        const wrap = $('water');
+        const tip = $('tip');
+        const stat = { min: $('statMin'), med: $('statMed'), max: $('statMax'), loss: $('statLoss') };
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const rootStyle = getComputedStyle(document.documentElement);
+
+        const TICKS = [1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 700,
+            1000, 1500, 2000, 3000, 5000, 7000, 10000, 15000, 20000, 30000, 60000];
+        const COARSE = new Set([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 60000]);
+        const DECADES = new Set([1, 10, 100, 1000, 10000]);
+        const SLIDE_MS = 700;
+        const PULSE_MS = 1500;
+        const INK_SOFT = 'rgba(147, 168, 160, 0.95)';
+        const RULE = 'rgba(168, 230, 191, 0.10)';
+
+        // Colour of the light by latency: cool moonlight when fast, lamp ochre when slow, ember when very slow.
+        const STOPS = [
+            [1, [143, 211, 200]],
+            [60, [168, 230, 191]],
+            [250, [224, 176, 96]],
+            [1000, [224, 112, 90]]
+        ];
+        const EMBER = [224, 112, 90];
+
+        const samples = [];           // { id, t: Date, ms: number | null }
+        let serial = 0;
+        let maxHistory = readInt(historyInput, 30, 5, 500);
+        let timer = null;
+
+        let cssW = 0, cssH = 0, dpr = 1, gutterPx = 16;
+        let dom = { lo: Math.log(5), hi: Math.log(200) };
+        let domFrom = { ...dom }, domTo = { ...dom };
+        let slideStart = -1e9, domStart = -1e9;
+        let hoverX = null;
+        let raf = 0;
+
+        // ---------- helpers ----------
+
+        function readInt(input, fallback, min, max) {
+            const n = parseInt(input.value, 10);
+            return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+        }
+
+        const clamp01 = (v) => Math.min(1, Math.max(0, v));
+        const expoOut = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+        const rgba = (c, a = 1) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`;
+        const two = (n) => String(n).padStart(2, '0');
+        const clock = (d) => `${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;
+
+        function rgbFor(ms) {
+            if (ms === null) return EMBER;
+            const v = Math.max(1, ms);
+            for (let i = 1; i < STOPS.length; i++) {
+                const [a, ca] = STOPS[i - 1];
+                const [b, cb] = STOPS[i];
+                if (v <= b) {
+                    const t = (Math.log(v) - Math.log(a)) / (Math.log(b) - Math.log(a));
+                    return ca.map((c, k) => Math.round(c + (cb[k] - c) * t));
+                }
+            }
+            return STOPS[STOPS.length - 1][1];
+        }
+
+        function stateFor(ms) {
+            if (ms === null) return 'Keine Antwort';
+            if (ms <= 60) return 'Schnell';
+            if (ms <= 250) return 'Mäßig';
+            if (ms <= 1000) return 'Langsam';
+            return 'Sehr langsam';
+        }
+
+        function formatMs(ms) {
+            return ms >= 1000 ? `${(ms / 1000).toLocaleString('de-DE', { maximumFractionDigits: 1 })} s` : `${ms} ms`;
+        }
+
+        function targetDomain() {
+            const v = samples.filter((s) => s.ms !== null).map((s) => Math.max(1, s.ms));
+            if (!v.length) return { lo: Math.log(5), hi: Math.log(200) };
+            const mn = Math.min(...v), mx = Math.max(...v);
+            let lo = TICKS[0];
+            for (const t of TICKS) if (t <= mn * 0.8) lo = t;
+            let hi = TICKS.find((t) => t >= mx * 1.3) ?? TICKS[TICKS.length - 1];
+            if (hi / lo < 3) hi = TICKS.find((t) => t >= lo * 3) ?? hi;
+            return { lo: Math.log(lo), hi: Math.log(hi) };
+        }
+
+        function retargetDomain() {
+            domFrom = { ...dom };
+            domTo = targetDomain();
+            domStart = performance.now();
+        }
+
+        // ---------- measuring ----------
+
+        async function measurePing() {
+            const start = performance.now();
+            let ms = null;
+            try {
+                await fetch(`https://www.google.com/favicon.ico?t=${Date.now()}`, { mode: 'no-cors', cache: 'no-store' });
+                ms = Math.round(performance.now() - start);
+            } catch (error) {
+                console.error('Ping-Fehler:', error);
+            }
+            addSample(ms);
+        }
+
+        function addSample(ms) {
+            samples.push({ id: serial++, t: new Date(), ms });
+            trimHistory();
+            slideStart = performance.now();
+            retargetDomain();
+            updateReadout(ms);
+            updateFigures();
+            requestFrame();
+        }
+
+        function trimHistory() {
+            while (samples.length > maxHistory) samples.shift();
+        }
+
+        function updateReadout(ms) {
+            pingEl.textContent = ms === null ? '–' : ms;
+            unitEl.hidden = ms === null;
+            stateEl.textContent = stateFor(ms);
+            readingEl.dataset.state = ms === null ? 'lost' : 'ok';
+            document.documentElement.style.setProperty('--light', rgba(rgbFor(ms)));
+        }
+
+        function updateFigures() {
+            const v = samples.filter((s) => s.ms !== null).map((s) => s.ms).sort((a, b) => a - b);
+            const lost = samples.length - v.length;
+            if (v.length) {
+                const mid = v.length >> 1;
+                const median = v.length % 2 ? v[mid] : Math.round((v[mid - 1] + v[mid]) / 2);
+                stat.min.textContent = formatMs(v[0]);
+                stat.med.textContent = formatMs(median);
+                stat.max.textContent = formatMs(v[v.length - 1]);
+            } else {
+                stat.min.textContent = stat.med.textContent = stat.max.textContent = '–';
+            }
+            stat.loss.textContent = samples.length ? `${lost} von ${samples.length}` : '–';
+
+            const last = samples[samples.length - 1];
+            canvas.setAttribute('aria-label', last
+                ? `Latenzverlauf der letzten ${samples.length} Messungen, zuletzt ${last.ms === null ? 'keine Antwort' : last.ms + ' Millisekunden'}`
+                : 'Latenzverlauf, noch keine Messung');
+        }
+
+        function restartInterval() {
+            clearInterval(timer);
+            const seconds = readInt(periodInput, 2, 1, 3600);
+            periodInput.value = seconds;
+            measurePing();
+            timer = setInterval(measurePing, seconds * 1000);
+        }
+
+        // ---------- drawing ----------
+
+        function requestFrame() {
+            if (!raf) raf = requestAnimationFrame(frame);
+        }
+
+        function frame(now) {
+            raf = 0;
+            if (draw(now)) requestFrame();
+        }
+
+        function resize() {
+            const r = wrap.getBoundingClientRect();
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            cssW = r.width;
+            cssH = r.height;
+            gutterPx = Math.min(40, Math.max(16, cssW * 0.04));
+            canvas.width = Math.max(1, Math.round(cssW * dpr));
+            canvas.height = Math.max(1, Math.round(cssH * dpr));
+            requestFrame();
+        }
+
+        function trace(pts) {
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+                const a = pts[i - 1], b = pts[i], mx = (a.x + b.x) / 2;
+                ctx.bezierCurveTo(mx, a.y, mx, b.y, b.x, b.y);
+            }
+        }
+
+        // Vertical gradient that gives every height the colour of its latency.
+        function valueGradient(y0, y1, alphaAt) {
+            const g = ctx.createLinearGradient(0, y0, 0, y1);
+            const n = 10;
+            for (let k = 0; k <= n; k++) {
+                const ms = Math.exp(dom.hi + (dom.lo - dom.hi) * (k / n));
+                g.addColorStop(k / n, rgba(rgbFor(ms), alphaAt(k / n)));
+            }
+            return g;
+        }
+
+        function draw(now) {
+            const w = cssW, h = cssH;
+            if (!w || !h) return false;
+
+            const instant = reduceMotion.matches;
+            const slideP = instant ? 1 : clamp01((now - slideStart) / SLIDE_MS);
+            const pulseP = instant ? 1 : clamp01((now - slideStart) / PULSE_MS);
+            const domP = instant ? 1 : clamp01((now - domStart) / SLIDE_MS);
+            const slide = 1 - expoOut(slideP);
+            const de = expoOut(domP);
+            dom.lo = domFrom.lo + (domTo.lo - domFrom.lo) * de;
+            dom.hi = domFrom.hi + (domTo.hi - domFrom.hi) * de;
+
+            const gutter = Math.max(gutterPx, (w - 1100) / 2);
+            const x0 = 0;
+            const x1 = w - gutter - 8;
+            const y0 = 26;
+            const y1 = h - 30;
+            const n = samples.length;
+            const step = (x1 - x0) / (maxHistory - 1);
+            const xOf = (i) => x1 - ((n - 1 - i) - slide) * step;
+            const yOf = (ms) => y1 - ((Math.log(Math.max(1, ms)) - dom.lo) / (dom.hi - dom.lo)) * (y1 - y0);
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.shadowBlur = 0;
+            ctx.clearRect(0, 0, w, h);
+
+            // --- the curve and its light ---
+            const pts = samples.map((s, i) => ({ x: xOf(i), y: s.ms === null ? null : yOf(s.ms), s }));
+            const runs = [];
+            let run = [];
+            for (const p of pts) {
+                if (p.y === null) { if (run.length) runs.push(run); run = []; }
+                else run.push(p);
+            }
+            if (run.length) runs.push(run);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, w, y1 + 1);
+            ctx.clip();
+
+            // light lying on the water under the curve
+            ctx.fillStyle = valueGradient(y0, y1, (t) => 0.2 * (1 - Math.pow(t, 2.2)));
+            for (const r of runs) {
+                if (r.length < 2) continue;
+                ctx.beginPath();
+                trace(r);
+                ctx.lineTo(r[r.length - 1].x, y1);
+                ctx.lineTo(r[0].x, y1);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // the curve: one soft glowing pass, one crisp pass
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            for (const r of runs) {
+                if (r.length < 2) continue;
+                ctx.beginPath();
+                trace(r);
+                ctx.strokeStyle = valueGradient(y0, y1, () => 0.55);
+                ctx.shadowColor = rgba(rgbFor(r[r.length - 1].s.ms), 0.9);
+                ctx.shadowBlur = 18;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = valueGradient(y0, y1, () => 1);
+                ctx.lineWidth = 1.6;
+                ctx.stroke();
+            }
+
+            // every measurement, small
+            for (const p of pts) {
+                if (p.y === null) {
+                    // a failed ping: the light is out
+                    ctx.strokeStyle = rgba(EMBER, 0.22);
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, y0);
+                    ctx.lineTo(p.x, y1 - 8);
+                    ctx.stroke();
+                    ctx.strokeStyle = rgba(EMBER, 0.95);
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, y1 - 5, 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = 'rgba(240, 248, 243, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // the newest measurement carries the light
+            const last = pts[n - 1];
+            if (last && last.y !== null) {
+                const c = rgbFor(last.s.ms);
+
+                // glints below it, as light breaks on water
+                ctx.lineWidth = 1;
+                for (let k = 1; k <= 7; k++) {
+                    const gy = last.y + 6 + k * 7;
+                    if (gy > y1 - 2) break;
+                    const half = (11 - k) * (1 + 0.35 * Math.sin(k * 12.9898 + last.s.id));
+                    ctx.strokeStyle = rgba(c, 0.42 * (1 - k / 8));
+                    ctx.beginPath();
+                    ctx.moveTo(last.x - half, gy);
+                    ctx.lineTo(last.x + half, gy);
+                    ctx.stroke();
+                }
+
+                const glow = ctx.createRadialGradient(last.x, last.y, 0, last.x, last.y, 26);
+                glow.addColorStop(0, rgba(c, 0.55));
+                glow.addColorStop(0.35, rgba(c, 0.16));
+                glow.addColorStop(1, rgba(c, 0));
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(last.x, last.y, 26, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (pulseP < 1) {
+                    ctx.strokeStyle = rgba(c, 0.6 * (1 - pulseP));
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 5 + 30 * expoOut(pulseP), 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = '#f6fbf7';
+                ctx.beginPath();
+                ctx.arc(last.x, last.y, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // --- the past falls into shadow ---
+            ctx.globalCompositeOperation = 'destination-in';
+            const fade = ctx.createLinearGradient(0, 0, w * 0.42, 0);
+            fade.addColorStop(0, 'rgba(0, 0, 0, 0.16)');
+            fade.addColorStop(1, 'rgba(0, 0, 0, 1)');
+            ctx.fillStyle = fade;
+            ctx.fillRect(0, 0, w, h);
+
+            // --- scale, behind the curve ---
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.strokeStyle = RULE;
+            ctx.lineWidth = 1;
+            const inView = TICKS.filter((t) => Math.log(t) >= dom.lo - 0.01 && Math.log(t) <= dom.hi + 0.01);
+            const maxLines = Math.max(3, Math.floor((y1 - y0) / 44));
+            let visible = inView;
+            if (visible.length > maxLines) visible = inView.filter((t) => COARSE.has(t));
+            if (visible.length > maxLines) visible = inView.filter((t) => DECADES.has(t));
+            for (const t of visible) {
+                const y = Math.round(yOf(t)) + 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+
+            // --- labels ---
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.font = `11px ${rootStyle.getPropertyValue('--mono')}`;
+            ctx.fillStyle = INK_SOFT;
+            ctx.textBaseline = 'alphabetic';
+            ctx.textAlign = 'left';
+            visible.forEach((t, k) => {
+                const label = t >= 1000 ? `${t / 1000} s` : (k === visible.length - 1 ? `${t} ms` : `${t}`);
+                ctx.fillText(label, gutter, Math.round(yOf(t)) - 6);
+            });
+
+            ctx.textAlign = 'center';
+            const every = Math.max(1, Math.ceil(92 / step));
+            for (const p of pts) {
+                if (p.s.id % every !== 0) continue;
+                if (p.x < gutter + 30 || p.x > x1 + 2) continue;
+                ctx.fillText(clock(p.s.t), Math.min(p.x, w - 34), y1 + 19);
+            }
+
+            // --- pointer: read one measurement ---
+            let shown = false;
+            if (hoverX !== null && n) {
+                const i = Math.round(n - 1 - (x1 - hoverX) / step);
+                const p = pts[i];
+                if (p) {
+                    const py = p.y === null ? y1 - 5 : p.y;
+                    ctx.strokeStyle = 'rgba(227, 237, 230, 0.35)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.round(p.x) + 0.5, y0);
+                    ctx.lineTo(Math.round(p.x) + 0.5, y1);
+                    ctx.stroke();
+                    ctx.strokeStyle = '#f6fbf7';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, py, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    tip.textContent = `${clock(p.s.t)} · ${p.s.ms === null ? 'keine Antwort' : formatMs(p.s.ms)}`;
+                    tip.hidden = false;
+                    const tw = tip.offsetWidth, th = tip.offsetHeight;
+                    const tx = Math.min(w - tw - 8, Math.max(8, p.x - tw / 2));
+                    const ty = py - th - 14 < 4 ? py + 14 : py - th - 14;
+                    tip.style.transform = `translate(${Math.round(tx)}px, ${Math.round(ty)}px)`;
+                    shown = true;
+                }
+            }
+            if (!shown) tip.hidden = true;
+
+            return slideP < 1 || pulseP < 1 || domP < 1;
+        }
+
+        // ---------- events ----------
+
+        periodInput.addEventListener('change', restartInterval);
+
+        historyInput.addEventListener('change', () => {
+            maxHistory = readInt(historyInput, 30, 5, 500);
+            historyInput.value = maxHistory;
+            trimHistory();
+            retargetDomain();
+            updateFigures();
+            requestFrame();
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            hoverX = e.clientX - canvas.getBoundingClientRect().left;
+            requestFrame();
+        });
+        canvas.addEventListener('pointerdown', (e) => {
+            hoverX = e.clientX - canvas.getBoundingClientRect().left;
+            requestFrame();
+        });
+        canvas.addEventListener('pointerleave', () => {
+            hoverX = null;
+            requestFrame();
+        });
+
+        new ResizeObserver(resize).observe(wrap);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) requestFrame(); });
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(requestFrame);
+
+        resize();
+        restartInterval();
+    })();
+    </script>
+</body>
+</html>
